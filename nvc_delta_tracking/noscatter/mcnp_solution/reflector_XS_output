@@ -1,0 +1,23 @@
+
+=====> simple_ace_mg.pl - create simple multigroup ACE file
+
+	      zaid = 99992.01m
+	      za   = 99992
+	      file = reflector
+	       awr = 1000000
+	       tmp = 2.5301e-08
+	    groups = 1
+	  xss size = 11
+	   comment = multigroup ACE file
+	      date = 2019-10-23
+
+  group      Ehi     Elow       total     capture     scatter     fission          nu         chi
+      1      100        0       0.295       0.295           0           0           0           0
+
+  XSDIR Info, to use on XSn card:
+
+	XSn   99992.01m 1e+06        reflector  0 1 1 11  0 0 2.5301e-08 
+
+
+  Creating ACE file:  reflector
+
