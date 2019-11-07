@@ -55,8 +55,11 @@ font_size = plt.rcParams["font.size"]
 font_size = 15
 plt.rcParams["font.size"] = font_size
 
-plt.errorbar(F_fast[0], F_fast[1], yerr=F_fast[1]*F_fast[2], c='b', label="Flux Rapide")
-plt.errorbar(F_therm[0], F_therm[1], yerr=F_therm[1]*F_therm[2], c='orange', label="Flux Thermique")
+# Error bar cap size in points
+cpsize = 1
+
+plt.errorbar(F_fast[0], F_fast[1], yerr=F_fast[1]*F_fast[2], c='b', label="Flux Rapide", capsize=cpsize)
+plt.errorbar(F_therm[0], F_therm[1], yerr=F_therm[1]*F_therm[2], c='orange', label="Flux Thermique", capsize=cpsize)
 #plt.errorbar(F_tot[0], F_tot[1], yerr=F_tot[1]*F_tot[2], c='r', label="Total")
 plt.xlabel("Position [cm]")
 plt.ylabel("Flux")
@@ -65,7 +68,7 @@ plt.tight_layout()
 plt.show()
 
 plt.plot(F_fast[0], F_fast[1]*F_fast[2], c='b', label="Erreur Flux Rapide")
-plt.errorbar(F_therm[0], F_therm[1]*F_therm[2], c='orange', label="Erreur Flux Thermique")
+plt.errorbar(F_therm[0], F_therm[1]*F_therm[2], c='orange', label="Erreur Flux Thermique", capsize=cpsize)
 plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 plt.legend()
 plt.xlabel("Position [cm]")

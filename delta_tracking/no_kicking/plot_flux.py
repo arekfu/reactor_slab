@@ -60,9 +60,12 @@ font_size = plt.rcParams["font.size"]
 font_size = 15
 plt.rcParams["font.size"] = font_size
 
+# Error bars cap size in points
+cpsize = 1
+
 # Plot flux
-plt.errorbar(x,F[0], yerr=F_err[0], c='blue', label="Flux Rapide")
-plt.errorbar(x,F[1], yerr=F_err[1], c='orange', label="Flux Thermique")
+plt.errorbar(x,F[0], yerr=F_err[0], c='blue', label="Flux Rapide", capsize=cpsize)
+plt.errorbar(x,F[1], yerr=F_err[1], c='orange', label="Flux Thermique", capsize=cpsize)
 plt.xlabel("Position [cm]")
 plt.ylabel("Flux")
 plt.tight_layout()
