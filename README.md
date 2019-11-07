@@ -8,3 +8,5 @@ The system which I have chosen to build this toy model around is a slab reactor,
 
 ![reactor](https://github.com/HunterBelanger/reactor_slab/blob/master/docs/reacteur.png)
 
+## Installation
+To make the ray-tracing and two delta-tracking programs, simply run make to build the executables in the main directory. To build the no virtual collision weighted models, you must link to the include directory, so if in this root drectory, one would run `$ clang++ -Iinclude -fopenmp nvc_delta_tracking/scatter/nvc_delta_tracking.cpp -o nvcdt`.

@@ -3,7 +3,7 @@
 #include<cmath>
 #include<iomanip>
 #include<fstream>
-#include <chrono>
+#include<chrono>
 #include<omp.h>
 
 using namespace std::chrono;
@@ -542,7 +542,7 @@ void Eigenvalue(double Emaj[2], double** &Et, double** &Ea, double** &Ef, double
 }
 
 int main() {
-    std::cout << " Delta Tracking (Resampling) Two Group Reflected Slab\n\n";
+    std::cout << " No Virtual Collision Weighted Delta Tracking Two Group Reflected Slab\n\n";
 
     // Declare cross section variables
     double**  Et; // Total XS
