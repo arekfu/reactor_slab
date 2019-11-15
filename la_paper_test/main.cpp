@@ -34,13 +34,19 @@ class XS {
         double Pnc;
         double G;
         double Emax;
+        double Em[4];
 
 };
 
 // Derived classes for each type of cross section
 class Lin_Decrease : public XS {
     public:
-        Lin_Decrease():XS(std::exp(-2.0), 2.0) {}
+        Lin_Decrease():XS(std::exp(-2.0), 2.0) {
+            Em[0] = 2.0;
+            Em[1] = 1.5;
+            Em[2] = 1.0;
+            Em[3] = 0.5;
+        }
 
         double T(double x) {
             if((x >= 0.0) and (x <= 2.0)) {
@@ -61,7 +67,12 @@ class Lin_Decrease : public XS {
 
 class Lin_Increase : public XS {
     public:
-        Lin_Increase():XS(std::exp(-2.0), 2.0) {}
+        Lin_Increase():XS(std::exp(-2.0), 2.0) {
+            Em[0] = 0.5;
+            Em[1] = 1.0;
+            Em[2] = 1.5;
+            Em[3] = 2.0;
+        }
 
         double T(double x) {
             if((x >= 0.0) and (x <= 2.0)) {
@@ -82,7 +93,12 @@ class Lin_Increase : public XS {
 
 class Exp_Decrease : public XS {
     public:
-        Exp_Decrease():XS(std::exp(-(1.0/3.0)*(1.0 - std::exp(-6.0))), 1.0) {}
+        Exp_Decrease():XS(std::exp(-(1.0/3.0)*(1.0 - std::exp(-6.0))), 1.0) {
+            Em[0] = 1.0;
+            Em[1] = std::exp(-1.5);
+            Em[2] = std::exp(-3.0);
+            Em[3] = std::exp(-4.5);
+        }
 
         double T(double x) {
             if((x >= 0.0) and (x <= 2.0)) {
@@ -103,7 +119,12 @@ class Exp_Decrease : public XS {
 
 class Exp_Increase : public XS {
     public:
-        Exp_Increase():XS(std::exp(-0.05*(std::exp(4.0)-1.0)), 0.1*std::exp(4.0)) {}
+        Exp_Increase():XS(std::exp(-0.05*(std::exp(4.0)-1.0)), 0.1*std::exp(4.0)) {
+            Em[0] = Et(0.5);
+            Em[1] = Et(1.0);
+            Em[2] = Et(1.5);
+            Em[3] = Et(2.0);
+        }
 
         double T(double x) {
             if((x >= 0.0) and (x <= 2.0)) {
@@ -124,7 +145,12 @@ class Exp_Increase : public XS {
 
 class Gauss_Sharp : public XS {
     public:
-        Gauss_Sharp():XS(0.9317314, 2.0/std::sqrt(2.0*M_PI)) {}
+        Gauss_Sharp():XS(0.9317314, 2.0/std::sqrt(2.0*M_PI)) {
+            Em[0] = Et(0.5);
+            Em[1] = Et(1.0);
+            Em[2] = Et(1.0);
+            Em[3] = Et(1.5);
+        }
 
         double T(double x) {
             if((x >= 0.0) and (x <= 2.0)) {
@@ -148,7 +174,12 @@ class Gauss_Sharp : public XS {
 
 class Gauss_Broad : public XS {
     public:
-        Gauss_Broad():XS(0.303686, 2.0/std::sqrt(2.0*M_PI)) {}
+        Gauss_Broad():XS(0.303686, 2.0/std::sqrt(2.0*M_PI)) {
+            Em[0] = Et(0.5);
+            Em[1] = Et(1.0);
+            Em[2] = Et(1.0);
+            Em[3] = Et(1.5);
+        }
 
         double T(double x) {
             if(x <= 2.0) {
@@ -221,7 +252,7 @@ void Direct_Sampling(XS* xs) {
     double collide = 0.0;
     int cnts_sum = 0;
 
-#pragma omp parallel
+    #pragma omp parallel
     {
         pcg64_unique rng;
         int cnt;
@@ -295,18 +326,68 @@ void Delta_Tracking(XS* xs) {
     std::cout << trans << ", Average Counts: " << avg_cnt << "\n\n";
 }
 
-int main() {
-    /*
-    std::cout << "\n Available Cross Sections\n";
-    std::cout <<" 1) Linearly Increasing\n"<<" 2) Linearly Decreasing\n";
-    std::cout <<" 3) Exponentially Increasing\n"<<" 4) Exponentially Decreasing\n";
-    std::cout << " 5) Sharp Gaussian\n" << " 6) Broad Gaussian\n\n";
-    std::cout << " Enter choice => ";
-    int type;
-    std::cin >> type;
-    */
+void Meshed_Delta_Tracking(XS* xs) {
+    std::cout << "\n Meshed Delta Tracking\n";
 
-    for(int type = 1; type <= 6; type++) {
+    int cnts_sum = 0;
+    double escape = 0.0;
+    double collide = 0.0;
+
+    #pragma omp parallel
+    {    
+        pcg64_unique rng;
+        #pragma omp for
+        for(int n = 0; n < NPART; n++) {
+            bool virtual_collision = true;
+            double x = 0.0;
+            int cnt = 0;
+            double Emax = xs->Em[0];
+            int bin = 0;
+            while(virtual_collision) {
+                cnt++;
+                double d = -std::log(rand(rng))/(Emax);
+                x += d;
+                int new_bin = std::floor(x/0.5);
+                while((new_bin != bin) and (new_bin >= 0)  and (new_bin < 4)) {
+                    cnt++;
+                    x = new_bin*0.5 + 10e-5; // Move particle back, just barely in bin
+                    bin = new_bin;
+                    Emax = xs->Em[bin];
+                    d = -std::log(rand(rng)/Emax);
+                    x += d;
+                    new_bin = std::floor(x/0.5);
+                }
+                
+                if(x >= 2.0) {
+                    #pragma omp atomic
+                    escape += 1.0;
+                    virtual_collision = false;
+                    #pragma omp atomic
+                    cnts_sum += cnt;
+                }
+                else if(rand(rng) < (xs->Et(x)/Emax)) {
+                    // Collision is real
+                    #pragma omp atomic
+                    collide += 1.0;
+                    #pragma omp atomic
+                    cnts_sum += cnt;
+                    virtual_collision = false;
+                
+                }
+            }
+        }
+    }
+    
+    double trans = escape / (double)NPART;
+    double avg_cnt = (double)cnts_sum/(double)NPART;
+
+    std::cout << " Collisions: " << (int)collide << ", Transmission: ";
+    std::cout << trans << ", Average Counts: " << avg_cnt << "\n\n";
+}
+
+int main() {
+
+    for(int type = 1; type <= 1; type++) {
         XS* crs;
         
         // Determine cross section type for run
@@ -348,9 +429,11 @@ int main() {
         }
         else {exit(1);}
 
-        Direct_Sampling(crs);
+        //Direct_Sampling(crs);
 
         Delta_Tracking(crs);
+
+        Meshed_Delta_Tracking(crs);
     }
     
     return 0;
