@@ -407,18 +407,18 @@ void Eigenvalue(double Emaj[2], double** &Et, double** &Ea, double** &Ef, double
                     if(alive == true) {
                         #pragma omp atomic
                         //tally += w*v[material][energy]*Ef[material][energy]/Et[material][energy];
-                        tally += w*(1.0 - (Et[material][energy]/Emaj[energy]))*v[material][energy]*Ef[material][energy]/Et[material][energy];
+                        tally += w*((Et[material][energy]/Emaj[energy]))*v[material][energy]*Ef[material][energy]/Et[material][energy];
 
                         // Tally flux
                         if(g > ninactive) {
                             bin = std::floor(x/Fdx);
                             #pragma omp atomic
                             //Flux[energy][bin] += w/(Et[material][energy]);
-                            Flux[energy][bin] += w*(1.0 - (Et[material][energy]/Emaj[energy]))/(Et[material][energy]);
+                            Flux[energy][bin] += w*((Et[material][energy]/Emaj[energy]))/(Et[material][energy]);
                         }
 
                         //int new_particles = floor((w/k)*v[material][energy]*Ef[material][energy]/Et[material][energy] + rand(rnd));
-                        int new_particles = floor((w*(1.0 - (Et[material][energy]/Emaj[energy]))/k)*v[material][energy]*Ef[material][energy]/Et[material][energy] + rand(rnd));
+                        int new_particles = floor((w*((Et[material][energy]/Emaj[energy]))/k)*v[material][energy]*Ef[material][energy]/Et[material][energy] + rand(rnd));
                         for(int n = 0; n < new_particles; n++) {
                             #pragma omp critical
                             {
@@ -429,7 +429,7 @@ void Eigenvalue(double Emaj[2], double** &Et, double** &Ea, double** &Ef, double
                         
                         // New weight after partial fission
                         // w = w*(1.0 - (Et[material][energy]/Emaj[energy]))*(1.0 - (Ea[material][energy]/Et[material][energy]));
-                        w = w*(Et[material][energy]/Emaj[energy])*(1.0 - (Ea[material][energy]/Et[material][energy]));
+                        w = w*(1.0 - Et[material][energy]/Emaj[energy])*(1.0 - (Ea[material][energy]/Et[material][energy]));
 
                         // Russian Roulett
                         if(w < w_c) {
