@@ -296,7 +296,7 @@ void Delta_Tracking(XS* xs) {
 }
 
 int main() {
-
+    /*
     std::cout << "\n Available Cross Sections\n";
     std::cout <<" 1) Linearly Increasing\n"<<" 2) Linearly Decreasing\n";
     std::cout <<" 3) Exponentially Increasing\n"<<" 4) Exponentially Decreasing\n";
@@ -304,45 +304,54 @@ int main() {
     std::cout << " Enter choice => ";
     int type;
     std::cin >> type;
+    */
 
-    XS* crs;
-    
-    // Determine cross section type for run
-    if(type == 1) {
-        std::cout << "\n Linearly Increasing\n\n";
-        Lin_Increase xs = Lin_Increase();
-        crs = &xs;
-    }
-    else if(type == 2) {
-        std::cout << "\n\n Linearly Decreasing\n\n";
-        Lin_Decrease xs = Lin_Decrease();
-        crs = &xs;
-    }
-    else if(type == 4) {
-        std::cout << "\n\n Exponentially Decreasing\n\n";
-        Exp_Decrease xs = Exp_Decrease();
-        crs = &xs;
-    }
-    else if(type == 3) {
-        std::cout << "\n\n Exponentially Increasing\n\n";
-        Exp_Increase xs = Exp_Increase();
-        crs = &xs;
-    }
-    else if(type == 5) {
-        std::cout << "\n\n Sharp Gaussian\n\n";
-        Gauss_Sharp xs = Gauss_Sharp();
-        crs = &xs;
-    }
-    else if(type == 6) {
-        std::cout << "\n\n Broad Gaussian\n\n";
-        Gauss_Broad xs = Gauss_Broad();
-        crs = &xs;
-    }
-    else {exit(1);}
+    for(int type = 1; type <= 6; type++) {
+        XS* crs;
+        
+        // Determine cross section type for run
+        if(type == 1) {
+            std::cout << "\n------------------------------------------------------";
+            std::cout << "\n Linearly Increasing\n\n";
+            Lin_Increase xs = Lin_Increase();
+            crs = &xs;
+        }
+        else if(type == 2) {
+            std::cout << "\n------------------------------------------------------";
+            std::cout << "\n Linearly Decreasing\n\n";
+            Lin_Decrease xs = Lin_Decrease();
+            crs = &xs;
+        }
+        else if(type == 4) {
+            std::cout << "\n------------------------------------------------------";
+            std::cout << "\n Exponentially Decreasing\n\n";
+            Exp_Decrease xs = Exp_Decrease();
+            crs = &xs;
+        }
+        else if(type == 3) {
+            std::cout << "\n------------------------------------------------------";
+            std::cout << "\n Exponentially Increasing\n\n";
+            Exp_Increase xs = Exp_Increase();
+            crs = &xs;
+        }
+        else if(type == 5) {
+            std::cout << "\n------------------------------------------------------";
+            std::cout << "\n Sharp Gaussian\n\n";
+            Gauss_Sharp xs = Gauss_Sharp();
+            crs = &xs;
+        }
+        else if(type == 6) {
+            std::cout << "\n------------------------------------------------------";
+            std::cout << "\n Broad Gaussian\n\n";
+            Gauss_Broad xs = Gauss_Broad();
+            crs = &xs;
+        }
+        else {exit(1);}
 
-    Direct_Sampling(crs);
+        Direct_Sampling(crs);
 
-    Delta_Tracking(crs);
+        Delta_Tracking(crs);
+    }
     
     return 0;
 }
