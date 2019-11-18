@@ -15,6 +15,8 @@
 
 const double EPS = 10e-6;
 const int NPART = 10e6;
+const double dx = 0.5;
+const int NBIN = 9;
 
 // Base Cross Section Class
 class XS {
@@ -34,7 +36,7 @@ class XS {
         double Pnc;
         double G;
         double Emax;
-        double Em[4];
+        double Em[NBIN];
 
 };
 
@@ -42,10 +44,10 @@ class XS {
 class Lin_Decrease : public XS {
     public:
         Lin_Decrease():XS(std::exp(-2.0), 2.0) {
-            Em[0] = 2.0;
-            Em[1] = 1.5;
-            Em[2] = 1.0;
-            Em[3] = 0.5;
+            for(int b = 0; b < NBIN; b++) {
+                double x = b*dx;
+                Em[b] = Et(x);
+            }    
         }
 
         double T(double x) {
@@ -68,10 +70,10 @@ class Lin_Decrease : public XS {
 class Lin_Increase : public XS {
     public:
         Lin_Increase():XS(std::exp(-2.0), 2.0) {
-            Em[0] = 0.5;
-            Em[1] = 1.0;
-            Em[2] = 1.5;
-            Em[3] = 2.0;
+            for(int b = 0; b < NBIN; b++) {
+                double x = b*dx + dx;
+                Em[b] = Et(x);
+            }
         }
 
         double T(double x) {
@@ -94,10 +96,10 @@ class Lin_Increase : public XS {
 class Exp_Decrease : public XS {
     public:
         Exp_Decrease():XS(std::exp(-(1.0/3.0)*(1.0 - std::exp(-6.0))), 1.0) {
-            Em[0] = 1.0;
-            Em[1] = std::exp(-1.5);
-            Em[2] = std::exp(-3.0);
-            Em[3] = std::exp(-4.5);
+            for(int b = 0; b < NBIN; b++) {
+                double x = b*dx;
+                Em[b] = Et(x);
+            }
         }
 
         double T(double x) {
@@ -120,10 +122,10 @@ class Exp_Decrease : public XS {
 class Exp_Increase : public XS {
     public:
         Exp_Increase():XS(std::exp(-0.05*(std::exp(4.0)-1.0)), 0.1*std::exp(4.0)) {
-            Em[0] = Et(0.5);
-            Em[1] = Et(1.0);
-            Em[2] = Et(1.5);
-            Em[3] = Et(2.0);
+            for(int b = 0; b < NBIN; b++) {
+                double x = b*dx + dx;
+                Em[b] = Et(x);
+            }
         }
 
         double T(double x) {
@@ -146,10 +148,20 @@ class Exp_Increase : public XS {
 class Gauss_Sharp : public XS {
     public:
         Gauss_Sharp():XS(0.9317314, 2.0/std::sqrt(2.0*M_PI)) {
-            Em[0] = Et(0.5);
-            Em[1] = Et(1.0);
-            Em[2] = Et(1.0);
-            Em[3] = Et(1.5);
+            int bin_peak = std::floor(1.0/dx);
+            double x;
+            for(int b = 0; b < NBIN; b++) {
+                if(b < bin_peak) {
+                    x = b*dx + dx;
+                }
+                else if(b > bin_peak) {
+                    x = b*dx;
+                }
+                else {
+                    x = 1.0;
+                }
+                Em[b] = Et(x);
+            }
         }
 
         double T(double x) {
@@ -175,10 +187,20 @@ class Gauss_Sharp : public XS {
 class Gauss_Broad : public XS {
     public:
         Gauss_Broad():XS(0.303686, 2.0/std::sqrt(2.0*M_PI)) {
-            Em[0] = Et(0.5);
-            Em[1] = Et(1.0);
-            Em[2] = Et(1.0);
-            Em[3] = Et(1.5);
+            int bin_peak = std::floor(1.0/dx);
+            double x;
+            for(int b = 0; b < NBIN; b++) {
+                if(b < bin_peak) {
+                    x = b*dx + dx;
+                }
+                else if(b > bin_peak) {
+                    x = b*dx;
+                }
+                else {
+                    x = 1.0;
+                }
+                Em[b] = Et(x);
+            }
         }
 
         double T(double x) {
@@ -269,7 +291,6 @@ void Direct_Sampling(XS* xs) {
                 #pragma omp atomic
                 collide += 1.0;
             }
-            //std::cout << n << "\n";
         }
     }
 
@@ -332,6 +353,8 @@ void Meshed_Delta_Tracking(XS* xs) {
     int cnts_sum = 0;
     double escape = 0.0;
     double collide = 0.0;
+    int virtual_cnt_sum = 0;
+    int bin_cnt_sum = 0;
 
     #pragma omp parallel
     {    
@@ -344,20 +367,27 @@ void Meshed_Delta_Tracking(XS* xs) {
             int bin = 0;
             double d,d_bin;
             int cnt = 0;
+            int virtual_cnt = 0;
+            int bin_cnt = 0;
             while(virtual_collision) {
-                d_bin = ((double)bin*0.5 + 0.5) - x;
+                d_bin = ((double)bin*dx + dx) - x;
                 d = -std::log(rand(rng))/Emax;
                 cnt++;
                 if(d_bin < d) {
+                    bin_cnt++;
                     d = d_bin + 10e-5;
                     x += d;
-                    bin = std::floor(x/0.5);
+                    bin = std::floor(x/dx);
                     if(x >= 2.0) {
                         virtual_collision = false;
                         #pragma omp atomic
                         escape += 1.0;
                         #pragma omp atomic
                         cnts_sum += cnt;
+                        #pragma omp atomic
+                        virtual_cnt_sum += virtual_cnt;
+                        #pragma omp atomic
+                        bin_cnt_sum += bin_cnt;
                     }
                     else {
                         Emax = xs->Em[bin];
@@ -373,7 +403,12 @@ void Meshed_Delta_Tracking(XS* xs) {
                         collide += 1.0;
                         #pragma omp atomic
                         cnts_sum += cnt;
+                        #pragma omp atomic
+                        virtual_cnt_sum += virtual_cnt;
+                        #pragma omp atomic 
+                        bin_cnt_sum += bin_cnt;
                     }
+                    else {virtual_cnt++;}
                 }
             }
         }
@@ -381,13 +416,18 @@ void Meshed_Delta_Tracking(XS* xs) {
     
     double trans = escape / (double)NPART;
     double avg_cnt = (double)cnts_sum/(double)NPART;
+    double avg_bin_cnt = (double)bin_cnt_sum/(double)NPART;
+    double avg_virtual_cnt = (double)virtual_cnt_sum/(double)NPART;
 
     std::cout << " Collisions: " << (int)collide << ", Transmission: ";
-    std::cout << trans << ", Average Counts: " << avg_cnt << "\n\n";
+    std::cout << trans << ", Average Counts: " << avg_cnt << "\n";
+    std::cout << " Avg Bin Cnts = " << avg_bin_cnt << ", Avg Virt. Cnts = ";
+    std::cout << avg_virtual_cnt << "\n\n";
 }
 
 int main() {
-
+    std::cout << "\n NParticles = " << NPART << ", NBins = " << NBIN << "\n\n";
+    
     for(int type = 1; type <= 6; type++) {
         XS* crs;
         
