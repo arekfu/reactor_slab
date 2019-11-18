@@ -340,39 +340,40 @@ void Meshed_Delta_Tracking(XS* xs) {
         for(int n = 0; n < NPART; n++) {
             bool virtual_collision = true;
             double x = 0.0;
-            int cnt = 0;
             double Emax = xs->Em[0];
             int bin = 0;
+            double d,d_bin;
+            int cnt = 0;
             while(virtual_collision) {
+                d_bin = ((double)bin*0.5 + 0.5) - x;
+                d = -std::log(rand(rng))/Emax;
                 cnt++;
-                double d = -std::log(rand(rng))/(Emax);
-                x += d;
-                int new_bin = std::floor(x/0.5);
-                while((new_bin != bin) and (new_bin >= 0)  and (new_bin < 4)) {
-                    cnt++;
-                    x = new_bin*0.5 + 10e-5; // Move particle back, just barely in bin
-                    bin = new_bin;
-                    Emax = xs->Em[bin];
-                    d = -std::log(rand(rng)/Emax);
+                if(d_bin < d) {
+                    d = d_bin + 10e-5;
                     x += d;
-                    new_bin = std::floor(x/0.5);
+                    bin = std::floor(x/0.5);
+                    if(x >= 2.0) {
+                        virtual_collision = false;
+                        #pragma omp atomic
+                        escape += 1.0;
+                        #pragma omp atomic
+                        cnts_sum += cnt;
+                    }
+                    else {
+                        Emax = xs->Em[bin];
+                    }
                 }
-                
-                if(x >= 2.0) {
-                    #pragma omp atomic
-                    escape += 1.0;
-                    virtual_collision = false;
-                    #pragma omp atomic
-                    cnts_sum += cnt;
-                }
-                else if(rand(rng) < (xs->Et(x)/Emax)) {
-                    // Collision is real
-                    #pragma omp atomic
-                    collide += 1.0;
-                    #pragma omp atomic
-                    cnts_sum += cnt;
-                    virtual_collision = false;
-                
+                else {
+                    x += d;
+                    double xi = rand(rng);
+                    double Pr = xs->Et(x)/Emax;
+                    if(xi < Pr) {
+                        virtual_collision = false;
+                        #pragma omp atomic
+                        collide += 1.0;
+                        #pragma omp atomic
+                        cnts_sum += cnt;
+                    }
                 }
             }
         }
@@ -387,7 +388,7 @@ void Meshed_Delta_Tracking(XS* xs) {
 
 int main() {
 
-    for(int type = 1; type <= 1; type++) {
+    for(int type = 1; type <= 6; type++) {
         XS* crs;
         
         // Determine cross section type for run
@@ -429,7 +430,7 @@ int main() {
         }
         else {exit(1);}
 
-        //Direct_Sampling(crs);
+        Direct_Sampling(crs);
 
         Delta_Tracking(crs);
 
