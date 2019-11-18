@@ -13,10 +13,10 @@
 #include<cmath>
 #include<iostream>
 
-const double EPS = 10e-6;
-const int NPART = 10e6;
-const double dx = 0.5;
-const int NBIN = 9;
+const double EPS = 1e-6;
+const int NPART = 1e7;
+const int NBIN = 2;
+const double dx = 2.0/(double)NBIN;
 
 // Base Cross Section Class
 class XS {
@@ -375,7 +375,7 @@ void Meshed_Delta_Tracking(XS* xs) {
                 cnt++;
                 if(d_bin < d) {
                     bin_cnt++;
-                    d = d_bin + 10e-5;
+                    d = d_bin + 1e-6;
                     x += d;
                     bin = std::floor(x/dx);
                     if(x >= 2.0) {
