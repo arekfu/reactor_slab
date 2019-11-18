@@ -15,7 +15,7 @@
 
 const double EPS = 1e-6;
 const int NPART = 1e7;
-const int NBIN = 2;
+const int NBIN = 5;
 const double dx = 2.0/(double)NBIN;
 
 // Base Cross Section Class

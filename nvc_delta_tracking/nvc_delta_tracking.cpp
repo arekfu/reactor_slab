@@ -12,7 +12,7 @@ using namespace std::chrono;
 int nparticles = 1000000;
 const int nparticles_initial = nparticles;
 const int array_len = 2*nparticles;
-const int ngens = 105;
+const int ngens = 1005;
 const int ninactive = 5;
 const int ngroups = 2;
 const int nmaterials = 2;
@@ -375,9 +375,9 @@ void Eigenvalue(double Emaj[2], double** &Et, double** &Ea, double** &Ef, double
                 int bin = std::floor((x-Surfaces[1])/Hdx);
                 #pragma omp atomic
                 Entropy[bin] += 1.0/(double)nparticles;
-
+                double xi, Pr;
+                double mu = 2.0*rand(rnd) - 1.0; // Isotropic scattering
                 while(alive) {
-                    double mu = 2.0*rand(rnd) - 1.0; // Isotropic scattering
                     // Determine collision distance
                     double d = -std::log(rand(rnd))/Emaj[energy];
                     x += d*mu; // Position updated
@@ -386,51 +386,47 @@ void Eigenvalue(double Emaj[2], double** &Et, double** &Ea, double** &Ef, double
                         alive = false;
                     }
                     
-                    // Original delta tracking virtual collision block
-                    /*bool virtual_collision = true;
-                    while(virtual_collision) {
-                        double d = -std::log(rand(rnd))/Emaj[energy]; // Distance to collision
-                        int new_material = Get_Material(x + (d*mu)); // Material where particle lands
-                        if(new_material != -1) { // Particle hasn't left simulation
-                            if(rand(rnd) < (Et[new_material][energy]/Emaj[energy])) { // Virtual collision accepted
-                                virtual_collision = false;
-                                x += d*mu;
-                                material = new_material;
-                            }
-                        }
-                        else { // Particle has left simulation, kill it
-                            virtual_collision = false;
-                            alive = false;
-                        }
-                    }*/
-
                     if(alive == true) {
-                        #pragma omp atomic
-                        //tally += w*v[material][energy]*Ef[material][energy]/Et[material][energy];
-                        tally += w*((Et[material][energy]/Emaj[energy]))*v[material][energy]*Ef[material][energy]/Et[material][energy];
-
-                        // Tally flux
-                        if(g > ninactive) {
-                            bin = std::floor(x/Fdx);
+                        Pr = Et[material][energy]/Emaj[energy];
+                        xi = rand(rnd);
+                        if(xi < Ea[material][energy]/Et[material][energy]) { // Absorption
+                            // Fission tally
                             #pragma omp atomic
-                            //Flux[energy][bin] += w/(Et[material][energy]);
-                            Flux[energy][bin] += w*((Et[material][energy]/Emaj[energy]))/(Et[material][energy]);
-                        }
+                            tally += w*Pr*(v[material][energy]*Ef[material][energy]/Ea[material][energy]);
 
-                        //int new_particles = floor((w/k)*v[material][energy]*Ef[material][energy]/Et[material][energy] + rand(rnd));
-                        int new_particles = floor((w*((Et[material][energy]/Emaj[energy]))/k)*v[material][energy]*Ef[material][energy]/Et[material][energy] + rand(rnd));
-                        for(int n = 0; n < new_particles; n++) {
-                            #pragma omp critical
-                            {
-                                pos_future[nparticles_future] = x;
-                                nparticles_future += 1;
+                            // Make new fission neutrons
+                            int new_n = std::floor(w*(Pr/k)*(v[material][energy]*Ef[material][energy]/Ea[material][energy]) + rand(rnd));
+                            for(int n = 0; n < new_n; n++) {
+                                #pragma omp critical
+                                {
+                                    pos_future[nparticles_future] = x;
+                                    nparticles_future += 1;
+                                }
+                            }
+                            
+                            // Flux tally
+                            bin = std::floor(x/Fdx); 
+                            #pragma omp atomic
+                            Flux[energy][bin] += w*Pr/Ea[material][energy];
+                            
+                            // Reduce particle weight
+                            w = w*(1.0 - Pr);
+                        }
+                        else { // Scatter
+                            xi = rand(rnd);
+                            if(xi < Pr) { // Real collision
+                                double scatter_total = Es[material][energy][0] + Es[material][energy][1];
+                                if(rand(rnd) < Es[material][energy][0]/scatter_total) {energy = 0;}
+                                else {energy = 1;}
+                                mu = 2.0*rand(rnd) - 1.0;
+
+                                // Flux tally
+                                bin = std::floor(x/Fdx);
+                                #pragma omp atomic
+                                Flux[energy][bin] += w/scatter_total;
                             }
                         }
-                        
-                        // New weight after partial fission
-                        // w = w*(1.0 - (Et[material][energy]/Emaj[energy]))*(1.0 - (Ea[material][energy]/Et[material][energy]));
-                        w = w*(1.0 - Et[material][energy]/Emaj[energy])*(1.0 - (Ea[material][energy]/Et[material][energy]));
-
+                          
                         // Russian Roulett
                         if(w < w_c) {
                             if(rand(rnd) > (1 - (w/w_s))) {
@@ -440,11 +436,6 @@ void Eigenvalue(double Emaj[2], double** &Et, double** &Ea, double** &Ef, double
                                 alive = false;
                             }
                         }
-
-                        // Scatter
-                        double scatter_total = Es[material][energy][0] + Es[material][energy][1];
-                        if(rand(rnd) < Es[material][energy][0]/scatter_total) { energy = 0; }
-                        else { energy = 1; }
 
                     }
                 }
