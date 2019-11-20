@@ -15,7 +15,7 @@
 
 const double EPS = 1e-6;
 const int NPART = 1e7;
-const int NBIN = 3;
+const int NBIN = 5;
 const double dx = 2.0/(double)NBIN;
 
 // Constants for gaussians A*exp(-a*(x-z)^2)
@@ -260,7 +260,8 @@ double False_Position(XS* xs, double T_hat, double& x0, double& x1,
     
     double F1 = F(x1);
     double F0 = F(x0);
-    counter += 2;
+    counter++;
+    counter++;
     double m = (F1 - F0)/(x1 - x0);
     double x = x0;
     double x_old = x1;
@@ -316,7 +317,8 @@ double Newton(XS* xs, double T_hat, double x0, double x_low,
     double g = 0.0;
     double gp = 0.0;
     while(std::abs(x - x0) > EPS) {
-        counter += 2;
+        counter++;
+        counter++;
         x0 = x;
         g = F(x0);
         gp = xs->Et(x0);
@@ -338,10 +340,10 @@ void Direct_Sampling(XS* xs) {
     #pragma omp parallel
     {
         pcg64_unique rng;
-        int cnt = 0;
         #pragma omp for
         for(int n = 0; n < NPART; n++) {
             double xi = rand(rng);
+            int cnt = 0;
             if(xi < xs->Pnc) { // No collision
                 #pragma omp atomic
                 escape += 1.0;    
@@ -447,7 +449,6 @@ void Meshed_Delta_Tracking(XS* xs) {
             while(virtual_collision) {
                 d_bin = ((double)bin*dx + dx) - x;
                 d = -std::log(rand(rng))/Emax;
-                //cnt++;
                 if(d_bin < d) {
                     bin_cnt++;
                     d = d_bin + 1e-6;
