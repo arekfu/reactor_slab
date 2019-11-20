@@ -1,0 +1,1402 @@
+ ======================>     TALLY 1: FLUX TALLY     <======================
+
+ Mesh Index (1)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.000431683 +/- 3.60129e-06
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.000322395 +/- 1.85054e-06
+ Mesh Index (2)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.000810636 +/- 6.29305e-06
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.000406037 +/- 2.4363e-06
+ Mesh Index (3)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.00118586 +/- 8.0534e-06
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.000483154 +/- 2.78248e-06
+ Mesh Index (4)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.00155689 +/- 9.64333e-06
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.000565216 +/- 3.40512e-06
+ Mesh Index (5)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.00192142 +/- 1.12662e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.000648457 +/- 3.84874e-06
+ Mesh Index (6)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0022893 +/- 1.30357e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.000743887 +/- 4.93197e-06
+ Mesh Index (7)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.00266374 +/- 1.57566e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.000846353 +/- 4.54193e-06
+ Mesh Index (8)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.00306302 +/- 1.77936e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.000949206 +/- 4.61915e-06
+ Mesh Index (9)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.00350036 +/- 1.82888e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.00106343 +/- 4.95759e-06
+ Mesh Index (10)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.00395605 +/- 1.80466e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.00118706 +/- 5.51402e-06
+ Mesh Index (11)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0044439 +/- 1.87983e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.00132138 +/- 5.48074e-06
+ Mesh Index (12)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.00496234 +/- 2.13518e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.00146656 +/- 6.6375e-06
+ Mesh Index (13)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.00553272 +/- 2.33236e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.00162109 +/- 6.33719e-06
+ Mesh Index (14)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.00615933 +/- 2.52796e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.00179467 +/- 6.356e-06
+ Mesh Index (15)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.00683095 +/- 2.58981e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.00199403 +/- 6.40252e-06
+ Mesh Index (16)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.00756533 +/- 2.63876e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.00220635 +/- 7.0251e-06
+ Mesh Index (17)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.00835451 +/- 2.94193e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.00243572 +/- 7.67739e-06
+ Mesh Index (18)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.00921349 +/- 2.91277e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.00269784 +/- 8.97368e-06
+ Mesh Index (19)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0101661 +/- 3.05656e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0029806 +/- 9.30087e-06
+ Mesh Index (20)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.011217 +/- 3.38209e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.00329743 +/- 9.93027e-06
+ Mesh Index (21)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0123481 +/- 3.47499e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.00364006 +/- 1.02069e-05
+ Mesh Index (22)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0135923 +/- 3.56849e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.00401942 +/- 9.77892e-06
+ Mesh Index (23)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0149751 +/- 4.00759e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.00442243 +/- 1.1287e-05
+ Mesh Index (24)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0164581 +/- 4.37191e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.00487687 +/- 1.14634e-05
+ Mesh Index (25)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0180877 +/- 4.63463e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.00538291 +/- 1.32023e-05
+ Mesh Index (26)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0198874 +/- 4.65744e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.00594726 +/- 1.38692e-05
+ Mesh Index (27)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0217997 +/- 4.78263e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.00655276 +/- 1.42733e-05
+ Mesh Index (28)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0239224 +/- 4.64986e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.00722086 +/- 1.57785e-05
+ Mesh Index (29)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0262326 +/- 4.46817e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.00797053 +/- 1.56348e-05
+ Mesh Index (30)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0287888 +/- 4.81635e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0087858 +/- 1.6413e-05
+ Mesh Index (31)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0315048 +/- 5.09656e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.00968628 +/- 1.97646e-05
+ Mesh Index (32)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.034505 +/- 5.61156e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0106989 +/- 2.02992e-05
+ Mesh Index (33)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0377274 +/- 6.08475e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0118059 +/- 1.8933e-05
+ Mesh Index (34)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0412702 +/- 6.1065e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0130486 +/- 2.07125e-05
+ Mesh Index (35)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0451254 +/- 6.27064e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0143577 +/- 2.24271e-05
+ Mesh Index (36)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.049318 +/- 6.57172e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0158484 +/- 2.3436e-05
+ Mesh Index (37)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.05382 +/- 7.03852e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0174778 +/- 2.43598e-05
+ Mesh Index (38)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0586709 +/- 7.07518e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0192906 +/- 2.52174e-05
+ Mesh Index (39)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0637682 +/- 7.5406e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0212679 +/- 2.27895e-05
+ Mesh Index (40)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0693503 +/- 7.3622e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0235018 +/- 2.46306e-05
+ Mesh Index (41)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0753084 +/- 7.40743e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0259049 +/- 2.70428e-05
+ Mesh Index (42)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0815659 +/- 7.89068e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0285995 +/- 2.88384e-05
+ Mesh Index (43)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0882467 +/- 9.34023e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0316059 +/- 3.20854e-05
+ Mesh Index (44)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0952413 +/- 9.17698e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0348567 +/- 3.47951e-05
+ Mesh Index (45)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.102599 +/- 8.7274e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0384446 +/- 3.87955e-05
+ Mesh Index (46)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.110256 +/- 9.06286e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0424664 +/- 3.89917e-05
+ Mesh Index (47)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.118117 +/- 9.74603e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0468945 +/- 4.19772e-05
+ Mesh Index (48)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.125967 +/- 0.000115005
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0518301 +/- 3.87788e-05
+ Mesh Index (49)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.133783 +/- 0.000121787
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0572986 +/- 4.78899e-05
+ Mesh Index (50)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.141409 +/- 0.000126121
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0633179 +/- 4.91635e-05
+ Mesh Index (51)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.148701 +/- 0.000131512
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0700512 +/- 5.00254e-05
+ Mesh Index (52)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.155176 +/- 0.000141392
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0775018 +/- 5.59498e-05
+ Mesh Index (53)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.160615 +/- 0.000139706
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0857869 +/- 5.96519e-05
+ Mesh Index (54)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.164548 +/- 0.000136673
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0951133 +/- 6.27681e-05
+ Mesh Index (55)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.166339 +/- 0.000134198
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.105495 +/- 6.58002e-05
+ Mesh Index (56)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.165176 +/- 0.000139049
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.117277 +/- 6.84261e-05
+ Mesh Index (57)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.160217 +/- 0.000134803
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.130537 +/- 7.14122e-05
+ Mesh Index (58)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.150283 +/- 0.000108614
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.145869 +/- 7.37318e-05
+ Mesh Index (59)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.133833 +/- 9.31529e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.163863 +/- 8.80464e-05
+ Mesh Index (60)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.107992 +/- 7.00435e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.186725 +/- 9.17641e-05
+ Mesh Index (61)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0797036 +/- 5.51528e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.21624 +/- 0.000107413
+ Mesh Index (62)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0662683 +/- 5.04103e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.236246 +/- 0.000112737
+ Mesh Index (63)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0574189 +/- 4.6199e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.251807 +/- 0.000131477
+ Mesh Index (64)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0513379 +/- 4.52875e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.265165 +/- 0.00013705
+ Mesh Index (65)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0472575 +/- 4.22229e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.277266 +/- 0.000148697
+ Mesh Index (66)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0445671 +/- 4.577e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.28856 +/- 0.000148089
+ Mesh Index (67)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0428959 +/- 4.30903e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.299349 +/- 0.000151136
+ Mesh Index (68)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0418657 +/- 3.62668e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.309642 +/- 0.000145161
+ Mesh Index (69)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0414171 +/- 3.6843e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.319623 +/- 0.000149897
+ Mesh Index (70)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0412774 +/- 3.44476e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.329179 +/- 0.000157686
+ Mesh Index (71)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0414497 +/- 3.89715e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.338492 +/- 0.000169204
+ Mesh Index (72)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0418119 +/- 3.79965e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.347584 +/- 0.000163455
+ Mesh Index (73)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.042327 +/- 3.96835e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.356321 +/- 0.000155793
+ Mesh Index (74)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0429037 +/- 3.8206e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.36468 +/- 0.000162686
+ Mesh Index (75)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0436451 +/- 3.77973e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.373131 +/- 0.000167172
+ Mesh Index (76)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0443607 +/- 3.55454e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.381072 +/- 0.000166086
+ Mesh Index (77)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0451038 +/- 3.54822e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.388847 +/- 0.000147351
+ Mesh Index (78)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0458229 +/- 3.21237e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.396258 +/- 0.000148915
+ Mesh Index (79)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0465742 +/- 3.55582e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.403426 +/- 0.000143844
+ Mesh Index (80)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.047302 +/- 3.66216e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.410256 +/- 0.000144821
+ Mesh Index (81)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0479691 +/- 3.80138e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.416812 +/- 0.000155709
+ Mesh Index (82)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0486754 +/- 4.17704e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.42303 +/- 0.000149546
+ Mesh Index (83)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0493707 +/- 3.61688e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.428932 +/- 0.000145506
+ Mesh Index (84)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0499955 +/- 3.50005e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.43479 +/- 0.000151059
+ Mesh Index (85)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0506107 +/- 3.74128e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.440223 +/- 0.000152506
+ Mesh Index (86)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0511837 +/- 4.20838e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.445259 +/- 0.000149083
+ Mesh Index (87)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0517011 +/- 4.09918e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.450073 +/- 0.000138031
+ Mesh Index (88)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.05225 +/- 4.10468e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.454377 +/- 0.00014426
+ Mesh Index (89)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0527634 +/- 4.06809e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.458517 +/- 0.0001381
+ Mesh Index (90)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0531851 +/- 3.89014e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.462287 +/- 0.00014247
+ Mesh Index (91)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.053523 +/- 3.99677e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.465617 +/- 0.000149798
+ Mesh Index (92)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0538821 +/- 3.80302e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.46872 +/- 0.000150356
+ Mesh Index (93)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0541477 +/- 3.74552e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.47149 +/- 0.00015423
+ Mesh Index (94)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0544187 +/- 4.36232e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.473888 +/- 0.000160405
+ Mesh Index (95)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0546862 +/- 4.11578e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.475861 +/- 0.000168206
+ Mesh Index (96)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0548525 +/- 3.80141e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.477744 +/- 0.000160893
+ Mesh Index (97)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0550074 +/- 4.32682e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.47899 +/- 0.000160976
+ Mesh Index (98)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0551248 +/- 4.29148e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.480075 +/- 0.000153646
+ Mesh Index (99)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.055203 +/- 4.0103e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.480634 +/- 0.000151679
+ Mesh Index (100)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0552359 +/- 3.80374e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.480945 +/- 0.000154844
+ Mesh Index (101)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0552372 +/- 4.16973e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.480981 +/- 0.00015803
+ Mesh Index (102)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0552205 +/- 4.0517e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.480618 +/- 0.000155634
+ Mesh Index (103)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0551032 +/- 4.09117e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.479881 +/- 0.000138542
+ Mesh Index (104)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.054936 +/- 4.02206e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.478835 +/- 0.000124863
+ Mesh Index (105)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0547962 +/- 3.93321e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.477579 +/- 0.000130972
+ Mesh Index (106)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.054584 +/- 3.90127e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.475831 +/- 0.000144385
+ Mesh Index (107)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0543671 +/- 3.68327e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.473523 +/- 0.000144932
+ Mesh Index (108)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0540925 +/- 3.39103e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.471169 +/- 0.000140769
+ Mesh Index (109)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0537799 +/- 4.41737e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.468463 +/- 0.000146342
+ Mesh Index (110)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0534589 +/- 4.22248e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.465294 +/- 0.000142508
+ Mesh Index (111)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0530646 +/- 4.10307e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.461875 +/- 0.000128142
+ Mesh Index (112)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0526291 +/- 4.3934e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.458235 +/- 0.000137141
+ Mesh Index (113)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0521431 +/- 3.93108e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.454055 +/- 0.000141536
+ Mesh Index (114)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0516789 +/- 4.0729e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.449589 +/- 0.000142158
+ Mesh Index (115)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0511252 +/- 3.78355e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.444913 +/- 0.000145248
+ Mesh Index (116)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0505368 +/- 4.12947e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.439903 +/- 0.000152238
+ Mesh Index (117)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0499325 +/- 3.91206e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.434522 +/- 0.000151052
+ Mesh Index (118)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0492977 +/- 3.76006e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.428793 +/- 0.00014149
+ Mesh Index (119)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0486523 +/- 3.50942e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.42281 +/- 0.000153992
+ Mesh Index (120)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0479196 +/- 3.60327e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.41648 +/- 0.000152814
+ Mesh Index (121)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0472302 +/- 3.69239e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.409841 +/- 0.000160921
+ Mesh Index (122)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0464769 +/- 3.5703e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.403049 +/- 0.000154077
+ Mesh Index (123)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.04578 +/- 3.56947e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.395741 +/- 0.000158648
+ Mesh Index (124)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0449975 +/- 3.4497e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.388337 +/- 0.000151423
+ Mesh Index (125)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0443101 +/- 3.44883e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.380674 +/- 0.00014686
+ Mesh Index (126)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0435821 +/- 3.56657e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.372552 +/- 0.000152524
+ Mesh Index (127)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0429028 +/- 3.51989e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.364236 +/- 0.000156274
+ Mesh Index (128)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0422463 +/- 3.36314e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.355738 +/- 0.000158073
+ Mesh Index (129)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0417045 +/- 3.36139e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.347003 +/- 0.000162819
+ Mesh Index (130)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0413334 +/- 3.31269e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.337981 +/- 0.000154833
+ Mesh Index (131)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0411375 +/- 3.43055e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.328623 +/- 0.000156489
+ Mesh Index (132)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0412387 +/- 3.34563e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.31895 +/- 0.000151938
+ Mesh Index (133)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.041678 +/- 3.49354e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.30905 +/- 0.000153313
+ Mesh Index (134)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0426832 +/- 3.32484e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.298735 +/- 0.000144935
+ Mesh Index (135)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0444462 +/- 3.12568e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.288056 +/- 0.000137425
+ Mesh Index (136)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0471328 +/- 3.70923e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.276789 +/- 0.000131316
+ Mesh Index (137)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0512226 +/- 3.98213e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.264733 +/- 0.000140609
+ Mesh Index (138)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0572572 +/- 4.14333e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.251264 +/- 0.000128644
+ Mesh Index (139)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0660853 +/- 5.272e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.235775 +/- 0.000124441
+ Mesh Index (140)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0794773 +/- 6.50776e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.215784 +/- 0.000119014
+ Mesh Index (141)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.107728 +/- 7.46022e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.186283 +/- 0.000106219
+ Mesh Index (142)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.13353 +/- 9.22958e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.163624 +/- 9.58312e-05
+ Mesh Index (143)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.150138 +/- 9.9378e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.145649 +/- 8.5681e-05
+ Mesh Index (144)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.160123 +/- 0.000111985
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.130331 +/- 7.9845e-05
+ Mesh Index (145)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.164992 +/- 0.000118552
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.117 +/- 7.74204e-05
+ Mesh Index (146)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.165945 +/- 0.000125139
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.105272 +/- 7.25925e-05
+ Mesh Index (147)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.164146 +/- 0.000139971
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0948829 +/- 6.37063e-05
+ Mesh Index (148)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.160255 +/- 0.000128913
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.085593 +/- 5.89631e-05
+ Mesh Index (149)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.154776 +/- 0.000131185
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0773033 +/- 5.20311e-05
+ Mesh Index (150)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.148382 +/- 0.000124115
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0698638 +/- 4.77279e-05
+ Mesh Index (151)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.141261 +/- 0.000117166
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0631306 +/- 4.49579e-05
+ Mesh Index (152)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.133627 +/- 0.000116247
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.057118 +/- 4.41373e-05
+ Mesh Index (153)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.12581 +/- 0.00010945
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0517003 +/- 3.90546e-05
+ Mesh Index (154)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.117907 +/- 0.000103862
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0467924 +/- 3.78112e-05
+ Mesh Index (155)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.110117 +/- 0.000102659
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0423465 +/- 3.55162e-05
+ Mesh Index (156)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.102464 +/- 0.000101827
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.038328 +/- 3.57805e-05
+ Mesh Index (157)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0951182 +/- 9.8531e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0347152 +/- 3.36485e-05
+ Mesh Index (158)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0881055 +/- 9.82213e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0314484 +/- 3.72837e-05
+ Mesh Index (159)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0814511 +/- 9.68642e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0285305 +/- 3.35606e-05
+ Mesh Index (160)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0750895 +/- 8.95441e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0258258 +/- 2.9919e-05
+ Mesh Index (161)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.06913 +/- 9.1296e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0234053 +/- 2.70342e-05
+ Mesh Index (162)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0635363 +/- 8.47286e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0212052 +/- 2.31512e-05
+ Mesh Index (163)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0583772 +/- 7.65843e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0191913 +/- 2.35875e-05
+ Mesh Index (164)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.053621 +/- 7.31321e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0173946 +/- 2.43642e-05
+ Mesh Index (165)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0491248 +/- 7.14417e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0157569 +/- 2.27178e-05
+ Mesh Index (166)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0449631 +/- 7.18201e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0142973 +/- 2.14802e-05
+ Mesh Index (167)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0411357 +/- 6.38331e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0129616 +/- 2.04467e-05
+ Mesh Index (168)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0376151 +/- 5.65181e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0117336 +/- 1.92051e-05
+ Mesh Index (169)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0343446 +/- 5.43681e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0106508 +/- 1.73107e-05
+ Mesh Index (170)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0313955 +/- 5.38651e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.00965539 +/- 1.461e-05
+ Mesh Index (171)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0286611 +/- 5.23554e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0087531 +/- 1.36166e-05
+ Mesh Index (172)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0261737 +/- 4.56427e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0079335 +/- 1.44472e-05
+ Mesh Index (173)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0238546 +/- 4.8562e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.00719988 +/- 1.33487e-05
+ Mesh Index (174)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0217232 +/- 4.61222e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.00654073 +/- 1.45173e-05
+ Mesh Index (175)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0197789 +/- 4.11863e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.00593139 +/- 1.45384e-05
+ Mesh Index (176)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0180016 +/- 3.93118e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.00537454 +/- 1.18708e-05
+ Mesh Index (177)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0163787 +/- 3.54715e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.00487456 +/- 1.08934e-05
+ Mesh Index (178)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0149018 +/- 3.45554e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.00442004 +/- 1.17355e-05
+ Mesh Index (179)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.013557 +/- 3.48796e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.00400186 +/- 1.00356e-05
+ Mesh Index (180)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0123322 +/- 3.05951e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.00363515 +/- 9.58719e-06
+ Mesh Index (181)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.011188 +/- 2.92268e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.00329057 +/- 9.66819e-06
+ Mesh Index (182)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.0101196 +/- 3.01602e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.00299356 +/- 9.33297e-06
+ Mesh Index (183)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.00916408 +/- 2.9164e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.002706 +/- 8.88624e-06
+ Mesh Index (184)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.00828785 +/- 2.93529e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.00243876 +/- 8.38115e-06
+ Mesh Index (185)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.00751597 +/- 2.86397e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.00221179 +/- 7.79999e-06
+ Mesh Index (186)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.00676097 +/- 2.57847e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.00199659 +/- 7.44831e-06
+ Mesh Index (187)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.00610165 +/- 2.36341e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.00180991 +/- 7.53568e-06
+ Mesh Index (188)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.00551202 +/- 2.16729e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.00163345 +/- 6.2263e-06
+ Mesh Index (189)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.00494746 +/- 2.21836e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0014631 +/- 5.80093e-06
+ Mesh Index (190)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.00441279 +/- 1.99759e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.00131352 +/- 6.07089e-06
+ Mesh Index (191)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.00392494 +/- 1.84732e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.00118197 +/- 6.41082e-06
+ Mesh Index (192)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.00349166 +/- 1.65797e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.0010608 +/- 5.89589e-06
+ Mesh Index (193)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.00305164 +/- 1.45297e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.000945322 +/- 5.45378e-06
+ Mesh Index (194)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.00263594 +/- 1.29087e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.000841745 +/- 4.89126e-06
+ Mesh Index (195)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.00224808 +/- 1.25175e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.000741844 +/- 4.11463e-06
+ Mesh Index (196)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.00187143 +/- 1.16253e-05
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.00065283 +/- 4.25511e-06
+ Mesh Index (197)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.00150564 +/- 9.59425e-06
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.000565781 +/- 3.76354e-06
+ Mesh Index (198)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.00114419 +/- 7.87475e-06
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.000483638 +/- 3.12324e-06
+ Mesh Index (199)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.000790954 +/- 6.0603e-06
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.000406034 +/- 2.73945e-06
+ Mesh Index (200)
+   Incoming Energy [1e-05, 10)
+     Total Material
+       Flux                                 0.000424821 +/- 3.46665e-06
+   Incoming Energy [10, 1e+07)
+     Total Material
+       Flux                                 0.000325695 +/- 2.18365e-06
