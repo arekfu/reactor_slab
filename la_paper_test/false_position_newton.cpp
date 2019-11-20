@@ -17,6 +17,8 @@ const double EPS = 1e-6;
 const int NPART = 1e7;
 const int NBIN = 5;
 const double dx = 2.0/(double)NBIN;
+const double p = 0.7;
+const double q = 0.3;
 
 // Constants for gaussians A*exp(-a*(x-z)^2)
 const double A = 2.0/std::sqrt(2.0*M_PI);
@@ -502,6 +504,56 @@ void Meshed_Delta_Tracking(XS* xs) {
     std::cout << avg_virtual_cnt << "\n\n";
 }
 
+void Negative_Weight_Delta_Tracking(XS* xs) {
+    std::cout << "\n Negative Weight Delta Tracking\n";
+
+    int cnts_sum = 0;
+    double escape = 0.0;
+    double collide = 0.0;
+    double Esamp = p*(xs->Emax);
+    #pragma omp parallel
+    {    
+        pcg64_unique rng;
+        #pragma omp for
+        for(int n = 0; n < NPART; n++) {
+            double x = 0.0;
+            double w = 1.0;
+            bool alive = true;
+            int cnt = 0;
+            while(alive) {
+                double d = -std::log(rand(rng))/Esamp;
+                x += d;
+                
+                if(x >= 2.0) {
+                    #pragma omp atomic
+                    escape += w;
+                    alive = false;
+                    #pragma omp atomic
+                    cnts_sum += cnt;
+                }
+                else if(rand(rng) < q) {
+                    // Collision is real
+                    #pragma omp atomic
+                    collide += w;
+                    #pragma omp atomic
+                    cnts_sum += cnt;
+                    alive = false;
+                }
+                else { // Collision is virtual
+                    w = w*((1.0 - (xs->Et(x)/Esamp))/(1.0 - q));
+                    cnt++;
+                }
+            }
+        }
+    }
+    
+    double trans = escape / (double)NPART;
+    double avg_cnt = (double)cnts_sum/(double)NPART;
+
+    std::cout << " Collisions: " << (int)collide << ", Transmission: ";
+    std::cout << trans << ", Average Counts: " << avg_cnt << "\n\n";
+}
+
 int main() {
     std::cout << "\n NParticles = " << NPART << ", NBins = " << NBIN << "\n\n";
     
@@ -552,6 +604,8 @@ int main() {
         Delta_Tracking(crs);
 
         Meshed_Delta_Tracking(crs);
+
+        Negative_Weight_Delta_Tracking(crs);
     }
     
     return 0;
