@@ -15,10 +15,12 @@
 
 const double EPS = 1e-6;
 const int NPART = 1e7;
-const int NBIN = 5;
+const int NBIN = 2;
 const double dx = 2.0/(double)NBIN;
 const double p = 0.7;
+const double p_mshd = 0.5;
 const double q = 0.3;
+const double q_mshd = 0.05;
 
 // Constants for gaussians A*exp(-a*(x-z)^2)
 const double A = 2.0/std::sqrt(2.0*M_PI);
@@ -54,6 +56,7 @@ class XS {
         double G;
         double Emax;
         double Em[NBIN];
+        double Esmp[NBIN];
 };
 
 // Derived classes for each type of cross section
@@ -63,6 +66,7 @@ class Lin_Decrease : public XS {
             for(int b = 0; b < NBIN; b++) {
                 double x = b*dx;
                 Em[b] = Et(x);
+                Esmp[b] = p_mshd*Et(x);
             }    
         }
 
@@ -89,6 +93,7 @@ class Lin_Increase : public XS {
             for(int b = 0; b < NBIN; b++) {
                 double x = b*dx + dx;
                 Em[b] = Et(x);
+                Esmp[b] = p_mshd*Et(x);
             }
         }
 
@@ -115,6 +120,7 @@ class Exp_Decrease : public XS {
             for(int b = 0; b < NBIN; b++) {
                 double x = b*dx;
                 Em[b] = Et(x);
+                Esmp[b] = p_mshd*Et(x);
             }
         }
 
@@ -141,6 +147,7 @@ class Exp_Increase : public XS {
             for(int b = 0; b < NBIN; b++) {
                 double x = b*dx + dx;
                 Em[b] = Et(x);
+                Esmp[b] = p_mshd*Et(x);
             }
         }
 
@@ -177,6 +184,7 @@ class Gauss_Sharp : public XS {
                     x = z;
                 }
                 Em[b] = Et(x);
+                Esmp[b] = p_mshd*Et(x);
             }
         }
 
@@ -215,6 +223,7 @@ class Gauss_Broad : public XS {
                     x = z;
                 }
                 Em[b] = Et(x);
+                Esmp[b] = p_mshd*Et(x);
             }
         }
 
@@ -510,6 +519,7 @@ void Negative_Weight_Delta_Tracking(XS* xs) {
     int cnts_sum = 0;
     double escape = 0.0;
     double collide = 0.0;
+    double sign_change = 0.0;
     double Esamp = p*(xs->Emax);
     #pragma omp parallel
     {    
@@ -540,7 +550,12 @@ void Negative_Weight_Delta_Tracking(XS* xs) {
                     alive = false;
                 }
                 else { // Collision is virtual
-                    w = w*((1.0 - (xs->Et(x)/Esamp))/(1.0 - q));
+                    double dw = ((1.0 - (xs->Et(x)/Esamp))/(1.0 - q));
+                    if(dw < 0.0) {
+                        #pragma omp atomic
+                        sign_change += 1.0;
+                    }
+                    w = w*dw;
                     cnt++;
                 }
             }
@@ -549,9 +564,89 @@ void Negative_Weight_Delta_Tracking(XS* xs) {
     
     double trans = escape / (double)NPART;
     double avg_cnt = (double)cnts_sum/(double)NPART;
+    double avg_sign_chng = sign_change / (double)NPART;
+
+    std::cout << " Collisions: " << (int)std::round(collide) << ", Transmission: ";
+    std::cout << trans << ", Average Counts: " << avg_cnt;
+    std::cout << "\n Avg Sign Chng = " << avg_sign_chng << "\n\n";
+}
+
+void Meshed_Negative_Weight_Delta_Tracking(XS* xs) {
+    std::cout << "\n Meshed Negative Weight Delta Tracking\n";
+
+    int cnts_sum = 0;
+    double escape = 0.0;
+    double collide = 0.0;
+    int bin_cnt_sum = 0;
+    double sign_change = 0.0;
+    #pragma omp parallel
+    {    
+        pcg64_unique rng;
+        #pragma omp for
+        for(int n = 0; n < NPART; n++) {
+            bool alive = true;
+            double x = 0.0;
+            int bin = 0;
+            double Esamp = xs->Esmp[bin];
+            double d,d_bin;
+            int cnt = 0;
+            int bin_cnt = 0;
+            double w = 1.0;
+            while(alive) {
+                d_bin = ((double)bin*dx + dx) - x;
+                d = -std::log(rand(rng))/Esamp;
+                if(d_bin < d) {
+                    bin_cnt++;
+                    d = d_bin + 1e-6;
+                    x += d;
+                    bin = std::floor(x/dx);
+                    if(x >= 2.0) {
+                        alive = false;
+                        #pragma omp atomic
+                        escape += w;
+                        #pragma omp atomic
+                        cnts_sum += cnt;
+                        #pragma omp atomic
+                        bin_cnt_sum += bin_cnt;
+                    }
+                    else {
+                        Esamp = xs->Esmp[bin];
+                    }
+                }
+                else {
+                    x += d;
+                    if(rand(rng) < q_mshd) {
+                        alive = false;
+                        #pragma omp atomic
+                        collide += w;
+                        #pragma omp atomic
+                        cnts_sum += cnt;
+                        #pragma omp atomic 
+                        bin_cnt_sum += bin_cnt;
+                    }
+                    else {
+                        cnt++;
+                        double dw=((1.0-(xs->Et(x)/Esamp))/(1.0-q_mshd));
+                        if(dw < 0.0) {
+                            #pragma omp atomic
+                            sign_change += 1.0;
+                        }
+                        w = w*dw;
+                    }
+                }
+            }
+        }
+    }
+    
+    double trans = escape / (double)NPART;
+    double avg_cnt = (double)cnts_sum/(double)NPART;
+    double avg_bin_cnt = (double)bin_cnt_sum/(double)NPART;
+    double avg_sign_chng = sign_change / (double)NPART;
 
     std::cout << " Collisions: " << (int)collide << ", Transmission: ";
-    std::cout << trans << ", Average Counts: " << avg_cnt << "\n\n";
+    std::cout << trans << ", Average Counts: " << avg_cnt << "\n";
+    std::cout << " Avg Bin Cnts = " << avg_bin_cnt;
+    std::cout << "\n Avg Sign Chng = " << avg_sign_chng << "\n\n";
 }
 
 int main() {
@@ -606,6 +701,8 @@ int main() {
         Meshed_Delta_Tracking(crs);
 
         Negative_Weight_Delta_Tracking(crs);
+
+        Meshed_Negative_Weight_Delta_Tracking(crs);
     }
     
     return 0;
