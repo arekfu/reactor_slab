@@ -15,7 +15,7 @@
 
 const double EPS = 1e-6;
 const int NPART = 1e7;
-const int NBIN = 6;
+const int NBIN = 10;
 const double dx = 2.0/(double)NBIN;
 const double p = 0.7;
 const double p_mshd = 0.7;
@@ -422,7 +422,6 @@ void Delta_Tracking(XS* xs) {
                     #pragma omp atomic
                     cnts_sum += cnt;
                     virtual_collision = false;
-                
                 }
             }
         }
@@ -518,7 +517,9 @@ void Negative_Weight_Delta_Tracking(XS* xs) {
 
     int cnts_sum = 0;
     double escape = 0.0;
+    double escape_sqr = 0.0;
     double collide = 0.0;
+    double collide_sqr = 0.0;
     double sign_change = 0.0;
     double Esamp = p*(xs->Emax);
     #pragma omp parallel
@@ -537,6 +538,8 @@ void Negative_Weight_Delta_Tracking(XS* xs) {
                 if(x >= 2.0) {
                     #pragma omp atomic
                     escape += w;
+                    #pragma omp atomic
+                    escape_sqr += w*w;
                     alive = false;
                     #pragma omp atomic
                     cnts_sum += cnt;
@@ -546,6 +549,8 @@ void Negative_Weight_Delta_Tracking(XS* xs) {
                     #pragma omp atomic
                     //collide += w*(1.0 - p); // TODO this is probably wrong
                     collide += w*xs->Et(x)/(Esamp * q);
+                    #pragma omp atomic
+                    collide_sqr += (w*xs->Et(x)/(Esamp * q))*(w*xs->Et(x)/(Esamp * q));
                     #pragma omp atomic
                     cnts_sum += cnt;
                     alive = false;
@@ -567,9 +572,16 @@ void Negative_Weight_Delta_Tracking(XS* xs) {
     double avg_cnt = (double)cnts_sum/(double)NPART;
     double avg_sign_chng = sign_change / (double)NPART;
 
-    std::cout << " Collisions: " << (int)std::round(collide) << ", Transmission: ";
-    std::cout << trans << ", Average Counts: " << avg_cnt;
-    std::cout << "\n Avg Sign Chng = " << avg_sign_chng << "\n\n";
+    double escp_std = std::sqrt(std::abs(escape*escape - escape_sqr)/((double)NPART - 1.0));
+    double col_std = std::sqrt(std::abs(collide*collide - collide_sqr)/((double)NPART - 1.0));
+    double FOM_escp = 1.0 / (avg_cnt * escp_std * escp_std);
+    double FOM_col = 1.0 / (avg_cnt * col_std * col_std);
+
+    std::cout << " Collisions: " << (int)std::round(collide) << " +/- " << col_std;
+    std::cout << ", Transmission: " << trans << " +/- " << escp_std/(double)NPART;
+    std::cout << "\n Average Counts: " << avg_cnt;
+    std::cout << ", Avg Sign Chng = " << avg_sign_chng << "\n";
+    std::cout << " FOM_escp = " << FOM_escp << " FOM_col = "<<FOM_col<<"\n\n";
 }
 
 void Meshed_Negative_Weight_Delta_Tracking(XS* xs) {
@@ -577,7 +589,9 @@ void Meshed_Negative_Weight_Delta_Tracking(XS* xs) {
 
     int cnts_sum = 0;
     double escape = 0.0;
+    double escape_sqr = 0.0;
     double collide = 0.0;
+    double collide_sqr = 0.0;
     int bin_cnt_sum = 0;
     double sign_change = 0.0;
     #pragma omp parallel
@@ -606,6 +620,8 @@ void Meshed_Negative_Weight_Delta_Tracking(XS* xs) {
                         #pragma omp atomic
                         escape += w;
                         #pragma omp atomic
+                        escape_sqr += w*w;
+                        #pragma omp atomic
                         cnts_sum += cnt;
                         #pragma omp atomic
                         bin_cnt_sum += bin_cnt;
@@ -620,6 +636,8 @@ void Meshed_Negative_Weight_Delta_Tracking(XS* xs) {
                         alive = false;
                         #pragma omp atomic
                         collide += w*(xs->Et(x)/(Esamp*q_mshd));
+                        #pragma omp atomic
+                        collide_sqr += (w*(xs->Et(x)/(Esamp*q_mshd)))*(w*(xs->Et(x)/(Esamp*q_mshd)));
                         #pragma omp atomic
                         cnts_sum += cnt;
                         #pragma omp atomic 
@@ -643,11 +661,17 @@ void Meshed_Negative_Weight_Delta_Tracking(XS* xs) {
     double avg_cnt = (double)cnts_sum/(double)NPART;
     double avg_bin_cnt = (double)bin_cnt_sum/(double)NPART;
     double avg_sign_chng = sign_change / (double)NPART;
+    
+    double escp_std = std::sqrt(std::abs(escape*escape - escape_sqr)/((double)NPART - 1.0));
+    double col_std = std::sqrt(std::abs(collide*collide - collide_sqr)/((double)NPART - 1.0));
+    double FOM_escp = 1.0 / (avg_cnt * escp_std * escp_std);
+    double FOM_col = 1.0 / (avg_cnt * col_std * col_std);
 
-    std::cout << " Collisions: " << (int)collide << ", Transmission: ";
-    std::cout << trans << ", Average Counts: " << avg_cnt << "\n";
-    std::cout << " Avg Bin Cnts = " << avg_bin_cnt;
-    std::cout << "\n Avg Sign Chng = " << avg_sign_chng << "\n\n";
+    std::cout << " Collisions: " << (int)std::round(collide) << " +/- " << col_std;
+    std::cout << ", Transmission: " << trans << " +/- " << escp_std/(double)NPART;
+    std::cout << "\n Average Counts: " << avg_cnt;
+    std::cout << ", Avg Sign Chng = " << avg_sign_chng << "\n";
+    std::cout << " FOM_escp = " << FOM_escp << " FOM_col = "<<FOM_col<<"\n\n";
 }
 
 int main() {
