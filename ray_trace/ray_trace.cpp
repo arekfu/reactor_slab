@@ -494,7 +494,7 @@ void Eigenvalue(double** &Et, double** &Ea, double** &Ef, double*** &Es, double*
             if(g > ninactive+1) {
                 t = high_resolution_clock::now();
                 duration<double, std::milli> time_span = t - t0;
-                double T = (double)time_span.count() * 0.001;
+                double T = (double)time_span.count() * 0.00001;
                 double FOM = 1.0/( T * (std/kavg)*(std/kavg) );
                 std::cout << " " << std::setfill(' ') << std::setw(4) << g << "  " << std::fixed << std::setprecision(5) << k ;
                 std::cout << "  " << std::fixed << std::setprecision(5) << H << " | " << std::fixed << std::setprecision(5);

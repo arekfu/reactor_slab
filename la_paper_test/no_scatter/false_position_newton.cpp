@@ -18,9 +18,9 @@ const int NPART = 1e7;
 const int NBIN = 6;
 const double dx = 2.0/(double)NBIN;
 const double p = 0.7;
-const double p_mshd = 0.5;
+const double p_mshd = 0.7;
 const double q = 0.3;
-const double q_mshd = 0.05;
+const double q_mshd = 0.3;
 
 // Constants for gaussians A*exp(-a*(x-z)^2)
 const double A = 2.0/std::sqrt(2.0*M_PI);
@@ -544,7 +544,8 @@ void Negative_Weight_Delta_Tracking(XS* xs) {
                 else if(rand(rng) < q) {
                     // Collision is real
                     #pragma omp atomic
-                    collide += w*(1.0 - p); // TODO this is probably wrong
+                    //collide += w*(1.0 - p); // TODO this is probably wrong
+                    collide += w*xs->Et(x)/(Esamp * q);
                     #pragma omp atomic
                     cnts_sum += cnt;
                     alive = false;
@@ -618,7 +619,7 @@ void Meshed_Negative_Weight_Delta_Tracking(XS* xs) {
                     if(rand(rng) < q_mshd) {
                         alive = false;
                         #pragma omp atomic
-                        collide += w;
+                        collide += w*(xs->Et(x)/(Esamp*q_mshd));
                         #pragma omp atomic
                         cnts_sum += cnt;
                         #pragma omp atomic 
