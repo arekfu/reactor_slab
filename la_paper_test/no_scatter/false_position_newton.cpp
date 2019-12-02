@@ -18,7 +18,7 @@ const int NPART = 1e7;
 const int NBIN = 10;
 const double dx = 2.0/(double)NBIN;
 const double p = 0.7;
-const double p_mshd = 0.7;
+const double p_mshd = 0.99;
 const double q = 0.3;
 const double q_mshd = 0.3;
 
