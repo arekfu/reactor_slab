@@ -1,0 +1,207 @@
+
+ NParticles = 10000000, NBins = 6
+
+
+------------------------------------------------------
+ Linearly Increasing
+
+
+ Direct Sampling (Newton's Method)
+ Collision Rate: 0.864762 +/- 0.000108143, Transmission Rate: 0.135238 +/- 0.000108143
+ Average XS/Integration Evaluations: 6.65689
+ FOM_coll = 1.2845e+07, FOM_escp = 1.2845e+07
+
+
+ Delta Tracking
+ Collision Rate: 0.864806 +/- 0.000108128, Transmission Rate: 0.135194 +/- 0.000108128
+ Average XS/Integration Evaluations: 2.5279
+ FOM_coll = 3.38348e+07, FOM_escp = 3.38348e+07
+
+
+ Meshed Delta Tracking
+ Collision Rate: 0.864622 +/- 0.00010819, Transmission Rate: 0.135378 +/- 0.00010819
+ Average XS/Integration Evaluations: 1.07216
+ FOM_coll = 7.96836e+07, FOM_escp = 7.96836e+07
+
+
+ Negative Weight Delta Tracking
+ Collision Rate: 0.864201 +/- 0.000388042, Transmission Rate: 0.135382 +/- 0.000121712
+ Average XS/Integration Evaluations: 1.32625
+ FOM_coll = 5.00746e+06, FOM_escp = 5.08989e+07
+
+
+ Meshed Negative Weight Delta Tracking
+ Collision Rate: 0.8649 +/- 0.000580467, Transmission Rate: 0.135324 +/- 0.000148812
+ Average XS/Integration Evaluations: 0.904052
+ FOM_coll = 3.28286e+06, FOM_escp = 4.99492e+07
+
+
+------------------------------------------------------
+ Linearly Decreasing
+
+
+ Direct Sampling (Newton's Method)
+ Collision Rate: 0.864762 +/- 0.000108143, Transmission Rate: 0.135238 +/- 0.000108143
+ Average XS/Integration Evaluations: 8.09985
+ FOM_coll = 1.05567e+07, FOM_escp = 1.05567e+07
+
+
+ Delta Tracking
+ Collision Rate: 0.86482 +/- 0.000108123, Transmission Rate: 0.13518 +/- 0.000108123
+ Average XS/Integration Evaluations: 1.41519
+ FOM_coll = 6.04435e+07, FOM_escp = 6.04435e+07
+
+
+ Meshed Delta Tracking
+ Collision Rate: 0.864756 +/- 0.000108145, Transmission Rate: 0.135244 +/- 0.000108145
+ Average XS/Integration Evaluations: 0.963536
+ FOM_coll = 8.87401e+07, FOM_escp = 8.87401e+07
+
+
+ Negative Weight Delta Tracking
+ Collision Rate: 0.865074 +/- 0.000550743, Transmission Rate: 0.135306 +/- 0.000121676
+ Average XS/Integration Evaluations: 1.32625
+ FOM_coll = 2.48586e+06, FOM_escp = 5.09292e+07
+
+
+ Meshed Negative Weight Delta Tracking
+ Collision Rate: 0.863582 +/- 0.000634567, Transmission Rate: 0.135481 +/- 0.000148882
+ Average XS/Integration Evaluations: 0.904186
+ FOM_coll = 2.74655e+06, FOM_escp = 4.98953e+07
+
+
+------------------------------------------------------
+ Exponentially Increasing
+
+
+ Direct Sampling (Newton's Method)
+ Collision Rate: 0.931459 +/- 7.9902e-05, Transmission Rate: 0.0685411 +/- 7.9902e-05
+ Average XS/Integration Evaluations: 6.08197
+ FOM_coll = 2.57538e+07, FOM_escp = 2.57538e+07
+
+
+ Delta Tracking
+ Collision Rate: 0.931475 +/- 7.98934e-05, Transmission Rate: 0.0685253 +/- 7.98934e-05
+ Average XS/Integration Evaluations: 7.09941
+ FOM_coll = 2.20676e+07, FOM_escp = 2.20676e+07
+
+
+ Meshed Delta Tracking
+ Collision Rate: 0.93143 +/- 7.99174e-05, Transmission Rate: 0.0685697 +/- 7.99174e-05
+ Average XS/Integration Evaluations: 1.3165
+ FOM_coll = 1.18932e+08, FOM_escp = 1.18932e+08
+
+
+ Negative Weight Delta Tracking
+ Collision Rate: 0.930999 +/- 0.000538159, Transmission Rate: 0.0688698 +/- 0.000141189
+ Average XS/Integration Evaluations: 2.09855
+ FOM_coll = 1.64536e+06, FOM_escp = 2.39045e+07
+
+
+ Meshed Negative Weight Delta Tracking
+ Collision Rate: 0.931312 +/- 0.000504504, Transmission Rate: 0.0685163 +/- 9.1879e-05
+ Average XS/Integration Evaluations: 1.25439
+ FOM_coll = 3.13213e+06, FOM_escp = 9.44356e+07
+
+
+------------------------------------------------------
+ Exponentially Decreasing
+
+
+ Direct Sampling (Newton's Method)
+ Collision Rate: 0.283062 +/- 0.000142456, Transmission Rate: 0.716939 +/- 0.000142456
+ Average XS/Integration Evaluations: 1.69837
+ FOM_coll = 2.90138e+07, FOM_escp = 2.90138e+07
+
+
+ Delta Tracking
+ Collision Rate: 0.282855 +/- 0.000142425, Transmission Rate: 0.717145 +/- 0.000142425
+ Average XS/Integration Evaluations: 2.23706
+ FOM_coll = 2.20369e+07, FOM_escp = 2.20369e+07
+
+
+ Meshed Delta Tracking
+ Collision Rate: 0.282839 +/- 0.000142422, Transmission Rate: 0.717161 +/- 0.000142422
+ Average XS/Integration Evaluations: 0.441705
+ FOM_coll = 1.11612e+08, FOM_escp = 1.11612e+08
+
+
+ Negative Weight Delta Tracking
+ Collision Rate: 0.283168 +/- 0.000253631, Transmission Rate: 0.717071 +/- 0.000218163
+ Average XS/Integration Evaluations: 0.80057
+ FOM_coll = 1.94177e+07, FOM_escp = 2.62446e+07
+
+
+ Meshed Negative Weight Delta Tracking
+ Collision Rate: 0.282736 +/- 0.000294128, Transmission Rate: 0.717309 +/- 0.000143476
+ Average XS/Integration Evaluations: 0.244035
+ FOM_coll = 4.73667e+07, FOM_escp = 1.99061e+08
+
+
+------------------------------------------------------
+ Sharp Gaussian
+
+
+ Direct Sampling (Newton's Method)
+ Collision Rate: 0.0683437 +/- 7.97953e-05, Transmission Rate: 0.931656 +/- 7.97953e-05
+ Average XS/Integration Evaluations: 0.410062
+ FOM_coll = 3.82998e+08, FOM_escp = 3.82998e+08
+
+
+ Delta Tracking
+ Collision Rate: 0.0682223 +/- 7.97296e-05, Transmission Rate: 0.931778 +/- 7.97296e-05
+ Average XS/Integration Evaluations: 2.48585
+ FOM_coll = 6.3283e+07, FOM_escp = 6.3283e+07
+
+
+ Meshed Delta Tracking
+ Collision Rate: 0.0683049 +/- 7.97743e-05, Transmission Rate: 0.931695 +/- 7.97743e-05
+ Average XS/Integration Evaluations: 0.263759
+ FOM_coll = 5.95755e+08, FOM_escp = 5.95755e+08
+
+
+ Negative Weight Delta Tracking
+ Collision Rate: 0.0680989 +/- 0.000172973, Transmission Rate: 0.932053 +/- 0.000243496
+ Average XS/Integration Evaluations: 0.664623
+ FOM_coll = 5.02884e+07, FOM_escp = 2.5377e+07
+
+
+ Meshed Negative Weight Delta Tracking
+ Collision Rate: 0.0678964 +/- 0.000152765, Transmission Rate: 0.931806 +/- 0.000106289
+ Average XS/Integration Evaluations: 0.128328
+ FOM_coll = 3.33909e+08, FOM_escp = 6.89766e+08
+
+
+------------------------------------------------------
+ Broad Gaussian
+
+
+ Direct Sampling (Newton's Method)
+ Collision Rate: 0.687009 +/- 0.000146638, Transmission Rate: 0.312991 +/- 0.000146638
+ Average XS/Integration Evaluations: 7.73154
+ FOM_coll = 6.01505e+06, FOM_escp = 6.01505e+06
+
+
+ Delta Tracking
+ Collision Rate: 0.687014 +/- 0.000146638, Transmission Rate: 0.312986 +/- 0.000146638
+ Average XS/Integration Evaluations: 1.33448
+ FOM_coll = 3.48495e+07, FOM_escp = 3.48495e+07
+
+
+ Meshed Delta Tracking
+ Collision Rate: 0.687009 +/- 0.000146638, Transmission Rate: 0.312991 +/- 0.000146638
+ Average XS/Integration Evaluations: 0.791724
+ FOM_coll = 5.87397e+07, FOM_escp = 5.87397e+07
+
+
+ Negative Weight Delta Tracking
+ Collision Rate: 0.686709 +/- 0.000469192, Transmission Rate: 0.312923 +/- 0.000171308
+ Average XS/Integration Evaluations: 0.664623
+ FOM_coll = 6.83476e+06, FOM_escp = 5.1271e+07
+
+
+ Meshed Negative Weight Delta Tracking
+ Collision Rate: 0.686785 +/- 0.000535126, Transmission Rate: 0.313032 +/- 0.000188011
+ Average XS/Integration Evaluations: 0.562735
+ FOM_coll = 6.2056e+06, FOM_escp = 5.02725e+07
+

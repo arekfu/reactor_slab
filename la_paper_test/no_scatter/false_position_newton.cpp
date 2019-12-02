@@ -18,7 +18,7 @@ const int NPART = 1e7;
 const int NBIN = 10;
 const double dx = 2.0/(double)NBIN;
 const double p = 0.7;
-const double p_mshd = 0.99;
+const double p_mshd = 0.7;
 const double q = 0.3;
 const double q_mshd = 0.3;
 
@@ -27,6 +27,13 @@ const double A = 2.0/std::sqrt(2.0*M_PI);
 const double a_s = (1.0/0.05)*(1.0/0.05);
 const double a_b = 1.0;
 const double z = 1.23;
+
+// Tallies
+double collide;
+double collide_sqr;
+double escape;
+double escape_sqr;
+double xs_evals; // # of xs look ups or xs integrations
 
 const double T_2_s = A*std::sqrt(M_PI)*((std::erf(std::sqrt(a_s)*(2.0 - z)) 
                      - std::erf(std::sqrt(a_s)*(-z)))/(2.0*std::sqrt(a_s)));
@@ -344,9 +351,6 @@ double Newton(XS* xs, double T_hat, double x0, double x_low,
 
 void Direct_Sampling(XS* xs) {
     std::cout << "\n Direct Sampling (Newton's Method)\n";
-    double escape = 0.0;
-    double collide = 0.0;
-    int cnts_sum = 0;
 
     #pragma omp parallel
     {
@@ -358,6 +362,8 @@ void Direct_Sampling(XS* xs) {
             if(xi < xs->Pnc) { // No collision
                 #pragma omp atomic
                 escape += 1.0;    
+                #pragma omp atomic
+                escape_sqr += 1.0;
             } else { // Collision will occur 
                 double T_hat = -std::log(1.0 - (xs->G)*xi);
                 double x_low = 0.0;
@@ -367,7 +373,7 @@ void Direct_Sampling(XS* xs) {
                 double x1 = Newton(xs, T_hat, x0, x_low, x_hi, cnt);
 
                 if(x1 > 2.0) {
-                    escape += 1;
+                    escape += 1.0;
                     #pragma omp critical
                     {
                     std::cout << " Problem with Newton\n";
@@ -375,26 +381,20 @@ void Direct_Sampling(XS* xs) {
                 } else { 
                     #pragma omp atomic
                     collide += 1.0;
+                    #pragma omp atomic
+                    collide_sqr += 1.0;
                 }
             }
             #pragma omp atomic
-            cnts_sum += cnt;
+            xs_evals += cnt;
         }
     }
-
-    double trans = escape / (double)NPART;
-    double avg_cnt = (double)cnts_sum/(double)NPART;
-
-    std::cout << " Collisions: " << (int)collide << ", Transmission: ";
-    std::cout << trans << ", Average Counts: " << avg_cnt << "\n\n";
 }
 
 void Delta_Tracking(XS* xs) {
     std::cout << "\n Delta Tracking\n";
 
     int cnts_sum = 0;
-    double escape = 0.0;
-    double collide = 0.0;
 
     #pragma omp parallel
     {    
@@ -411,6 +411,8 @@ void Delta_Tracking(XS* xs) {
                 if(x >= 2.0) {
                     #pragma omp atomic
                     escape += 1.0;
+                    #pragma omp atomic
+                    escape_sqr += 1.0;
                     virtual_collision = false;
                     #pragma omp atomic
                     cnts_sum += cnt;
@@ -420,26 +422,21 @@ void Delta_Tracking(XS* xs) {
                     #pragma omp atomic
                     collide += 1.0;
                     #pragma omp atomic
+                    collide_sqr += 1.0;
+                    #pragma omp atomic
                     cnts_sum += cnt;
                     virtual_collision = false;
                 }
             }
         }
     }
-    
-    double trans = escape / (double)NPART;
-    double avg_cnt = (double)cnts_sum/(double)NPART;
-
-    std::cout << " Collisions: " << (int)collide << ", Transmission: ";
-    std::cout << trans << ", Average Counts: " << avg_cnt << "\n\n";
+    xs_evals += cnts_sum;
 }
 
 void Meshed_Delta_Tracking(XS* xs) {
     std::cout << "\n Meshed Delta Tracking\n";
 
     int cnts_sum = 0;
-    double escape = 0.0;
-    double collide = 0.0;
     int virtual_cnt_sum = 0;
     int bin_cnt_sum = 0;
 
@@ -469,6 +466,8 @@ void Meshed_Delta_Tracking(XS* xs) {
                         #pragma omp atomic
                         escape += 1.0;
                         #pragma omp atomic
+                        escape_sqr += 1.0;
+                        #pragma omp atomic
                         cnts_sum += cnt;
                         #pragma omp atomic
                         virtual_cnt_sum += virtual_cnt;
@@ -489,6 +488,8 @@ void Meshed_Delta_Tracking(XS* xs) {
                         #pragma omp atomic
                         collide += 1.0;
                         #pragma omp atomic
+                        collide_sqr += 1.0;
+                        #pragma omp atomic
                         cnts_sum += cnt;
                         #pragma omp atomic
                         virtual_cnt_sum += virtual_cnt;
@@ -500,26 +501,13 @@ void Meshed_Delta_Tracking(XS* xs) {
             }
         }
     }
-    
-    double trans = escape / (double)NPART;
-    double avg_cnt = (double)cnts_sum/(double)NPART;
-    double avg_bin_cnt = (double)bin_cnt_sum/(double)NPART;
-    double avg_virtual_cnt = (double)virtual_cnt_sum/(double)NPART;
-
-    std::cout << " Collisions: " << (int)collide << ", Transmission: ";
-    std::cout << trans << ", Average Counts: " << avg_cnt << "\n";
-    std::cout << " Avg Bin Cnts = " << avg_bin_cnt << ", Avg Virt. Cnts = ";
-    std::cout << avg_virtual_cnt << "\n\n";
+    xs_evals += cnts_sum;
 }
 
 void Negative_Weight_Delta_Tracking(XS* xs) {
     std::cout << "\n Negative Weight Delta Tracking\n";
 
     int cnts_sum = 0;
-    double escape = 0.0;
-    double escape_sqr = 0.0;
-    double collide = 0.0;
-    double collide_sqr = 0.0;
     double sign_change = 0.0;
     double Esamp = p*(xs->Emax);
     #pragma omp parallel
@@ -547,7 +535,6 @@ void Negative_Weight_Delta_Tracking(XS* xs) {
                 else if(rand(rng) < q) {
                     // Collision is real
                     #pragma omp atomic
-                    //collide += w*(1.0 - p); // TODO this is probably wrong
                     collide += w*xs->Et(x)/(Esamp * q);
                     #pragma omp atomic
                     collide_sqr += (w*xs->Et(x)/(Esamp * q))*(w*xs->Et(x)/(Esamp * q));
@@ -567,31 +554,13 @@ void Negative_Weight_Delta_Tracking(XS* xs) {
             }
         }
     }
-    
-    double trans = escape / (double)NPART;
-    double avg_cnt = (double)cnts_sum/(double)NPART;
-    double avg_sign_chng = sign_change / (double)NPART;
-
-    double escp_std = std::sqrt(std::abs(escape*escape - escape_sqr)/((double)NPART - 1.0));
-    double col_std = std::sqrt(std::abs(collide*collide - collide_sqr)/((double)NPART - 1.0));
-    double FOM_escp = 1.0 / (avg_cnt * escp_std * escp_std);
-    double FOM_col = 1.0 / (avg_cnt * col_std * col_std);
-
-    std::cout << " Collisions: " << (int)std::round(collide) << " +/- " << col_std;
-    std::cout << ", Transmission: " << trans << " +/- " << escp_std/(double)NPART;
-    std::cout << "\n Average Counts: " << avg_cnt;
-    std::cout << ", Avg Sign Chng = " << avg_sign_chng << "\n";
-    std::cout << " FOM_escp = " << FOM_escp << " FOM_col = "<<FOM_col<<"\n\n";
+    xs_evals += cnts_sum;
 }
 
 void Meshed_Negative_Weight_Delta_Tracking(XS* xs) {
     std::cout << "\n Meshed Negative Weight Delta Tracking\n";
 
     int cnts_sum = 0;
-    double escape = 0.0;
-    double escape_sqr = 0.0;
-    double collide = 0.0;
-    double collide_sqr = 0.0;
     int bin_cnt_sum = 0;
     double sign_change = 0.0;
     #pragma omp parallel
@@ -656,22 +625,28 @@ void Meshed_Negative_Weight_Delta_Tracking(XS* xs) {
             }
         }
     }
-    
-    double trans = escape / (double)NPART;
-    double avg_cnt = (double)cnts_sum/(double)NPART;
-    double avg_bin_cnt = (double)bin_cnt_sum/(double)NPART;
-    double avg_sign_chng = sign_change / (double)NPART;
-    
-    double escp_std = std::sqrt(std::abs(escape*escape - escape_sqr)/((double)NPART - 1.0));
-    double col_std = std::sqrt(std::abs(collide*collide - collide_sqr)/((double)NPART - 1.0));
-    double FOM_escp = 1.0 / (avg_cnt * escp_std * escp_std);
-    double FOM_col = 1.0 / (avg_cnt * col_std * col_std);
+    xs_evals += cnts_sum;
+}
 
-    std::cout << " Collisions: " << (int)std::round(collide) << " +/- " << col_std;
-    std::cout << ", Transmission: " << trans << " +/- " << escp_std/(double)NPART;
-    std::cout << "\n Average Counts: " << avg_cnt;
-    std::cout << ", Avg Sign Chng = " << avg_sign_chng << "\n";
-    std::cout << " FOM_escp = " << FOM_escp << " FOM_col = "<<FOM_col<<"\n\n";
+void Output() {
+    double collide_avg = collide / (double)NPART;
+    double collide_sqr_avg = collide_sqr / (double)NPART;
+    double collide_std = std::sqrt(std::abs(collide_avg*collide_avg - 
+                          collide_sqr_avg)/((double)NPART - 1.0));
+    double escape_avg = escape / (double)NPART;
+    double escape_sqr_avg = escape_sqr / (double)NPART;
+    double escape_std = std::sqrt(std::abs(escape_avg*escape_avg - 
+                           escape_sqr_avg)/((double)NPART - 1.0));
+
+    double avg_xs_evals = xs_evals / (double)NPART;
+
+    double FOM_col = 1.0 / (avg_xs_evals * collide_std * collide_std);
+    double FOM_esc = 1.0 / (avg_xs_evals * escape_std * escape_std);
+
+    std::cout << " Collision Rate: " << collide_avg << " +/- " << collide_std;
+    std::cout << ", Transmission Rate: " << escape_avg << " +/- " << escape_std << "\n";
+    std::cout << " Average XS/Integration Evaluations: " << avg_xs_evals << "\n";
+    std::cout << " FOM_coll = " << FOM_col << ", FOM_escp = " << FOM_esc << "\n\n";
 }
 
 int main() {
@@ -718,16 +693,52 @@ int main() {
             crs = &xs;
         }
         else {exit(1);}
+        
+        collide = 0.0;
+        collide_sqr = 0.0;
+        escape = 0.0;
+        escape_sqr = 0.0;
+        xs_evals = 0.0;
 
         Direct_Sampling(crs);
+        Output();
+                
+        collide = 0.0;
+        collide_sqr = 0.0;
+        escape = 0.0;
+        escape_sqr = 0.0;
+        xs_evals = 0.0;
 
         Delta_Tracking(crs);
+        Output();
+        
+        collide = 0.0;
+        collide_sqr = 0.0;
+        escape = 0.0;
+        escape_sqr = 0.0;
+        xs_evals = 0.0;
 
         Meshed_Delta_Tracking(crs);
+        Output();
+        
+        collide = 0.0;
+        collide_sqr = 0.0;
+        escape = 0.0;
+        escape_sqr = 0.0;
+        xs_evals = 0.0;
 
         Negative_Weight_Delta_Tracking(crs);
+        Output();
+        
+        collide = 0.0;
+        collide_sqr = 0.0;
+        escape = 0.0;
+        escape_sqr = 0.0;
+        xs_evals = 0.0;
 
         Meshed_Negative_Weight_Delta_Tracking(crs);
+        Output();
+
     }
     
     return 0;
