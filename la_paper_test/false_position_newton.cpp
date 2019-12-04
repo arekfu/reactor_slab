@@ -11,18 +11,17 @@
 #include"random/pcg_random.hpp"
 
 #include<cmath>
+#include<iomanip>
 #include<iostream>
 
 const double EPS = 1e-6;
 const int NPART = 1e7;
-const int NBIN = 2;
+const int NBIN = 5;
 const double dx = 2.0/(double)NBIN;
 const double p = 0.7;
-const double p_mshd = 0.5;
+const double p_mshd = 0.7;
 const double q = 0.3;
-const double q_mshd = 0.05;
-const double Pscatt = 0.5;
-const double Pabs = 0.5;
+const double q_mshd = 0.3;
 
 // Constants for gaussians A*exp(-a*(x-z)^2)
 const double A = 2.0/std::sqrt(2.0*M_PI);
@@ -30,27 +29,104 @@ const double a_s = (1.0/0.05)*(1.0/0.05);
 const double a_b = 1.0;
 const double z = 1.23;
 
+// Tallies
+double collide;
+double collide_sqr;
+double escape;
+double escape_sqr;
+double xs_evals; // # of xs look ups or xs integrations
+
+const double T_2_s = A*std::sqrt(M_PI)*((std::erf(std::sqrt(a_s)*(2.0 - z)) 
+                     - std::erf(std::sqrt(a_s)*(-z)))/(2.0*std::sqrt(a_s)));
+const double Pnc_s = std::exp(-T_2_s);
+
+const double T_2_b = A*std::sqrt(M_PI)*((std::erf(std::sqrt(a_b)*(2.0 - z)) 
+                     - std::erf(std::sqrt(a_b)*(-z)))/(2.0*std::sqrt(a_b)));
+const double Pnc_b = std::exp(-T_2_b);
+
+
 // Base Cross Section Class
 class XS {
     public:
-        XS(double _Emax) {
+        XS(double _Pnc, double _Emax) {
+            Pnc = _Pnc;
+            G = 1.0 - Pnc;
             Emax = _Emax;
         }
 
         // All virtual methods
-        virtual double T(double x0, double x) {return -1.0;}
+        virtual double T(double x) {return -1.0;}
         virtual double Et(double x) {return -1.0;}
+        virtual double dEt(double x) {return -1000000.0;}
+
+        double P_nc() {return Pnc;}
 
         // Data
+        double Pnc;
+        double G;
         double Emax;
         double Em[NBIN];
         double Esmp[NBIN];
 };
 
+// Constant XS
+class Constant : public XS {
+    public:
+        Constant():XS(std::exp(-2), 1.0) {
+            for(int b = 0; b < NBIN; b++) {
+                Em[b] = 1.0;
+                Esmp[b] = p_mshd;
+            }
+        }
+
+        double T(double x) {
+            if((x >= 0.0) and (x <= 2.0)) {return x;}
+            else if(x > 2.0) {return 2.0;}
+            else {exit(1);}
+        }
+
+        double Et(double x) {return 1.0;}
+
+        double dEt(double x) {return 0.0;}
+
+}; // Constants
+
+// Step XS
+class Step : public XS {
+    public:
+        Step():XS(std::exp(-2.139)  , 1.5) {
+            for(int b = 0; b < NBIN; b++) {
+                double x = b*dx;
+                Em[b] = Et(x);
+                Esmp[b] = p_mshd*Et(x);
+            }
+        }
+
+        double T(double x) {
+            if((x >= 0.0) and (x < 0.278)) {return 1.5*x;}
+            else if((x >= 0.278) and x <= 2.0) {return 1.5*0.278 + (x - 0.278);}
+            else if(x > 2.0) {return T(2.0);}
+            else {
+                #pragma omp critical
+                {
+                    std::cout << x<<"\n";
+                }
+                exit(1);}
+        }
+
+        double Et(double x) {
+            if((x >= 0.0) and (x < 0.278)) {return 1.5;}
+            else if ((x >= 0.278) and (x < 2.0)) {return 1.0;}
+            else {exit(1);}
+        }
+
+        double dEt(double x) {return 0.0;}
+}; // Step
+
 // Derived classes for each type of cross section
 class Lin_Decrease : public XS {
     public:
-        Lin_Decrease():XS(2.0) {
+        Lin_Decrease():XS(std::exp(-2.0), 2.0) {
             for(int b = 0; b < NBIN; b++) {
                 double x = b*dx;
                 Em[b] = Et(x);
@@ -58,21 +134,26 @@ class Lin_Decrease : public XS {
             }    
         }
 
-        double T(double x0, double x) {
-            double higher = 2*x - (x*x/2.0);
-            double lower = 2*x0 - (x0*x0/2.0);
-            if( x0 < x ) {return higher - lower;}
-            else {return lower - higher;}
+        double T(double x) {
+            if((x >= 0.0) and (x <= 2.0)) {
+                return (2.0*x - ((x*x)/2.0));
+            }
+            else if(x > 2) {return T(2.0);}
+            else {exit(1);}
         }
 
         double Et(double x) {
             return 2.0 - x;
         }
+
+        double dEt(double x) {
+            return -1.0;
+        }
 };
 
 class Lin_Increase : public XS {
     public:
-        Lin_Increase():XS(2.0) {
+        Lin_Increase():XS(std::exp(-2.0), 2.0) {
             for(int b = 0; b < NBIN; b++) {
                 double x = b*dx + dx;
                 Em[b] = Et(x);
@@ -80,21 +161,26 @@ class Lin_Increase : public XS {
             }
         }
 
-        double T(double x0, double x) {
-            double higher = x*x/2.0;
-            double lower = x0*x0/2.0;
-            if(x0 < x) {return higher - lower;}
-            else {return lower - higher;}
+        double T(double x) {
+            if((x >= 0.0) and (x <= 2.0)) {
+                return (x*x)/2.0 ;
+            }
+            else if(x > 2.0) {return T(2.0);}
+            else {exit(1);}
         }
 
         double Et(double x) {
             return x;
         }
+
+        double dEt(double x) {
+            return 1.0;
+        }
 };
 
 class Exp_Decrease : public XS {
     public:
-        Exp_Decrease():XS(1.0) {
+        Exp_Decrease():XS(std::exp(-(1.0/3.0)*(1.0 - std::exp(-6.0))), 1.0) {
             for(int b = 0; b < NBIN; b++) {
                 double x = b*dx;
                 Em[b] = Et(x);
@@ -102,21 +188,26 @@ class Exp_Decrease : public XS {
             }
         }
 
-        double T(double x0, double x) {
-            double higher = Et(x)/(-3.0);
-            double lower = Et(x0)/(-3.0);
-            if(x0 < x) {return higher - lower;}
-            else {return lower - higher;}
+        double T(double x) {
+            if((x >= 0.0) and (x <= 2.0)) {
+                return ((1.0/3.0) - (std::exp(-3.0*x)/3.0));
+            }
+            else if(x > 2.0) {return T(2.0);}
+            else {exit(1);}
         }
 
         double Et(double x) {
             return std::exp(-3.0*x);
         }
+
+        double dEt(double x) {
+            return -3.0*std::exp(-3.0*x);
+        }
 };
 
 class Exp_Increase : public XS {
     public:
-        Exp_Increase():XS(0.1*std::exp(4.0)) {
+        Exp_Increase():XS(std::exp(-0.05*(std::exp(4.0)-1.0)), 0.1*std::exp(4.0)) {
             for(int b = 0; b < NBIN; b++) {
                 double x = b*dx + dx;
                 Em[b] = Et(x);
@@ -124,21 +215,26 @@ class Exp_Increase : public XS {
             }
         }
 
-        double T(double x0, double x) {
-            double higher = Et(x)/(2.0);
-            double lower = Et(x0)/(2.0);
-            if(x0 < x) {return higher - lower;}
-            else {return lower - higher;}
+        double T(double x) {
+            if((x >= 0.0) and (x <= 2.0)) {
+                return 0.05*(std::exp(2.0*x) - 1.0);
+            }
+            else if(x > 2.0) {return T(2.0);}
+            else {exit(1);}
         }
 
         double Et(double x) {
             return 0.1*std::exp(2.0*x);
         }
+
+        double dEt(double x) {
+            return 0.2*std::exp(2.0*x);
+        }
 };
 
 class Gauss_Sharp : public XS {
     public:
-        Gauss_Sharp():XS(A) {
+        Gauss_Sharp():XS(Pnc_s, A) {
             int bin_peak = std::floor(z/dx);
             double x;
             for(int b = 0; b < NBIN; b++) {
@@ -156,21 +252,28 @@ class Gauss_Sharp : public XS {
             }
         }
 
-        double T(double x0, double x) {
-            double higher = std::sqrt(M_PI)*A*std::erf(std::sqrt(a_s*(x-z)))/(2.0*std::sqrt(a_s));
-            double lower = std::sqrt(M_PI)*A*std::erf(std::sqrt(a_s*(x0-z)))/(2.0*std::sqrt(a_s));
-            if(x0 < x) {return higher - lower;}
-            else {return lower - higher;}
+        double T(double x) {
+            if((x >= 0.0) and (x <= 2.0)) {
+                return A*std::sqrt(M_PI)*(std::erf(std::sqrt(a_s)*(x - z)) 
+                       - std::erf(std::sqrt(a_s)*(-z)))/(2.0*std::sqrt(a_s));
+            }
+            else if(x > 2.0) {return T(2.0);}
+            else {exit(1);}
         }
 
         double Et(double x) {
             return A*std::exp(-a_s*(x-z)*(x-z));
         }
+
+        double dEt(double x) {
+            double ar = (x - 1.0)/0.05;
+            return (2.0/std::sqrt(2.0*M_PI))*(-2*ar*(1.0/0.05))*std::exp(-ar*ar);
+        }
 };
 
 class Gauss_Broad : public XS {
     public:
-        Gauss_Broad():XS(A) {
+        Gauss_Broad():XS(Pnc_b, A) {
             int bin_peak = std::floor(z/dx);
             double x;
             for(int b = 0; b < NBIN; b++) {
@@ -188,15 +291,22 @@ class Gauss_Broad : public XS {
             }
         }
 
-        double T(double x0, double x) {
-            double higher = std::sqrt(M_PI)*A*std::erf(std::sqrt(a_b*(x-z)))/(2.0*std::sqrt(a_b));
-            double lower = std::sqrt(M_PI)*A*std::erf(std::sqrt(a_b*(x0-z)))/(2.0*std::sqrt(a_b));
-            if(x0 < x) {return higher - lower;}
-            else {return lower - higher;}
+        double T(double x) {
+            if((x >= 0.0) and (x <= 2.0)) {
+                return A*std::sqrt(M_PI)*(std::erf(std::sqrt(a_b)*(x - z)) 
+                       - std::erf(std::sqrt(a_b)*(-z)))/(2.0*std::sqrt(a_b));
+            }
+            else if(x > 2.0) {return T(2.0);}
+            else {exit(1);}
         }
 
         double Et(double x) {
             return A*std::exp(-a_b*(x-z)*(x-z));
+        }
+
+        double dEt(double x) {
+            double ar = (x - 1.0);
+            return (2.0/std::sqrt(2.0*M_PI))*(-2*ar)*std::exp(-ar*ar);
         }
 };
 
@@ -213,172 +323,135 @@ double rand(pcg64_unique& rng) {
     return double(x)/1000000000.0;
 }
 
-double False_Position(XS* xs, double x0, double T_hat, double& x_low, double& x_hi, 
+double False_Position(XS* xs, double T_hat, double& x0, double& x1, 
                       double eps, int& counter) {
-    // x_low is lower bound (initialy current x position)
-    // x_hi is point where particle would cross to new region
-    
-    double x_bound = x_hi;
-    bool mu_positive = x0 < x_hi;
+    // x0 is starting location
+    // x1 is point where particle would cross to new region
     
     // Lambda function for T_hat - T(x)
     auto F = [&](double y) {
-        return (T_hat - xs->T(x0,y));
+        return (T_hat - xs->T(y));
     };
     
-    double F_hi = F(x_hi);
-    double F_low = F(x_low);
+    double F1 = F(x1);
+    double F0 = F(x0);
     counter++;
     counter++;
-    double m = (F_hi - F_low)/(x_hi - x_low);
-    double x = x_low;
-    double x_old = x_hi;
-    while(std::abs(x_old - x) > eps) {
-        x_old = x;
-        x = x_low - (F_low/m);
+    double m = (F1 - F0)/(x1 - x0);
+    double x = x0;
+    double x_old = x1;
+    if( m >= 0.0 ) {
+        std::cout << " ERROR WITH INITIAL POINTS!!\n";
+    } else {
+        while(std::abs(x_old - x) > eps) {
+            x_old = x;
+            x = x0 - (F0/m);
 
-        if((x > 2.0) or (x < 0.0)) {
-            #pragma omp critical
-            {
-            std::cout << " PROBS\n";
-            std::cout << " xi = " << xi << " G = " << G << "\n";
-            std::cout << " Pnc = " << Pnc << "\n";
-            std::cout << " T_hat = " << T_hat << "\n";
-            std::cout << " Mu positive = " << mu_positive << "\n";
-            std::cout << " x0 = " << x0 << " xb = " << x_bound << "\n";
-            std::cout << " x_low = " << x_low << "\n" << " x_hi = " << x_hi;
-            std::cout << "\n x = " << x << " m = " << m << "\n";
-            std::cout << " F_low = " << F_low << " F_hi = " << F_hi << "\n";
-            std::cin >> x;
+            if((x > 2.0) or (x < 0.0)) {
+                #pragma omp critical
+                {
+                std::cout << " PROBS\n";
+                std::cout << " T_hat = " << T_hat << "\n";
+                std::cout << " x0 = " << x0 << "\n" << " x1 = " << x1;
+                std::cout << "\n x = " << x << " m = " << m << "\n";
+                std::cout << " F0 = " << F0 << " F1 = " << F1 << "\n";
+                std::cin >> x;
+                }
             }
-        }
 
-        if(std::abs(x_old - x) > eps) {
-            break;
-        } else {
-            counter++;
-            
-            if(mu_positive) {
-                if(F(x) > 0.0) {
-                    x_low = x;
-                    F_low = F(x_low);
-                }
-                else {
-                    x_hi = x;
-                    F_hi = F(x_hi);
-                }
+            if(std::abs(x_old - x) > eps) {
+                break;
             } else {
-                if(F(x) < 0.0) {
-                    x_low = x;
-                    F_low = F(x_low);
+                counter++;
+                if(F(x) > 0.0) {
+                    x0 = x;
+                    F0 = F(x0);
                 }
                 else {
-                    x_hi = x;
-                    F_hi = F(x_hi);
+                    x1 = x;
+                    F1 = F(x1);
                 }
+                
+                m = (F1 - F0)/(x1 - x0);
             }
-            m = (F_hi - F_low)/(x_hi - x_low);
         }
     }
     return x;
 }
 
-double Newton(XS* xs, double x_orig, double xi, double Pnc, double G, double T_hat, double x0, double xg, double x_low, 
+double Newton(XS* xs, double T_hat, double x0, double x_low, 
               double x_hi, int& counter) {
-    // xg is initial guess from False_Position
-    // x0 is current position
     // Lambda function for T_hat - T(x)
     auto F = [&](double y) {
-        return (T_hat - xs->T(x0,y));
+        return (T_hat - xs->T(y));
     };
 
     //if(T_hat == x0) {std::cout << " SCREAM\n";} 
-    double x = xg;
-    xg += 0.05;
+    double x = x0;
+    x0 += 0.05;
     double g = 0.0;
     double gp = 0.0;
-    while(std::abs(x - xg) > EPS) {
+    while(std::abs(x - x0) > EPS) {
         counter++;
         counter++;
-        xg = x;
-        g = F(xg);
-        gp = xs->Et(xg);
-        x = xg - (g/gp);
-        if ((x > x_hi) or (x < x_low)) {
-            x = False_Position(xs, x_orig, xi, Pnc, G, T_hat, x_low, x_hi, EPS, counter);
+        x0 = x;
+        g = F(x0);
+        gp = xs->Et(x0);
+        x = x0 - (g/gp);
+        if ((x > x_hi) or (x < x_low) or (x < 0.0)) {
+            x = False_Position(xs, T_hat, x_low, x_hi, EPS, counter);
             break;           
         }
     }
     return x;
 }
 
-double Distance_To_Surf(double x, double mu) {
-    if(mu > 0) {return 2.0 - x;}
-    else {return x;}
-}
-
 void Direct_Sampling(XS* xs) {
-    std::cout << "\n Direct Sampling (Newton's Method)\n";
-    double escape = 0.0;
-    int cnts_sum = 0;
-
+    std::cout << "\n Direct Sampling (False Position/Newton's Method)\n";
+    double Pnc = xs->Pnc;
     #pragma omp parallel
     {
         pcg64_unique rng;
         #pragma omp for
         for(int n = 0; n < NPART; n++) {
-            double x = 1.0; // All particles start in middle
-            double mu = 1.0;
-            //if(rand(rng) < 0.5) {mu = -1.0;}
-            bool alive = true;
+            double xi = rand(rng);
             int cnt = 0;
+            if(xi < Pnc) { // No collision
+                #pragma omp atomic
+                escape += 1.0;    
+                #pragma omp atomic
+                escape_sqr += 1.0;
+            } else { // Collision will occur 
+                double T_hat = -std::log(1.0 - (xs->G)*xi);
+                double x_low = 0.0;
+                double x_hi = 2.0;
+                double eps = 0.01;
+                double x0 = False_Position(xs, T_hat, x_low, x_hi, eps, cnt);
+                double x1 = Newton(xs, T_hat, x0, x_low, x_hi, cnt);
 
-            while(alive) {
-                double ds = Distance_To_Surf(x, mu);
-                double Pnc = std::exp(-(xs->T(x,x + (mu*ds)))); // Probability of no collision
-                cnt++;
-                double G = 1.0 - Pnc;
-                double xi = rand(rng);
-                if(xi < Pnc) { // Particle escapes
-                    alive = false;
-                    #pragma omp atomic
+                if(x1 > 2.0) {
                     escape += 1.0;
-                } else { // Particle has collision
-                    double T_hat = -std::log(1.0 - G*xi);
-                    double x_low = x;
-                    double x_hi = x + mu*ds;
-                    double eps = 0.01;
-                    double xg = False_Position(xs, x, xi, Pnc, G, T_hat, x_low, x_hi, eps, cnt);
-                    x = Newton(xs, x, xi, Pnc, G, T_hat, x, xg, x_low, x_hi, cnt);
-
-                    // Determine if scatter or absorption
-                    if(rand(rng) < Pscatt) { // Scatter occurs
-                        if(rand(rng) > 0.5) {mu = 1.0;}
-                        else {mu = -1.0;}
-                    } else { // Particle absorbed
-                        alive = false;
+                    #pragma omp critical
+                    {
+                    std::cout << " Problem with Newton\n";
                     }
+                } else { 
+                    #pragma omp atomic
+                    collide += 1.0;
+                    #pragma omp atomic
+                    collide_sqr += 1.0;
                 }
             }
-
             #pragma omp atomic
-            cnts_sum += cnt;
+            xs_evals += cnt;
         }
     }
-
-    double trans = escape / (double)NPART;
-    double avg_cnt = (double)cnts_sum/(double)NPART;
-
-    std::cout << " Escaped: " << (int)escape << ", Transmission: ";
-    std::cout << trans << ", Average Counts: " << avg_cnt << "\n\n";
 }
 
 void Delta_Tracking(XS* xs) {
     std::cout << "\n Delta Tracking\n";
 
     int cnts_sum = 0;
-    double escape = 0.0;
-    double collide = 0.0;
 
     #pragma omp parallel
     {    
@@ -395,6 +468,8 @@ void Delta_Tracking(XS* xs) {
                 if(x >= 2.0) {
                     #pragma omp atomic
                     escape += 1.0;
+                    #pragma omp atomic
+                    escape_sqr += 1.0;
                     virtual_collision = false;
                     #pragma omp atomic
                     cnts_sum += cnt;
@@ -404,27 +479,21 @@ void Delta_Tracking(XS* xs) {
                     #pragma omp atomic
                     collide += 1.0;
                     #pragma omp atomic
+                    collide_sqr += 1.0;
+                    #pragma omp atomic
                     cnts_sum += cnt;
                     virtual_collision = false;
-                
                 }
             }
         }
     }
-    
-    double trans = escape / (double)NPART;
-    double avg_cnt = (double)cnts_sum/(double)NPART;
-
-    std::cout << " Collisions: " << (int)collide << ", Transmission: ";
-    std::cout << trans << ", Average Counts: " << avg_cnt << "\n\n";
+    xs_evals += cnts_sum;
 }
 
 void Meshed_Delta_Tracking(XS* xs) {
     std::cout << "\n Meshed Delta Tracking\n";
 
     int cnts_sum = 0;
-    double escape = 0.0;
-    double collide = 0.0;
     int virtual_cnt_sum = 0;
     int bin_cnt_sum = 0;
 
@@ -454,6 +523,8 @@ void Meshed_Delta_Tracking(XS* xs) {
                         #pragma omp atomic
                         escape += 1.0;
                         #pragma omp atomic
+                        escape_sqr += 1.0;
+                        #pragma omp atomic
                         cnts_sum += cnt;
                         #pragma omp atomic
                         virtual_cnt_sum += virtual_cnt;
@@ -474,6 +545,8 @@ void Meshed_Delta_Tracking(XS* xs) {
                         #pragma omp atomic
                         collide += 1.0;
                         #pragma omp atomic
+                        collide_sqr += 1.0;
+                        #pragma omp atomic
                         cnts_sum += cnt;
                         #pragma omp atomic
                         virtual_cnt_sum += virtual_cnt;
@@ -485,24 +558,13 @@ void Meshed_Delta_Tracking(XS* xs) {
             }
         }
     }
-    
-    double trans = escape / (double)NPART;
-    double avg_cnt = (double)cnts_sum/(double)NPART;
-    double avg_bin_cnt = (double)bin_cnt_sum/(double)NPART;
-    double avg_virtual_cnt = (double)virtual_cnt_sum/(double)NPART;
-
-    std::cout << " Collisions: " << (int)collide << ", Transmission: ";
-    std::cout << trans << ", Average Counts: " << avg_cnt << "\n";
-    std::cout << " Avg Bin Cnts = " << avg_bin_cnt << ", Avg Virt. Cnts = ";
-    std::cout << avg_virtual_cnt << "\n\n";
+    xs_evals += cnts_sum;
 }
 
 void Negative_Weight_Delta_Tracking(XS* xs) {
     std::cout << "\n Negative Weight Delta Tracking\n";
 
     int cnts_sum = 0;
-    double escape = 0.0;
-    double collide = 0.0;
     double sign_change = 0.0;
     double Esamp = p*(xs->Emax);
     #pragma omp parallel
@@ -521,6 +583,8 @@ void Negative_Weight_Delta_Tracking(XS* xs) {
                 if(x >= 2.0) {
                     #pragma omp atomic
                     escape += w;
+                    #pragma omp atomic
+                    escape_sqr += w*w;
                     alive = false;
                     #pragma omp atomic
                     cnts_sum += cnt;
@@ -528,7 +592,9 @@ void Negative_Weight_Delta_Tracking(XS* xs) {
                 else if(rand(rng) < q) {
                     // Collision is real
                     #pragma omp atomic
-                    collide += w;
+                    collide += w*xs->Et(x)/(Esamp * q);
+                    #pragma omp atomic
+                    collide_sqr += (w*xs->Et(x)/(Esamp * q))*(w*xs->Et(x)/(Esamp * q));
                     #pragma omp atomic
                     cnts_sum += cnt;
                     alive = false;
@@ -545,22 +611,13 @@ void Negative_Weight_Delta_Tracking(XS* xs) {
             }
         }
     }
-    
-    double trans = escape / (double)NPART;
-    double avg_cnt = (double)cnts_sum/(double)NPART;
-    double avg_sign_chng = sign_change / (double)NPART;
-
-    std::cout << " Collisions: " << (int)std::round(collide) << ", Transmission: ";
-    std::cout << trans << ", Average Counts: " << avg_cnt;
-    std::cout << "\n Avg Sign Chng = " << avg_sign_chng << "\n\n";
+    xs_evals += cnts_sum;
 }
 
 void Meshed_Negative_Weight_Delta_Tracking(XS* xs) {
     std::cout << "\n Meshed Negative Weight Delta Tracking\n";
 
     int cnts_sum = 0;
-    double escape = 0.0;
-    double collide = 0.0;
     int bin_cnt_sum = 0;
     double sign_change = 0.0;
     #pragma omp parallel
@@ -589,6 +646,8 @@ void Meshed_Negative_Weight_Delta_Tracking(XS* xs) {
                         #pragma omp atomic
                         escape += w;
                         #pragma omp atomic
+                        escape_sqr += w*w;
+                        #pragma omp atomic
                         cnts_sum += cnt;
                         #pragma omp atomic
                         bin_cnt_sum += bin_cnt;
@@ -602,7 +661,9 @@ void Meshed_Negative_Weight_Delta_Tracking(XS* xs) {
                     if(rand(rng) < q_mshd) {
                         alive = false;
                         #pragma omp atomic
-                        collide += w;
+                        collide += w*(xs->Et(x)/(Esamp*q_mshd));
+                        #pragma omp atomic
+                        collide_sqr += (w*(xs->Et(x)/(Esamp*q_mshd)))*(w*(xs->Et(x)/(Esamp*q_mshd)));
                         #pragma omp atomic
                         cnts_sum += cnt;
                         #pragma omp atomic 
@@ -621,26 +682,52 @@ void Meshed_Negative_Weight_Delta_Tracking(XS* xs) {
             }
         }
     }
-    
-    double trans = escape / (double)NPART;
-    double avg_cnt = (double)cnts_sum/(double)NPART;
-    double avg_bin_cnt = (double)bin_cnt_sum/(double)NPART;
-    double avg_sign_chng = sign_change / (double)NPART;
+    xs_evals += cnts_sum;
+}
 
-    std::cout << " Collisions: " << (int)collide << ", Transmission: ";
-    std::cout << trans << ", Average Counts: " << avg_cnt << "\n";
-    std::cout << " Avg Bin Cnts = " << avg_bin_cnt;
-    std::cout << "\n Avg Sign Chng = " << avg_sign_chng << "\n\n";
+void Output() {
+    double collide_avg = collide / (double)NPART;
+    double collide_sqr_avg = collide_sqr / (double)NPART;
+    double collide_std = std::sqrt(std::abs(collide_avg*collide_avg - 
+                          collide_sqr_avg)/((double)NPART - 1.0));
+    double escape_avg = escape / (double)NPART;
+    double escape_sqr_avg = escape_sqr / (double)NPART;
+    double escape_std = std::sqrt(std::abs(escape_avg*escape_avg - 
+                           escape_sqr_avg)/((double)NPART - 1.0));
+
+    double avg_xs_evals = xs_evals / (double)NPART;
+
+    double FOM_col = 1.0 / (avg_xs_evals * collide_std * collide_std);
+    double FOM_esc = 1.0 / (avg_xs_evals * escape_std * escape_std);
+    
+    std::cout << std::fixed << std::setprecision(6);
+    std::cout << " Colsn. Rate: " << collide_avg << " +/- " << collide_std;
+    std::cout << ", Trans. Rate: " << escape_avg << " +/- " << escape_std << "\n";
+    std::cout << " Average XS/Integration Evaluations: " << avg_xs_evals << "\n";
+    std::cout << std::scientific;
+    std::cout << " FOM_coll = " << FOM_col << ", FOM_escp = " << FOM_esc << "\n\n";
 }
 
 int main() {
     std::cout << "\n NParticles = " << NPART << ", NBins = " << NBIN << "\n\n";
     
-    for(int type = 1; type <= 1; type++) {
+    for(int type = 1; type <= 6; type++) {
         XS* crs;
         
         // Determine cross section type for run
-        if(type == 1) {
+        if(type == -1) {
+            std::cout << "\n------------------------------------------------------";
+            std::cout << "\n Step\n\n";
+            Step xs = Step();
+            crs = &xs;
+        }
+        else if(type == 0) {
+            std::cout << "\n------------------------------------------------------";
+            std::cout << "\n Constant\n\n";
+            Constant xs = Constant();
+            crs = &xs;
+        }
+        else if(type == 1) {
             std::cout << "\n------------------------------------------------------";
             std::cout << "\n Linearly Increasing\n\n";
             Lin_Increase xs = Lin_Increase();
@@ -677,22 +764,52 @@ int main() {
             crs = &xs;
         }
         else {exit(1);}
+        
+        collide = 0.0;
+        collide_sqr = 0.0;
+        escape = 0.0;
+        escape_sqr = 0.0;
+        xs_evals = 0.0;
 
         Direct_Sampling(crs);
-        //double Tau = crs->T(1.9999,2.0);
-        //double Pnc = std::exp(-Tau);
-        //double G = 1.0 - Pnc;
-        //std::cout << " T = " << Tau << "\n";
-        //std::cout << " Pnc = " << Pnc << "\n";
-        //std::cout << " G = " << G << "\n";
+        Output();
+                
+        collide = 0.0;
+        collide_sqr = 0.0;
+        escape = 0.0;
+        escape_sqr = 0.0;
+        xs_evals = 0.0;
 
-        //Delta_Tracking(crs);
+        Delta_Tracking(crs);
+        Output();
+        
+        collide = 0.0;
+        collide_sqr = 0.0;
+        escape = 0.0;
+        escape_sqr = 0.0;
+        xs_evals = 0.0;
 
-        //Meshed_Delta_Tracking(crs);
+        Meshed_Delta_Tracking(crs);
+        Output();
+        
+        collide = 0.0;
+        collide_sqr = 0.0;
+        escape = 0.0;
+        escape_sqr = 0.0;
+        xs_evals = 0.0;
 
-        //Negative_Weight_Delta_Tracking(crs);
+        Negative_Weight_Delta_Tracking(crs);
+        Output();
+        
+        collide = 0.0;
+        collide_sqr = 0.0;
+        escape = 0.0;
+        escape_sqr = 0.0;
+        xs_evals = 0.0;
 
-        //Meshed_Negative_Weight_Delta_Tracking(crs);
+        Meshed_Negative_Weight_Delta_Tracking(crs);
+        Output();
+
     }
     
     return 0;

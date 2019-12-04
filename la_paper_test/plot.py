@@ -67,6 +67,15 @@ for bin in bins:
 # MNWDT nbins
 for xs in XS_types:
     key = xs+"-MNWDT"
+    plt.plot(bins, data[key][2], label=xs)
+plt.legend()
+plt.xlabel("Bins")
+plt.ylabel("Average Number of XS Evaluations")
+plt.title("Meshed Negative Weighted Delta Tracking")
+plt.show()
+
+for xs in XS_types:
+    key = xs+"-MNWDT"
     plt.plot(bins, data[key][0], label=xs)
 plt.legend()
 plt.xlabel("Bins")

@@ -1,0 +1,207 @@
+
+ NParticles = 10000000, NBins = 2
+
+
+------------------------------------------------------
+ Linearly Increasing
+
+
+ Direct Sampling (False Position/Newton's Method)
+ Colsn. Rate: 0.864455 +/- 0.000108, Trans. Rate: 0.135545 +/- 0.000108
+ Average XS/Integration Evaluations: 6.655034
+ FOM_coll = 1.282404e+07, FOM_escp = 1.282404e+07
+
+
+ Delta Tracking
+ Colsn. Rate: 0.864549 +/- 0.000108, Trans. Rate: 0.135451 +/- 0.000108
+ Average XS/Integration Evaluations: 2.528247
+ FOM_coll = 3.377604e+07, FOM_escp = 3.377604e+07
+
+
+ Meshed Delta Tracking
+ Colsn. Rate: 0.864859 +/- 0.000108, Trans. Rate: 0.135141 +/- 0.000108
+ Average XS/Integration Evaluations: 1.537211
+ FOM_coll = 5.565886e+07, FOM_escp = 5.565886e+07
+
+
+ Negative Weight Delta Tracking
+ Colsn. Rate: 0.864281 +/- 0.000388, Trans. Rate: 0.135114 +/- 0.000122
+ Average XS/Integration Evaluations: 1.326406
+ FOM_coll = 5.001175e+06, FOM_escp = 5.096395e+07
+
+
+ Meshed Negative Weight Delta Tracking
+ Colsn. Rate: 0.864957 +/- 0.000462, Trans. Rate: 0.135164 +/- 0.000124
+ Average XS/Integration Evaluations: 1.090885
+ FOM_coll = 4.295273e+06, FOM_escp = 5.922064e+07
+
+
+------------------------------------------------------
+ Linearly Decreasing
+
+
+ Direct Sampling (False Position/Newton's Method)
+ Colsn. Rate: 0.864455 +/- 0.000108, Trans. Rate: 0.135545 +/- 0.000108
+ Average XS/Integration Evaluations: 8.096860
+ FOM_coll = 1.054043e+07, FOM_escp = 1.054043e+07
+
+
+ Delta Tracking
+ Colsn. Rate: 0.864685 +/- 0.000108, Trans. Rate: 0.135315 +/- 0.000108
+ Average XS/Integration Evaluations: 1.415636
+ FOM_coll = 6.037319e+07, FOM_escp = 6.037319e+07
+
+
+ Meshed Delta Tracking
+ Colsn. Rate: 0.864682 +/- 0.000108, Trans. Rate: 0.135318 +/- 0.000108
+ Average XS/Integration Evaluations: 1.118306
+ FOM_coll = 7.642374e+07, FOM_escp = 7.642374e+07
+
+
+ Negative Weight Delta Tracking
+ Colsn. Rate: 0.865827 +/- 0.000551, Trans. Rate: 0.135209 +/- 0.000122
+ Average XS/Integration Evaluations: 1.326406
+ FOM_coll = 2.485385e+06, FOM_escp = 5.091352e+07
+
+
+ Meshed Negative Weight Delta Tracking
+ Colsn. Rate: 0.864843 +/- 0.000569, Trans. Rate: 0.135269 +/- 0.000124
+ Average XS/Integration Evaluations: 1.090973
+ FOM_coll = 2.834315e+06, FOM_escp = 5.918717e+07
+
+
+------------------------------------------------------
+ Exponentially Increasing
+
+
+ Direct Sampling (False Position/Newton's Method)
+ Colsn. Rate: 0.931350 +/- 0.000080, Trans. Rate: 0.068650 +/- 0.000080
+ Average XS/Integration Evaluations: 6.081298
+ FOM_coll = 2.571874e+07, FOM_escp = 2.571874e+07
+
+
+ Delta Tracking
+ Colsn. Rate: 0.931393 +/- 0.000080, Trans. Rate: 0.068607 +/- 0.000080
+ Average XS/Integration Evaluations: 7.098415
+ FOM_coll = 2.204646e+07, FOM_escp = 2.204646e+07
+
+
+ Meshed Delta Tracking
+ Colsn. Rate: 0.931389 +/- 0.000080, Trans. Rate: 0.068611 +/- 0.000080
+ Average XS/Integration Evaluations: 2.783459
+ FOM_coll = 5.621992e+07, FOM_escp = 5.621992e+07
+
+
+ Negative Weight Delta Tracking
+ Colsn. Rate: 0.932042 +/- 0.000539, Trans. Rate: 0.068321 +/- 0.000141
+ Average XS/Integration Evaluations: 2.098213
+ FOM_coll = 1.638166e+06, FOM_escp = 2.411370e+07
+
+
+ Meshed Negative Weight Delta Tracking
+ Colsn. Rate: 0.931429 +/- 0.000318, Trans. Rate: 0.068638 +/- 0.000079
+ Average XS/Integration Evaluations: 1.698931
+ FOM_coll = 5.824340e+06, FOM_escp = 9.336358e+07
+
+
+------------------------------------------------------
+ Exponentially Decreasing
+
+
+ Direct Sampling (False Position/Newton's Method)
+ Colsn. Rate: 0.283021 +/- 0.000142, Trans. Rate: 0.716979 +/- 0.000142
+ Average XS/Integration Evaluations: 1.698127
+ FOM_coll = 2.902047e+07, FOM_escp = 2.902047e+07
+
+
+ Delta Tracking
+ Colsn. Rate: 0.282881 +/- 0.000142, Trans. Rate: 0.717119 +/- 0.000142
+ Average XS/Integration Evaluations: 2.236298
+ FOM_coll = 2.204323e+07, FOM_escp = 2.204323e+07
+
+
+ Meshed Delta Tracking
+ Colsn. Rate: 0.282902 +/- 0.000142, Trans. Rate: 0.717098 +/- 0.000142
+ Average XS/Integration Evaluations: 0.835374
+ FOM_coll = 5.900718e+07, FOM_escp = 5.900718e+07
+
+
+ Negative Weight Delta Tracking
+ Colsn. Rate: 0.282792 +/- 0.000253, Trans. Rate: 0.716877 +/- 0.000218
+ Average XS/Integration Evaluations: 0.800732
+ FOM_coll = 1.945817e+07, FOM_escp = 2.624514e+07
+
+
+ Meshed Negative Weight Delta Tracking
+ Colsn. Rate: 0.282255 +/- 0.000259, Trans. Rate: 0.717314 +/- 0.000156
+ Average XS/Integration Evaluations: 0.461942
+ FOM_coll = 3.235932e+07, FOM_escp = 8.936444e+07
+
+
+------------------------------------------------------
+ Sharp Gaussian
+
+
+ Direct Sampling (False Position/Newton's Method)
+ Colsn. Rate: 0.068396 +/- 0.000080, Trans. Rate: 0.931604 +/- 0.000080
+ Average XS/Integration Evaluations: 0.410374
+ FOM_coll = 3.824378e+08, FOM_escp = 3.824378e+08
+
+
+ Delta Tracking
+ Colsn. Rate: 0.068300 +/- 0.000080, Trans. Rate: 0.931700 +/- 0.000080
+ Average XS/Integration Evaluations: 2.485322
+ FOM_coll = 6.322960e+07, FOM_escp = 6.322960e+07
+
+
+ Meshed Delta Tracking
+ Colsn. Rate: 0.068297 +/- 0.000080, Trans. Rate: 0.931702 +/- 0.000080
+ Average XS/Integration Evaluations: 0.756230
+ FOM_coll = 2.078088e+08, FOM_escp = 2.078088e+08
+
+
+ Negative Weight Delta Tracking
+ Colsn. Rate: 0.068526 +/- 0.000173, Trans. Rate: 0.931971 +/- 0.000243
+ Average XS/Integration Evaluations: 0.664874
+ FOM_coll = 5.005411e+07, FOM_escp = 2.538602e+07
+
+
+ Meshed Negative Weight Delta Tracking
+ Colsn. Rate: 0.068039 +/- 0.000153, Trans. Rate: 0.931820 +/- 0.000168
+ Average XS/Integration Evaluations: 0.360200
+ FOM_coll = 1.188652e+08, FOM_escp = 9.861417e+07
+
+
+------------------------------------------------------
+ Broad Gaussian
+
+
+ Direct Sampling (False Position/Newton's Method)
+ Colsn. Rate: 0.686697 +/- 0.000147, Trans. Rate: 0.313303 +/- 0.000147
+ Average XS/Integration Evaluations: 7.727502
+ FOM_coll = 6.014935e+06, FOM_escp = 6.014935e+06
+
+
+ Delta Tracking
+ Colsn. Rate: 0.686546 +/- 0.000147, Trans. Rate: 0.313454 +/- 0.000147
+ Average XS/Integration Evaluations: 1.334642
+ FOM_coll = 3.481701e+07, FOM_escp = 3.481701e+07
+
+
+ Meshed Delta Tracking
+ Colsn. Rate: 0.686919 +/- 0.000147, Trans. Rate: 0.313081 +/- 0.000147
+ Average XS/Integration Evaluations: 0.987006
+ FOM_coll = 4.711051e+07, FOM_escp = 4.711051e+07
+
+
+ Negative Weight Delta Tracking
+ Colsn. Rate: 0.687424 +/- 0.000469, Trans. Rate: 0.312934 +/- 0.000171
+ Average XS/Integration Evaluations: 0.664874
+ FOM_coll = 6.825779e+06, FOM_escp = 5.128105e+07
+
+
+ Meshed Negative Weight Delta Tracking
+ Colsn. Rate: 0.686688 +/- 0.000480, Trans. Rate: 0.313096 +/- 0.000174
+ Average XS/Integration Evaluations: 0.650218
+ FOM_coll = 6.666268e+06, FOM_escp = 5.085578e+07
+
