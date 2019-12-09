@@ -642,7 +642,7 @@ void Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
                     #pragma omp atomic
                     escape += w;
                     #pragma omp atomic
-                    escape_sqr += w;
+                    escape_sqr += w*w;
                     #pragma omp atomic
                     cnts_sum += cnt;
                 } else {
@@ -711,7 +711,7 @@ void Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
                         #pragma omp atomic
                         escape += w;
                         #pragma omp atomic
-                        escape_sqr += w;
+                        escape_sqr += w*w;
                         #pragma omp atomic
                         cnts_sum += cnt;
                     } else {
@@ -723,7 +723,7 @@ void Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
                     #pragma omp atomic
                     escape += w;
                     #pragma omp atomic
-                    escape_sqr += w;
+                    escape_sqr += w*w;
                     #pragma omp atomic
                     cnts_sum += cnt;
                 } else {
