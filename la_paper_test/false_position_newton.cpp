@@ -614,6 +614,152 @@ void Negative_Weight_Delta_Tracking(XS* xs) {
     xs_evals += cnts_sum;
 }
 
+void Bomb_Transport(XS* xs, double P) {
+    std::cout << std::fixed << std::setprecision(2);
+    std::cout << "\n Bomb Paper Transport, p = " << P << "\n";
+    double Esmp = P*xs->Emax;
+    int cnts_sum = 0;
+    double sign_change = 0.0;
+    #pragma omp parallel
+    {
+        pcg64_unique rng;
+        #pragma omp for
+        for(int n = 0; n < NPART; n++) {
+            double x = 0.0;
+            bool alive = true;
+            int cnt = 0;
+            double w = 1.0;
+            bool real_collision = false;
+
+            while(alive) {
+                double d = -std::log(rand(rng))/Esmp;
+                x += d;
+                
+                // Fist check for leak
+                if(x > 2.0) {
+                    alive = false;
+                    #pragma omp atomic
+                    escape += w;
+                    #pragma omp atomic
+                    escape_sqr += w;
+                    #pragma omp atomic
+                    cnts_sum += cnt;
+                } else {
+                    double E_tot = xs->Et(x);
+                    cnt += 1;
+                    if(E_tot > Esmp) { // First negative branch
+                        double D = E_tot / (2*E_tot - Esmp);
+                        double F = E_tot / (D*Esmp);
+                        w *= F;
+                        if(rand(rng) < D) {real_collision = true;}
+                        else {
+                            w *= -1.0;
+                            #pragma omp atomic
+                            sign_change += 1.0;
+                        }
+
+                    } else { // Delta tracking branch
+                        double P_real = E_tot/ Esmp;
+                        if(rand(rng) < P_real) {real_collision = true;}
+                    }
+
+                    if(real_collision) {
+                        alive = false;
+                        #pragma omp atomic
+                        collide += w;
+                        #pragma omp atomic
+                        collide_sqr += w*w;
+                        #pragma omp atomic
+                        cnts_sum += cnt;
+                    }
+                }
+            }// While alive
+        }// For all particles
+    }// Parallel
+    xs_evals += cnts_sum;
+}
+
+void Meshed_Bomb_Transport(XS* xs, double P) {
+    std::cout << std::fixed << std::setprecision(2);
+    std::cout << "\n Meshed Bomb Paper Transport, p = " << P  << "\n";
+    int cnts_sum = 0;
+    double sign_change = 0.0;
+    #pragma omp parallel
+    {
+        pcg64_unique rng;
+        #pragma omp for
+        for(int n = 0; n < NPART; n++) {
+            double x = 0.0;
+            int bin = 0;
+            double Esmp = P*xs->Em[bin];
+            bool alive = true;
+            int cnt = 0;
+            double w = 1.0;
+            bool real_collision = false;
+
+            while(alive) {
+                double d = -std::log(rand(rng))/Esmp;
+                double d_bin = ((double)bin*dx + dx) - x;
+                
+                // Fist check for bin change
+                if(d_bin < d) {
+                    x += d_bin; // Move to new bin
+                    bin = std::floor(x/dx);
+                    if(x > 2.0) {
+                        alive = false;
+                        #pragma omp atomic
+                        escape += w;
+                        #pragma omp atomic
+                        escape_sqr += w;
+                        #pragma omp atomic
+                        cnts_sum += cnt;
+                    } else {
+                        Esmp = P*xs->Em[bin];
+                    }
+                    
+                } else if (x + d > 2.0) {
+                    alive = false;
+                    #pragma omp atomic
+                    escape += w;
+                    #pragma omp atomic
+                    escape_sqr += w;
+                    #pragma omp atomic
+                    cnts_sum += cnt;
+                } else {
+                    x += d;
+                    double E_tot = xs->Et(x);
+                    cnt += 1;
+                    if(E_tot > Esmp) { // First negative branch
+                        double D = E_tot / (2*E_tot - Esmp);
+                        double F = E_tot / (D*Esmp);
+                        w *= F;
+                        if(rand(rng) < D) {real_collision = true;}
+                        else {
+                            w *= -1.0;
+                            #pragma omp atomic
+                            sign_change += 1.0;
+                        }
+
+                    } else { // Delta tracking branch
+                        double P_real = E_tot/ Esmp;
+                        if(rand(rng) < P_real) {real_collision = true;}
+                    }
+
+                    if(real_collision) {
+                        alive = false;
+                        #pragma omp atomic
+                        collide += w;
+                        #pragma omp atomic
+                        collide_sqr += w*w;
+                        #pragma omp atomic
+                        cnts_sum += cnt;
+                    }
+                }
+            }// While alive
+        }// For all particles
+    }// Parallel
+    xs_evals += cnts_sum;
+}
 void Meshed_Negative_Weight_Delta_Tracking(XS* xs) {
     std::cout << "\n Meshed Negative Weight Delta Tracking\n";
 
@@ -792,7 +938,7 @@ int main() {
         Meshed_Delta_Tracking(crs);
         Output();
         
-        collide = 0.0;
+        /*collide = 0.0;
         collide_sqr = 0.0;
         escape = 0.0;
         escape_sqr = 0.0;
@@ -808,6 +954,24 @@ int main() {
         xs_evals = 0.0;
 
         Meshed_Negative_Weight_Delta_Tracking(crs);
+        Output();*/
+        
+        collide = 0.0;
+        collide_sqr = 0.0;
+        escape = 0.0;
+        escape_sqr = 0.0;
+        xs_evals = 0.0;
+
+        Bomb_Transport(crs,0.95);
+        Output();
+
+        collide = 0.0;
+        collide_sqr = 0.0;
+        escape = 0.0;
+        escape_sqr = 0.0;
+        xs_evals = 0.0;
+
+        Meshed_Bomb_Transport(crs,0.95);
         Output();
 
     }

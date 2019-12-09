@@ -29,6 +29,8 @@ for line in fl:
             FOM_NDT_T.append(float(fom))
     cnt += 1
 
+fl.close()
+
 L = 2.0
 dx = 2.0 / len(FOM_DT_T)
 for i in range(len(FOM_DT_T)):

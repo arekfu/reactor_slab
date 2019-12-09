@@ -21,10 +21,12 @@ const double EPS = 1e-6;
 const int NPART = 1e7;
 const int NBIN = 100;
 const double dx = 10.0/(double)NBIN;
-const double p = 0.9;
-const double p_mshd = 0.9;
-const double q = 0.992;
-const double q_mshd = 0.992;
+// Decent choices p=0.75, q=0.85 seems to minimize FOM for both Col and Trans
+// Bad choices P=0.2, q=0.35 FOM for both are lower, but spacial FOM is higher
+const double p = 0.2;
+const double p_mshd = 0.988;
+const double q = 0.35;
+const double q_mshd = 0.300;
 
 // Constants for gaussians A*exp(-a*(x-z)^2)
 const double A = 2.0/std::sqrt(2.0*M_PI);
@@ -294,6 +296,7 @@ void Negative_Weight_Delta_Tracking(XS* xs) {
                 }
                 else if(rand(rng) < q) {
                     // Collision is real
+                    cnt++;
                     #pragma omp atomic
                     collide += w*xs->Et(x)/(Esamp * q);
                     #pragma omp atomic

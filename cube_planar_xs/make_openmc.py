@@ -6,9 +6,9 @@
 import numpy as np
 import openmc
 
-nxbins = 25
-nybins = 25
-nzbins = 25
+nxbins = 30
+nybins = 30 
+nzbins = 30
 
 L = 2.0
 
