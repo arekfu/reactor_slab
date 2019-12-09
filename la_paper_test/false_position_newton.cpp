@@ -13,6 +13,7 @@
 #include<cmath>
 #include<iomanip>
 #include<iostream>
+#include<memory>
 
 const double EPS = 1e-6;
 const int NPART = 1e7;
@@ -323,7 +324,7 @@ double rand(pcg64_unique& rng) {
     return double(x)/1000000000.0;
 }
 
-double False_Position(XS* xs, double T_hat, double& x0, double& x1, 
+double False_Position(std::unique_ptr<XS> const &xs, double T_hat, double& x0, double& x1, 
                       double eps, int& counter) {
     // x0 is starting location
     // x1 is point where particle would cross to new region
@@ -379,7 +380,7 @@ double False_Position(XS* xs, double T_hat, double& x0, double& x1,
     return x;
 }
 
-double Newton(XS* xs, double T_hat, double x0, double x_low, 
+double Newton(std::unique_ptr<XS> const &xs, double T_hat, double x0, double x_low, 
               double x_hi, int& counter) {
     // Lambda function for T_hat - T(x)
     auto F = [&](double y) {
@@ -406,7 +407,7 @@ double Newton(XS* xs, double T_hat, double x0, double x_low,
     return x;
 }
 
-void Direct_Sampling(XS* xs) {
+void Direct_Sampling(std::unique_ptr<XS> const &xs) {
     std::cout << "\n Direct Sampling (False Position/Newton's Method)\n";
     double Pnc = xs->Pnc;
     #pragma omp parallel
@@ -448,7 +449,7 @@ void Direct_Sampling(XS* xs) {
     }
 }
 
-void Delta_Tracking(XS* xs) {
+void Delta_Tracking(std::unique_ptr<XS> const &xs) {
     std::cout << "\n Delta Tracking\n";
 
     int cnts_sum = 0;
@@ -490,7 +491,7 @@ void Delta_Tracking(XS* xs) {
     xs_evals += cnts_sum;
 }
 
-void Meshed_Delta_Tracking(XS* xs) {
+void Meshed_Delta_Tracking(std::unique_ptr<XS> const &xs) {
     std::cout << "\n Meshed Delta Tracking\n";
 
     int cnts_sum = 0;
@@ -561,7 +562,7 @@ void Meshed_Delta_Tracking(XS* xs) {
     xs_evals += cnts_sum;
 }
 
-void Negative_Weight_Delta_Tracking(XS* xs) {
+void Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs) {
     std::cout << "\n Negative Weight Delta Tracking\n";
 
     int cnts_sum = 0;
@@ -614,7 +615,7 @@ void Negative_Weight_Delta_Tracking(XS* xs) {
     xs_evals += cnts_sum;
 }
 
-void Bomb_Transport(XS* xs, double P) {
+void Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
     std::cout << std::fixed << std::setprecision(2);
     std::cout << "\n Bomb Paper Transport, p = " << P << "\n";
     double Esmp = P*xs->Emax;
@@ -679,7 +680,7 @@ void Bomb_Transport(XS* xs, double P) {
     xs_evals += cnts_sum;
 }
 
-void Meshed_Bomb_Transport(XS* xs, double P) {
+void Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
     std::cout << std::fixed << std::setprecision(2);
     std::cout << "\n Meshed Bomb Paper Transport, p = " << P  << "\n";
     int cnts_sum = 0;
@@ -760,7 +761,7 @@ void Meshed_Bomb_Transport(XS* xs, double P) {
     }// Parallel
     xs_evals += cnts_sum;
 }
-void Meshed_Negative_Weight_Delta_Tracking(XS* xs) {
+void Meshed_Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs) {
     std::cout << "\n Meshed Negative Weight Delta Tracking\n";
 
     int cnts_sum = 0;
@@ -854,91 +855,89 @@ void Output() {
     std::cout << " FOM_coll = " << FOM_col << ", FOM_escp = " << FOM_esc << "\n\n";
 }
 
+std::unique_ptr<XS> make_cross_section(int type)
+{
+  // Determine cross section type for run
+  if(type == -1) {
+    std::cout << "\n------------------------------------------------------";
+    std::cout << "\n Step\n\n";
+    return std::make_unique<Step>();
+  }
+  else if(type == 0) {
+    std::cout << "\n------------------------------------------------------";
+    std::cout << "\n Constant\n\n";
+    return std::make_unique<Constant>();
+  }
+  else if(type == 1) {
+    std::cout << "\n------------------------------------------------------";
+    std::cout << "\n Linearly Increasing\n\n";
+    return std::make_unique<Lin_Increase>();
+  }
+  else if(type == 2) {
+    std::cout << "\n------------------------------------------------------";
+    std::cout << "\n Linearly Decreasing\n\n";
+    return std::make_unique<Lin_Decrease>();
+  }
+  else if(type == 4) {
+    std::cout << "\n------------------------------------------------------";
+    std::cout << "\n Exponentially Decreasing\n\n";
+    return std::make_unique<Exp_Decrease>();
+  }
+  else if(type == 3) {
+    std::cout << "\n------------------------------------------------------";
+    std::cout << "\n Exponentially Increasing\n\n";
+    return std::make_unique<Exp_Increase>();
+  }
+  else if(type == 5) {
+    std::cout << "\n------------------------------------------------------";
+    std::cout << "\n Sharp Gaussian\n\n";
+    return std::make_unique<Gauss_Sharp>();
+  }
+  else if(type == 6) {
+    std::cout << "\n------------------------------------------------------";
+    std::cout << "\n Broad Gaussian\n\n";
+    return std::make_unique<Gauss_Broad>();
+  }
+  else {
+    exit(1);
+  }
+
+}
+
 int main() {
     std::cout << "\n NParticles = " << NPART << ", NBins = " << NBIN << "\n\n";
     
     for(int type = 1; type <= 6; type++) {
-        XS* crs;
-        
-        // Determine cross section type for run
-        if(type == -1) {
-            std::cout << "\n------------------------------------------------------";
-            std::cout << "\n Step\n\n";
-            Step xs = Step();
-            crs = &xs;
-        }
-        else if(type == 0) {
-            std::cout << "\n------------------------------------------------------";
-            std::cout << "\n Constant\n\n";
-            Constant xs = Constant();
-            crs = &xs;
-        }
-        else if(type == 1) {
-            std::cout << "\n------------------------------------------------------";
-            std::cout << "\n Linearly Increasing\n\n";
-            Lin_Increase xs = Lin_Increase();
-            crs = &xs;
-        }
-        else if(type == 2) {
-            std::cout << "\n------------------------------------------------------";
-            std::cout << "\n Linearly Decreasing\n\n";
-            Lin_Decrease xs = Lin_Decrease();
-            crs = &xs;
-        }
-        else if(type == 4) {
-            std::cout << "\n------------------------------------------------------";
-            std::cout << "\n Exponentially Decreasing\n\n";
-            Exp_Decrease xs = Exp_Decrease();
-            crs = &xs;
-        }
-        else if(type == 3) {
-            std::cout << "\n------------------------------------------------------";
-            std::cout << "\n Exponentially Increasing\n\n";
-            Exp_Increase xs = Exp_Increase();
-            crs = &xs;
-        }
-        else if(type == 5) {
-            std::cout << "\n------------------------------------------------------";
-            std::cout << "\n Sharp Gaussian\n\n";
-            Gauss_Sharp xs = Gauss_Sharp();
-            crs = &xs;
-        }
-        else if(type == 6) {
-            std::cout << "\n------------------------------------------------------";
-            std::cout << "\n Broad Gaussian\n\n";
-            Gauss_Broad xs = Gauss_Broad();
-            crs = &xs;
-        }
-        else {exit(1);}
-        
-        collide = 0.0;
-        collide_sqr = 0.0;
-        escape = 0.0;
-        escape_sqr = 0.0;
-        xs_evals = 0.0;
+      std::unique_ptr<XS> crs = make_cross_section(type);
 
-        Direct_Sampling(crs);
-        Output();
-                
-        collide = 0.0;
-        collide_sqr = 0.0;
-        escape = 0.0;
-        escape_sqr = 0.0;
-        xs_evals = 0.0;
+      collide = 0.0;
+      collide_sqr = 0.0;
+      escape = 0.0;
+      escape_sqr = 0.0;
+      xs_evals = 0.0;
 
-        Delta_Tracking(crs);
-        Output();
-        
-        collide = 0.0;
-        collide_sqr = 0.0;
-        escape = 0.0;
-        escape_sqr = 0.0;
-        xs_evals = 0.0;
+      Direct_Sampling(crs);
+      Output();
 
-        Meshed_Delta_Tracking(crs);
-        Output();
-        
-        /*collide = 0.0;
+      collide = 0.0;
+      collide_sqr = 0.0;
+      escape = 0.0;
+      escape_sqr = 0.0;
+      xs_evals = 0.0;
+
+      Delta_Tracking(crs);
+      Output();
+
+      collide = 0.0;
+      collide_sqr = 0.0;
+      escape = 0.0;
+      escape_sqr = 0.0;
+      xs_evals = 0.0;
+
+      Meshed_Delta_Tracking(crs);
+      Output();
+
+      /*collide = 0.0;
         collide_sqr = 0.0;
         escape = 0.0;
         escape_sqr = 0.0;
@@ -946,7 +945,7 @@ int main() {
 
         Negative_Weight_Delta_Tracking(crs);
         Output();
-        
+
         collide = 0.0;
         collide_sqr = 0.0;
         escape = 0.0;
@@ -955,26 +954,26 @@ int main() {
 
         Meshed_Negative_Weight_Delta_Tracking(crs);
         Output();*/
-        
-        collide = 0.0;
-        collide_sqr = 0.0;
-        escape = 0.0;
-        escape_sqr = 0.0;
-        xs_evals = 0.0;
 
-        Bomb_Transport(crs,0.95);
-        Output();
+      collide = 0.0;
+      collide_sqr = 0.0;
+      escape = 0.0;
+      escape_sqr = 0.0;
+      xs_evals = 0.0;
 
-        collide = 0.0;
-        collide_sqr = 0.0;
-        escape = 0.0;
-        escape_sqr = 0.0;
-        xs_evals = 0.0;
+      Bomb_Transport(crs,0.95);
+      Output();
 
-        Meshed_Bomb_Transport(crs,0.95);
-        Output();
+      collide = 0.0;
+      collide_sqr = 0.0;
+      escape = 0.0;
+      escape_sqr = 0.0;
+      xs_evals = 0.0;
+
+      Meshed_Bomb_Transport(crs,0.95);
+      Output();
 
     }
-    
+
     return 0;
 }
