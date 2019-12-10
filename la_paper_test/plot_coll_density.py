@@ -2,6 +2,13 @@
 
 import matplotlib.pyplot as plt
 
+L = 2.0
+NFOMBIN = 100
+dx = L / NFOMBIN
+x = []
+for i in range(100):
+    x.append(i*dx + 0.5*dx)
+
 XS = {}
 fl = open("Coll_Densities.txt")
 line_count = 0;
@@ -28,13 +35,21 @@ fl.close()
 #print(XS["BroadGaussian"].keys())
 #print(XS["BroadGaussian"]["DT"])
 
-xsname = "LinearlyDecreasing"
+xsnames = ["LI", "LD", "EI", "ED", "SG", "BG"]
+tmnames = ["DS", "DT", "MDT", "NWDT", "MNWDT", "BT", "MBT"]
+#tmnames = ["DT", "MDT", "NWDT", "MNWDT"]
 
-#plt.plot(XS[xsname]["DS"][0])
-plt.plot(XS[xsname]["DT"][2])
-#plt.plot(XS[xsname]["MDT"][0])
-plt.plot(XS[xsname]["NWDT"][2])
-plt.plot(XS[xsname]["MNWDT"][2])
-plt.plot(XS[xsname]["BT"][2])
-#plt.plot(XS[xsname]["MBT"][0])
-plt.show()
+for xs in xsnames:
+    # Plot coll. density
+    for tm in tmnames:
+        plt.plot(x,XS[xs][tm][0],label=tm)
+    plt.title(xs+" Collision Density")
+    plt.legend()
+    plt.show()
+
+    # Plot FOM
+    for tm in tmnames:
+        plt.plot(x,XS[xs][tm][2],label=tm)
+    plt.title(xs+" FOM")
+    plt.legend()
+    plt.show()

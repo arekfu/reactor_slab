@@ -352,19 +352,7 @@ double False_Position(std::unique_ptr<XS> const &xs, double T_hat, double& x0, d
             x_old = x;
             x = x0 - (F0/m);
 
-            if((x > 2.0) or (x < 0.0)) {
-                #pragma omp critical
-                {
-                std::cout << " PROBS\n";
-                std::cout << " T_hat = " << T_hat << "\n";
-                std::cout << " x0 = " << x0 << "\n" << " x1 = " << x1;
-                std::cout << "\n x = " << x << " m = " << m << "\n";
-                std::cout << " F0 = " << F0 << " F1 = " << F1 << "\n";
-                std::cin >> x;
-                }
-            }
-
-            if(std::abs(x_old - x) > eps) {
+            if(std::abs(x_old - x) < eps) {
                 break;
             } else {
                 double Fx = T_hat - xs->T(x);
@@ -423,31 +411,24 @@ void Direct_Sampling(std::unique_ptr<XS> const &xs) {
                 escape += 1.0;    
                 #pragma omp atomic
                 escape_sqr += 1.0;
-            } else { // Collision will occur 
+            } else { // Collision will occur
+                xi = rand(rng); 
                 double T_hat = -std::log(1.0 - (xs->G)*xi);
                 double x_low = 0.0;
                 double x_hi = 2.0;
-                double eps = 0.01;
-                double x0 = False_Position(xs, T_hat, x_low, x_hi, eps, cnt);
+                //double eps = 0.01;
+                double x0 = False_Position(xs, T_hat, x_low, x_hi, EPS, cnt);
                 double x1 = Newton(xs, T_hat, x0, x_low, x_hi, cnt);
-
-                if(x1 > 2.0) {
-                    escape += 1.0;
-                    #pragma omp critical
-                    {
-                    std::cout << " Problem with Newton\n";
-                    }
-                } else { 
-                    #pragma omp atomic
-                    collide += 1.0;
-                    #pragma omp atomic
-                    collide_sqr += 1.0;
-                    int coll_bin = std::floor(x1/Fdx);
-                    #pragma omp atomic
-                    coll_density[coll_bin][0] += 1.0;
-                    #pragma omp atomic
-                    coll_density[coll_bin][1] += 1.0;
-                }
+                int coll_bin = std::floor(x1/Fdx);
+                #pragma omp atomic
+                coll_density[coll_bin][0] += 1.0;
+                #pragma omp atomic
+                coll_density[coll_bin][1] += 1.0;
+                #pragma omp atomic
+                collide += 1.0;
+                #pragma omp atomic
+                collide_sqr += 1.0;
+                
             }
             #pragma omp atomic
             xs_evals += cnt;
@@ -795,6 +776,7 @@ void Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
     xs_evals += cnts_sum;
     wgt_chngs += sign_change;
 }
+
 void Meshed_Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs) {
     std::cout << "\n Meshed Negative Weight Delta Tracking\n";
 
@@ -934,49 +916,49 @@ std::unique_ptr<XS> make_cross_section(int type)
   if(type == -1) {
     std::cout << "\n------------------------------------------------------";
     std::cout << "\n Step\n\n";
-    File << "#XS,Step\n";
+    File << "#XS,S\n";
     return std::make_unique<Step>();
   }
   else if(type == 0) {
     std::cout << "\n------------------------------------------------------";
     std::cout << "\n Constant\n\n";
-    File << "#XS,Constant\n";
+    File << "#XS,C\n";
     return std::make_unique<Constant>();
   }
   else if(type == 1) {
     std::cout << "\n------------------------------------------------------";
     std::cout << "\n Linearly Increasing\n\n";
-    File << "#XS,LinearlyIncreasing\n";
+    File << "#XS,LI\n";
     return std::make_unique<Lin_Increase>();
   }
   else if(type == 2) {
     std::cout << "\n------------------------------------------------------";
     std::cout << "\n Linearly Decreasing\n\n";
-    File << "#XS,LinearlyDecreasing\n"; 
+    File << "#XS,LD\n"; 
     return std::make_unique<Lin_Decrease>();
   }
   else if(type == 4) {
     std::cout << "\n------------------------------------------------------";
     std::cout << "\n Exponentially Decreasing\n\n";
-    File << "#XS,ExponentiallyDecreasing\n";
+    File << "#XS,ED\n";
     return std::make_unique<Exp_Decrease>();
   }
   else if(type == 3) {
     std::cout << "\n------------------------------------------------------";
     std::cout << "\n Exponentially Increasing\n\n";
-    File << "#XS,ExponentiallyIncreasing\n";
+    File << "#XS,EI\n";
     return std::make_unique<Exp_Increase>();
   }
   else if(type == 5) {
     std::cout << "\n------------------------------------------------------";
     std::cout << "\n Sharp Gaussian\n\n";
-    File << "#XS,SharpGaussian\n";
+    File << "#XS,SG\n";
     return std::make_unique<Gauss_Sharp>();
   }
   else if(type == 6) {
     std::cout << "\n------------------------------------------------------";
     std::cout << "\n Broad Gaussian\n\n";
-    File << "#XS,BroadGaussian\n";
+    File << "#XS,BG\n";
     return std::make_unique<Gauss_Broad>();
   }
   else {
