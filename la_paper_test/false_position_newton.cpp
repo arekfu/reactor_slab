@@ -14,10 +14,14 @@
 #include<iomanip>
 #include<iostream>
 #include<memory>
+#include<vector>
+#include<fstream>
 
 const double EPS = 1e-6;
 const int NPART = 1e7;
 const int NBIN = 5;
+const int NFOMBINS = 100;
+const double Fdx = 2.0/(double)NFOMBINS;
 const double dx = 2.0/(double)NBIN;
 const double p = 0.7;
 const double p_mshd = 0.7;
@@ -30,12 +34,17 @@ const double a_s = (1.0/0.05)*(1.0/0.05);
 const double a_b = 1.0;
 const double z = 1.23;
 
+// Outputfile
+std::ofstream File;
+
 // Tallies
 double collide;
 double collide_sqr;
 double escape;
 double escape_sqr;
 double xs_evals; // # of xs look ups or xs integrations
+double wgt_chngs; // # of times particle wgt sign flipped
+std::vector<std::vector<double>> coll_density; //[0] #sum coll in box,[1] sum coll sqr
 
 const double T_2_s = A*std::sqrt(M_PI)*((std::erf(std::sqrt(a_s)*(2.0 - z)) 
                      - std::erf(std::sqrt(a_s)*(-z)))/(2.0*std::sqrt(a_s)));
@@ -329,13 +338,8 @@ double False_Position(std::unique_ptr<XS> const &xs, double T_hat, double& x0, d
     // x0 is starting location
     // x1 is point where particle would cross to new region
     
-    // Lambda function for T_hat - T(x)
-    auto F = [&](double y) {
-        return (T_hat - xs->T(y));
-    };
-    
-    double F1 = F(x1);
-    double F0 = F(x0);
+    double F1 = T_hat - xs->T(x1);
+    double F0 = T_hat - xs->T(x0);
     counter++;
     counter++;
     double m = (F1 - F0)/(x1 - x0);
@@ -363,14 +367,15 @@ double False_Position(std::unique_ptr<XS> const &xs, double T_hat, double& x0, d
             if(std::abs(x_old - x) > eps) {
                 break;
             } else {
+                double Fx = T_hat - xs->T(x);
                 counter++;
-                if(F(x) > 0.0) {
+                if(Fx > 0.0) {
                     x0 = x;
-                    F0 = F(x0);
+                    F0 = Fx;
                 }
                 else {
                     x1 = x;
-                    F1 = F(x1);
+                    F1 = Fx;
                 }
                 
                 m = (F1 - F0)/(x1 - x0);
@@ -382,10 +387,6 @@ double False_Position(std::unique_ptr<XS> const &xs, double T_hat, double& x0, d
 
 double Newton(std::unique_ptr<XS> const &xs, double T_hat, double x0, double x_low, 
               double x_hi, int& counter) {
-    // Lambda function for T_hat - T(x)
-    auto F = [&](double y) {
-        return (T_hat - xs->T(y));
-    };
 
     //if(T_hat == x0) {std::cout << " SCREAM\n";} 
     double x = x0;
@@ -396,7 +397,7 @@ double Newton(std::unique_ptr<XS> const &xs, double T_hat, double x0, double x_l
         counter++;
         counter++;
         x0 = x;
-        g = F(x0);
+        g = T_hat - xs->T(x0);
         gp = xs->Et(x0);
         x = x0 - (g/gp);
         if ((x > x_hi) or (x < x_low) or (x < 0.0)) {
@@ -441,6 +442,11 @@ void Direct_Sampling(std::unique_ptr<XS> const &xs) {
                     collide += 1.0;
                     #pragma omp atomic
                     collide_sqr += 1.0;
+                    int coll_bin = std::floor(x1/Fdx);
+                    #pragma omp atomic
+                    coll_density[coll_bin][0] += 1.0;
+                    #pragma omp atomic
+                    coll_density[coll_bin][1] += 1.0;
                 }
             }
             #pragma omp atomic
@@ -483,6 +489,11 @@ void Delta_Tracking(std::unique_ptr<XS> const &xs) {
                     collide_sqr += 1.0;
                     #pragma omp atomic
                     cnts_sum += cnt;
+                    int coll_bin = std::floor(x/Fdx);
+                    #pragma omp atomic
+                    coll_density[coll_bin][0] += 1.0;
+                    #pragma omp atomic
+                    coll_density[coll_bin][1] += 1.0;
                     virtual_collision = false;
                 }
             }
@@ -547,6 +558,11 @@ void Meshed_Delta_Tracking(std::unique_ptr<XS> const &xs) {
                         collide += 1.0;
                         #pragma omp atomic
                         collide_sqr += 1.0;
+                        int coll_bin = std::floor(x/Fdx);
+                        #pragma omp atomic
+                        coll_density[coll_bin][0] += 1.0;
+                        #pragma omp atomic
+                        coll_density[coll_bin][1] += 1.0;
                         #pragma omp atomic
                         cnts_sum += cnt;
                         #pragma omp atomic
@@ -596,6 +612,11 @@ void Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs) {
                     collide += w*xs->Et(x)/(Esamp * q);
                     #pragma omp atomic
                     collide_sqr += (w*xs->Et(x)/(Esamp * q))*(w*xs->Et(x)/(Esamp * q));
+                    int coll_bin = std::floor(x/Fdx);
+                    #pragma omp atomic
+                    coll_density[coll_bin][0] += w*xs->Et(x)/(Esamp * q);
+                    #pragma omp atomic
+                    coll_density[coll_bin][1] += (w*xs->Et(x)/(Esamp * q))*(w*xs->Et(x)/(Esamp * q));
                     #pragma omp atomic
                     cnts_sum += cnt;
                     alive = false;
@@ -613,6 +634,7 @@ void Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs) {
         }
     }
     xs_evals += cnts_sum;
+    wgt_chngs += sign_change;
 }
 
 void Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
@@ -670,6 +692,11 @@ void Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
                         collide += w;
                         #pragma omp atomic
                         collide_sqr += w*w;
+                        int coll_bin = std::floor(x/Fdx);
+                        #pragma omp atomic
+                        coll_density[coll_bin][0] += w;
+                        #pragma omp atomic
+                        coll_density[coll_bin][1] += w*w;
                         #pragma omp atomic
                         cnts_sum += cnt;
                     }
@@ -678,6 +705,7 @@ void Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
         }// For all particles
     }// Parallel
     xs_evals += cnts_sum;
+    wgt_chngs += sign_change;
 }
 
 void Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
@@ -752,6 +780,11 @@ void Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
                         collide += w;
                         #pragma omp atomic
                         collide_sqr += w*w;
+                        int coll_bin = std::floor(x/Fdx);
+                        #pragma omp atomic
+                        coll_density[coll_bin][0] += w;
+                        #pragma omp atomic
+                        coll_density[coll_bin][1] += w*w;
                         #pragma omp atomic
                         cnts_sum += cnt;
                     }
@@ -760,6 +793,7 @@ void Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
         }// For all particles
     }// Parallel
     xs_evals += cnts_sum;
+    wgt_chngs += sign_change;
 }
 void Meshed_Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs) {
     std::cout << "\n Meshed Negative Weight Delta Tracking\n";
@@ -811,6 +845,11 @@ void Meshed_Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs) {
                         collide += w*(xs->Et(x)/(Esamp*q_mshd));
                         #pragma omp atomic
                         collide_sqr += (w*(xs->Et(x)/(Esamp*q_mshd)))*(w*(xs->Et(x)/(Esamp*q_mshd)));
+                        int coll_bin = std::floor(x/Fdx);
+                        #pragma omp atomic
+                        coll_density[coll_bin][0] += w*(xs->Et(x)/(Esamp*q_mshd));
+                        #pragma omp atomic
+                        coll_density[coll_bin][1] += (w*(xs->Et(x)/(Esamp*q_mshd)))*(w*(xs->Et(x)/(Esamp*q_mshd)));
                         #pragma omp atomic
                         cnts_sum += cnt;
                         #pragma omp atomic 
@@ -830,6 +869,7 @@ void Meshed_Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs) {
         }
     }
     xs_evals += cnts_sum;
+    wgt_chngs += sign_change;
 }
 
 void Output() {
@@ -843,14 +883,47 @@ void Output() {
                            escape_sqr_avg)/((double)NPART - 1.0));
 
     double avg_xs_evals = xs_evals / (double)NPART;
+    double avg_sgn_chngs = wgt_chngs / (double)NPART;
 
-    double FOM_col = 1.0 / (avg_xs_evals * collide_std * collide_std);
-    double FOM_esc = 1.0 / (avg_xs_evals * escape_std * escape_std);
+    //  Calculations and output for collision density profile
+    for(int i = 0; i < NFOMBINS; i++) {
+        // Get avg for bin
+        double coll_avg = coll_density[i][0] / static_cast<double>(NPART);
+        double coll_sqr_avg = coll_density[i][1] / static_cast<double>(NPART);
+        double coll_sig = std::sqrt(std::abs(coll_avg*coll_avg - coll_sqr_avg)
+                /(static_cast<double>(NPART) - 1.0));
+        coll_density[i][2] = coll_sig;
+        double rel_error = coll_sig / coll_avg;
+        coll_density[i][3] = 1.0 / (avg_xs_evals * rel_error * rel_error);
+
+        // Output avg coll desnity in bin
+        if(i == 0) {File << coll_avg;}
+        else {File << "," << coll_avg;}
+    }
+    File << "\n";
+    // Output std of coll density
+    for(int i = 0; i < NFOMBINS; i++) {
+        if(i == 0) {File << coll_density[i][2];}
+        else {File << "," << coll_density[i][2];}
+    }
+    File << "\n";
+    // Output FOM of coll density
+    for(int i = 0; i < NFOMBINS; i++) {
+        if(i == 0) {File << coll_density[i][3];}
+        else {File << "," << coll_density[i][3];}
+    }
+    File << "\n\n";
+
+    double coll_rel_error = collide_avg / collide_std;
+    double escape_rel_error = escape_avg / escape_std;
+    double FOM_col = 1.0 / (avg_xs_evals * coll_rel_error * coll_rel_error);
+    double FOM_esc = 1.0 / (avg_xs_evals*escape_rel_error*escape_rel_error);
     
     std::cout << std::fixed << std::setprecision(6);
     std::cout << " Colsn. Rate: " << collide_avg << " +/- " << collide_std;
     std::cout << ", Trans. Rate: " << escape_avg << " +/- " << escape_std << "\n";
-    std::cout << " Average XS/Integration Evaluations: " << avg_xs_evals << "\n";
+    std::cout << " Avg XS/Integration Evals: " << avg_xs_evals;
+    std::cout << ", Avg Sign Changes: " << avg_sgn_chngs << "\n";
     std::cout << std::scientific;
     std::cout << " FOM_coll = " << FOM_col << ", FOM_escp = " << FOM_esc << "\n\n";
 }
@@ -861,41 +934,49 @@ std::unique_ptr<XS> make_cross_section(int type)
   if(type == -1) {
     std::cout << "\n------------------------------------------------------";
     std::cout << "\n Step\n\n";
+    File << "#XS,Step\n";
     return std::make_unique<Step>();
   }
   else if(type == 0) {
     std::cout << "\n------------------------------------------------------";
     std::cout << "\n Constant\n\n";
+    File << "#XS,Constant\n";
     return std::make_unique<Constant>();
   }
   else if(type == 1) {
     std::cout << "\n------------------------------------------------------";
     std::cout << "\n Linearly Increasing\n\n";
+    File << "#XS,LinearlyIncreasing\n";
     return std::make_unique<Lin_Increase>();
   }
   else if(type == 2) {
     std::cout << "\n------------------------------------------------------";
     std::cout << "\n Linearly Decreasing\n\n";
+    File << "#XS,LinearlyDecreasing\n"; 
     return std::make_unique<Lin_Decrease>();
   }
   else if(type == 4) {
     std::cout << "\n------------------------------------------------------";
     std::cout << "\n Exponentially Decreasing\n\n";
+    File << "#XS,ExponentiallyDecreasing\n";
     return std::make_unique<Exp_Decrease>();
   }
   else if(type == 3) {
     std::cout << "\n------------------------------------------------------";
     std::cout << "\n Exponentially Increasing\n\n";
+    File << "#XS,ExponentiallyIncreasing\n";
     return std::make_unique<Exp_Increase>();
   }
   else if(type == 5) {
     std::cout << "\n------------------------------------------------------";
     std::cout << "\n Sharp Gaussian\n\n";
+    File << "#XS,SharpGaussian\n";
     return std::make_unique<Gauss_Sharp>();
   }
   else if(type == 6) {
     std::cout << "\n------------------------------------------------------";
     std::cout << "\n Broad Gaussian\n\n";
+    File << "#XS,BroadGaussian\n";
     return std::make_unique<Gauss_Broad>();
   }
   else {
@@ -904,8 +985,29 @@ std::unique_ptr<XS> make_cross_section(int type)
 
 }
 
+void Zero_Bins() {
+    for(int i = 0; i < NFOMBINS; i++) {
+        coll_density[i][0] = 0.0;
+        coll_density[i][1] = 0.0;
+        coll_density[i][2] = 0.0;
+        coll_density[i][3] = 0.0;
+    }
+}
+
 int main() {
     std::cout << "\n NParticles = " << NPART << ", NBins = " << NBIN << "\n\n";
+
+     // Create and zero coll_density array
+    for(int i = 0; i < NFOMBINS; i++) {
+        std::vector<double> bin;
+        bin.push_back(0.0);
+        bin.push_back(0.0);
+        bin.push_back(0.0);
+        bin.push_back(0.0);
+        coll_density.push_back(bin);
+    }
+
+    File.open("Coll_Densities.txt");
     
     for(int type = 1; type <= 6; type++) {
       std::unique_ptr<XS> crs = make_cross_section(type);
@@ -915,7 +1017,9 @@ int main() {
       escape = 0.0;
       escape_sqr = 0.0;
       xs_evals = 0.0;
-
+      wgt_chngs = 0.0;
+      Zero_Bins();
+      File << "#TM,DS\n";
       Direct_Sampling(crs);
       Output();
 
@@ -924,7 +1028,9 @@ int main() {
       escape = 0.0;
       escape_sqr = 0.0;
       xs_evals = 0.0;
-
+      wgt_chngs = 0.0;
+      Zero_Bins();
+      File << "#TM,DT\n";
       Delta_Tracking(crs);
       Output();
 
@@ -933,34 +1039,42 @@ int main() {
       escape = 0.0;
       escape_sqr = 0.0;
       xs_evals = 0.0;
-
+      wgt_chngs = 0.0;
+      Zero_Bins();
+      File << "#TM,MDT\n";
       Meshed_Delta_Tracking(crs);
       Output();
-
-      /*collide = 0.0;
-        collide_sqr = 0.0;
-        escape = 0.0;
-        escape_sqr = 0.0;
-        xs_evals = 0.0;
-
-        Negative_Weight_Delta_Tracking(crs);
-        Output();
-
-        collide = 0.0;
-        collide_sqr = 0.0;
-        escape = 0.0;
-        escape_sqr = 0.0;
-        xs_evals = 0.0;
-
-        Meshed_Negative_Weight_Delta_Tracking(crs);
-        Output();*/
 
       collide = 0.0;
       collide_sqr = 0.0;
       escape = 0.0;
       escape_sqr = 0.0;
       xs_evals = 0.0;
+      wgt_chngs = 0.0;
+      Zero_Bins();
+      File << "#TM,NWDT\n";
+      Negative_Weight_Delta_Tracking(crs);
+      Output();
 
+      collide = 0.0;
+      collide_sqr = 0.0;
+      escape = 0.0;
+      escape_sqr = 0.0;
+      xs_evals = 0.0;
+      wgt_chngs = 0.0;
+      Zero_Bins();
+      File << "#TM,MNWDT\n";
+      Meshed_Negative_Weight_Delta_Tracking(crs);
+      Output();
+
+      collide = 0.0;
+      collide_sqr = 0.0;
+      escape = 0.0;
+      escape_sqr = 0.0;
+      xs_evals = 0.0;
+      wgt_chngs = 0.0;
+      Zero_Bins();
+      File << "#TM,BT\n";
       Bomb_Transport(crs,0.95);
       Output();
 
@@ -969,11 +1083,13 @@ int main() {
       escape = 0.0;
       escape_sqr = 0.0;
       xs_evals = 0.0;
-
+      wgt_chngs = 0.0;
+      Zero_Bins();
+      File << "#TM,MBT\n";
       Meshed_Bomb_Transport(crs,0.95);
       Output();
 
     }
-
+    File.close();
     return 0;
 }
