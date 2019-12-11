@@ -31,10 +31,6 @@ for line in fl:
         line_count += 1
 fl.close()
 
-#print(XS.keys())
-#print(XS["BroadGaussian"].keys())
-#print(XS["BroadGaussian"]["DT"])
-
 xsnames = ["LI", "LD", "EI", "ED", "SG", "BG"]
 tmnames = ["DS", "DT", "MDT", "NWDT", "MNWDT", "BT", "MBT"]
 #tmnames = ["DT", "MDT", "NWDT", "MNWDT"]
@@ -42,7 +38,7 @@ tmnames = ["DS", "DT", "MDT", "NWDT", "MNWDT", "BT", "MBT"]
 for xs in xsnames:
     # Plot coll. density
     for tm in tmnames:
-        plt.plot(x,XS[xs][tm][0],label=tm)
+        plt.errorbar(x,XS[xs][tm][0], yerr=XS[xs][tm][1],label=tm)
     plt.title(xs+" Collision Density")
     plt.legend()
     plt.show()

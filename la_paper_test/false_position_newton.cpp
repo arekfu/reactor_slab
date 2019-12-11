@@ -23,8 +23,8 @@ const int NBIN = 5;
 const int NFOMBINS = 100;
 const double Fdx = 2.0/(double)NFOMBINS;
 const double dx = 2.0/(double)NBIN;
-const double p = 0.7;
-const double p_mshd = 0.7;
+const double p = 0.75;
+const double p_mshd = 0.75;
 const double q = 0.3;
 const double q_mshd = 0.3;
 
@@ -38,14 +38,15 @@ const double z = 1.23;
 std::ofstream File;
 
 // Tallies
-double collide;
-double collide_sqr;
-double escape;
-double escape_sqr;
+double collide; // Sum of weights that collide
+double collide_sqr; // Sum of weights squared that collide
+double escape; // Sum of weights that leak
+double escape_sqr; // Sum of weights squared that lead
 double xs_evals; // # of xs look ups or xs integrations
 double wgt_chngs; // # of times particle wgt sign flipped
-std::vector<std::vector<double>> coll_density; //[0] #sum coll in box,[1] sum coll sqr
+std::vector<std::vector<double>> coll_density; //[0] #sum coll in box,[1] sum coll sqr, [2] coll STD, [3] Coll FOM in box
 
+// Constants for Gaussian XS functions
 const double T_2_s = A*std::sqrt(M_PI)*((std::erf(std::sqrt(a_s)*(2.0 - z)) 
                      - std::erf(std::sqrt(a_s)*(-z)))/(2.0*std::sqrt(a_s)));
 const double Pnc_s = std::exp(-T_2_s);
@@ -65,21 +66,21 @@ class XS {
         }
 
         // All virtual methods
-        virtual double T(double x) {return -1.0;}
+        virtual double T(double x) {return -1.0;} // Calc. optical depth from 0 to x>0
         virtual double Et(double x) {return -1.0;}
         virtual double dEt(double x) {return -1000000.0;}
 
         double P_nc() {return Pnc;}
 
         // Data
-        double Pnc;
-        double G;
-        double Emax;
-        double Em[NBIN];
-        double Esmp[NBIN];
+        double Pnc; // Prob. of no collision
+        double G; // 1 - Pnc (Prob. of collision)
+        double Emax; // Maj over region
+        double Em[NBIN]; // Maj in each bin
+        double Esmp[NBIN]; // Sampling XS in each bin for NWDT and MNWDT
 };
 
-// Constant XS
+// Constant XS (Et = 1.0 ∀ 0<x<2, or Et=0)
 class Constant : public XS {
     public:
         Constant():XS(std::exp(-2), 1.0) {
@@ -101,7 +102,7 @@ class Constant : public XS {
 
 }; // Constants
 
-// Step XS
+// Step XS (Et = 1.5 ∀ 0<x<0.278), Et=1.0 ∀ 0.278<x<2)
 class Step : public XS {
     public:
         Step():XS(std::exp(-2.139)  , 1.5) {
@@ -133,7 +134,7 @@ class Step : public XS {
         double dEt(double x) {return 0.0;}
 }; // Step
 
-// Derived classes for each type of cross section
+// Et= 2 - x
 class Lin_Decrease : public XS {
     public:
         Lin_Decrease():XS(std::exp(-2.0), 2.0) {
@@ -161,6 +162,7 @@ class Lin_Decrease : public XS {
         }
 };
 
+// Et = x
 class Lin_Increase : public XS {
     public:
         Lin_Increase():XS(std::exp(-2.0), 2.0) {
@@ -416,8 +418,8 @@ void Direct_Sampling(std::unique_ptr<XS> const &xs) {
                 double T_hat = -std::log(1.0 - (xs->G)*xi);
                 double x_low = 0.0;
                 double x_hi = 2.0;
-                //double eps = 0.01;
-                double x0 = False_Position(xs, T_hat, x_low, x_hi, EPS, cnt);
+                double eps = 0.01;
+                double x0 = False_Position(xs, T_hat, x_low, x_hi, eps, cnt);
                 double x1 = Newton(xs, T_hat, x0, x_low, x_hi, cnt);
                 int coll_bin = std::floor(x1/Fdx);
                 #pragma omp atomic
@@ -896,8 +898,8 @@ void Output() {
     }
     File << "\n\n";
 
-    double coll_rel_error = collide_avg / collide_std;
-    double escape_rel_error = escape_avg / escape_std;
+    double coll_rel_error = collide_std / collide_avg;
+    double escape_rel_error = escape_std / escape_avg;
     double FOM_col = 1.0 / (avg_xs_evals * coll_rel_error * coll_rel_error);
     double FOM_esc = 1.0 / (avg_xs_evals*escape_rel_error*escape_rel_error);
     
