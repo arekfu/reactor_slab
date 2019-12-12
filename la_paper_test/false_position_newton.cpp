@@ -534,12 +534,12 @@ void Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs) {
 
     int cnts_sum = 0;
     double sign_change = 0.0;
-    double Esamp = p*(xs->Emax);
     #pragma omp parallel
     {    
         pcg64_unique rng;
         #pragma omp for
         for(int n = 0; n < NPART; n++) {
+            double Esamp = p*(xs->Emax);
             double x = 0.0;
             double w = 1.0;
             bool alive = true;
@@ -668,7 +668,6 @@ void Meshed_Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs) {
 void Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
     std::cout << std::fixed << std::setprecision(2);
     std::cout << "\n Bomb Paper Transport, p = " << P << "\n";
-    double Esmp = P*xs->Emax;
     int cnts_sum = 0;
     double sign_change = 0.0;
     #pragma omp parallel
@@ -676,6 +675,7 @@ void Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
         pcg64_unique rng;
         #pragma omp for
         for(int n = 0; n < NPART; n++) {
+            double Esmp = P*xs->Emax;
             double x = 0.0;
             bool alive = true;
             int cnt = 0;
@@ -739,8 +739,6 @@ void Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
 void Previous_XS_Bomb_Transport(std::unique_ptr<XS> const &xs) {
     std::cout << std::fixed << std::setprecision(2);
     std::cout << "\n Previous XS Bomb Paper Transport\n";
-    double Esmp = xs->Et(0.0); // Initial sampling XS is XS at birth place
-    if(Esmp < 0.1) Esmp = 0.1;
     int cnts_sum = 0;
     double sign_change = 0.0;
     #pragma omp parallel
@@ -748,6 +746,8 @@ void Previous_XS_Bomb_Transport(std::unique_ptr<XS> const &xs) {
         pcg64_unique rng;
         #pragma omp for
         for(int n = 0; n < NPART; n++) {
+            double Esmp = xs->Et(0.0); // Initial sampling XS is XS at birth place
+            if(Esmp < 0.1) Esmp = 0.1;
             double x = 0.0;
             bool alive = true;
             int cnt = 0;

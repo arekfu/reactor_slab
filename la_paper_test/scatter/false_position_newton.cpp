@@ -394,21 +394,22 @@ void Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs) {
 
     int cnts_sum = 0;
     double sign_change = 0.0;
-    double Esamp = p*(xs->Emax);
     #pragma omp parallel
     {    
         pcg64_unique rng;
         #pragma omp for
         for(int n = 0; n < NPART; n++) {
+            double Esamp = p*(xs->Emax);
             double x = 0.0;
+            double u = 1.0;
             double w = 1.0;
             bool alive = true;
             int cnt = 0;
             while(alive) {
                 double d = -std::log(rand(rng))/Esamp;
-                x += d;
+                x += u*d;
                 
-                if(x >= 2.0) {
+                if((x >= 2.0) or (x <= 0.0)) {
                     #pragma omp atomic
                     escape += w;
                     #pragma omp atomic
@@ -418,19 +419,27 @@ void Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs) {
                     cnts_sum += cnt;
                 }
                 else if(rand(rng) < q) {
-                    // Collision is real
+                    // Collision is real, addjust weight
+                    w *= xs->Et(x)/(Esamp * q);
                     #pragma omp atomic
-                    collide += w*xs->Et(x)/(Esamp * q);
+                    collide += w;
                     #pragma omp atomic
-                    collide_sqr += (w*xs->Et(x)/(Esamp * q))*(w*xs->Et(x)/(Esamp * q));
+                    collide_sqr += w*w;
                     int coll_bin = std::floor(x/Fdx);
                     #pragma omp atomic
-                    coll_density[coll_bin][0] += w*xs->Et(x)/(Esamp * q);
+                    coll_density[coll_bin][0] += w;
                     #pragma omp atomic
-                    coll_density[coll_bin][1] += (w*xs->Et(x)/(Esamp * q))*(w*xs->Et(x)/(Esamp * q));
-                    #pragma omp atomic
-                    cnts_sum += cnt;
-                    alive = false;
+                    coll_density[coll_bin][1] += w*w;
+
+                    // Determine collision type
+                    if(rand(rng) < P_abs) {
+                        #pragma omp atomic
+                        cnts_sum += cnt;
+                        alive = false;
+                    } else {
+                        if(rand(rng) > P_straight_ahead) {u *= -1;}
+                    }
+                    
                 }
                 else { // Collision is virtual
                     double dw = ((1.0 - (xs->Et(x)/Esamp))/(1.0 - q));
@@ -461,6 +470,7 @@ void Meshed_Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs) {
         for(int n = 0; n < NPART; n++) {
             bool alive = true;
             double x = 0.0;
+            double u = 1.0;
             int bin = 0;
             double Esamp = xs->Esmp[bin];
             double d,d_bin;
@@ -468,14 +478,15 @@ void Meshed_Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs) {
             int bin_cnt = 0;
             double w = 1.0;
             while(alive) {
-                d_bin = ((double)bin*dx + dx) - x;
+                if(u == -1.0) d_bin = x - static_cast<double>(bin)*dx;
+                else d_bin = (static_cast<double>(bin)*dx + dx) - x;
                 d = -std::log(rand(rng))/Esamp;
                 if(d_bin < d) {
                     bin_cnt++;
                     d = d_bin + 1e-6;
-                    x += d;
+                    x += u*d;
                     bin = std::floor(x/dx);
-                    if(x >= 2.0) {
+                    if((x >= 2.0) or (x <= 0.0)) {
                         alive = false;
                         #pragma omp atomic
                         escape += w;
@@ -491,22 +502,30 @@ void Meshed_Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs) {
                     }
                 }
                 else {
-                    x += d;
+                    x += u*d;
                     if(rand(rng) < q_mshd) {
-                        alive = false;
+                        // update weight
+                        w *= (xs->Et(x)/(Esamp*q_mshd));
                         #pragma omp atomic
-                        collide += w*(xs->Et(x)/(Esamp*q_mshd));
+                        collide += w;
                         #pragma omp atomic
-                        collide_sqr += (w*(xs->Et(x)/(Esamp*q_mshd)))*(w*(xs->Et(x)/(Esamp*q_mshd)));
+                        collide_sqr += w*w;
                         int coll_bin = std::floor(x/Fdx);
                         #pragma omp atomic
-                        coll_density[coll_bin][0] += w*(xs->Et(x)/(Esamp*q_mshd));
+                        coll_density[coll_bin][0] += w;
                         #pragma omp atomic
-                        coll_density[coll_bin][1] += (w*(xs->Et(x)/(Esamp*q_mshd)))*(w*(xs->Et(x)/(Esamp*q_mshd)));
-                        #pragma omp atomic
-                        cnts_sum += cnt;
-                        #pragma omp atomic 
-                        bin_cnt_sum += bin_cnt;
+                        coll_density[coll_bin][1] += w*w;
+
+                        if(rand(rng) < P_abs) {
+                            alive = false;
+                            #pragma omp atomic
+                            cnts_sum += cnt;
+                            #pragma omp atomic 
+                            bin_cnt_sum += bin_cnt;
+                        } else {
+                            if(rand(rng) > P_straight_ahead) u *= -1;
+                        }
+                        
                     }
                     else {
                         cnt++;
@@ -528,7 +547,6 @@ void Meshed_Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs) {
 void Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
     std::cout << std::fixed << std::setprecision(2);
     std::cout << "\n Bomb Paper Transport, p = " << P << "\n";
-    double Esmp = P*xs->Emax;
     int cnts_sum = 0;
     double sign_change = 0.0;
     #pragma omp parallel
@@ -536,7 +554,9 @@ void Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
         pcg64_unique rng;
         #pragma omp for
         for(int n = 0; n < NPART; n++) {
+            double Esmp = P*xs->Emax;
             double x = 0.0;
+            double u = 1.0;
             bool alive = true;
             int cnt = 0;
             double w = 1.0;
@@ -544,10 +564,11 @@ void Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
 
             while(alive) {
                 double d = -std::log(rand(rng))/Esmp;
-                x += d;
+                x += u*d;
+                real_collision = false;
                 
                 // Fist check for leak
-                if(x > 2.0) {
+                if((x >= 2.0) or (x <= 0.0)) {
                     alive = false;
                     #pragma omp atomic
                     escape += w;
@@ -575,7 +596,7 @@ void Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
                     }
 
                     if(real_collision) {
-                        alive = false;
+                        // Record collision
                         #pragma omp atomic
                         collide += w;
                         #pragma omp atomic
@@ -585,8 +606,116 @@ void Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
                         coll_density[coll_bin][0] += w;
                         #pragma omp atomic
                         coll_density[coll_bin][1] += w*w;
+
+                        // Determine collision type
+                        if(rand(rng) < P_abs) {
+                            alive = false;
+                            #pragma omp atomic
+                            cnts_sum += cnt;
+                        } else {
+                            if(rand(rng) > P_straight_ahead) u *= -1;
+                        }
+                    }
+                }
+            }// While alive
+        }// For all particles
+    }// Parallel
+    xs_evals += cnts_sum;
+    wgt_chngs += sign_change;
+}
+
+void Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
+    std::cout << std::fixed << std::setprecision(2);
+    std::cout << "\n Meshed Bomb Paper Transport, p = " << P << "\n";
+    int cnts_sum = 0;
+    double sign_change = 0.0;
+    #pragma omp parallel
+    {
+        pcg64_unique rng;
+        #pragma omp for
+        for(int n = 0; n < NPART; n++) {
+            double Esmp = P*xs->Em[0];
+            double x = 0.0;
+            double u = 1.0;
+            double d_bin;
+            int bin = 0;
+            bool alive = true;
+            int cnt = 0;
+            double w = 1.0;
+            bool real_collision = false;
+
+            while(alive) {
+                double d = -std::log(rand(rng))/Esmp;
+                if(u == -1.0) d_bin = x - static_cast<double>(bin)*dx;
+                else d_bin = (static_cast<double>(bin)*dx + dx) - x;
+                real_collision = false;
+                
+                if(d_bin < d) {
+                    x += u*(d_bin+1e-6);
+                    if((x >= 2.0) or (x <= 0.0)) {
+                        alive = false;
+                        #pragma omp atomic
+                        escape += w;
+                        #pragma omp atomic
+                        escape_sqr += w*w;
                         #pragma omp atomic
                         cnts_sum += cnt;
+                    } else {
+                        bin = std::floor(x/dx);
+                        Esmp = P*xs->Em[bin];
+                    }
+
+                } else {
+                    x += u*d;
+                    // Fist check for leak
+                    if((x >= 2.0) or (x <= 0.0)) {
+                        alive = false;
+                        #pragma omp atomic
+                        escape += w;
+                        #pragma omp atomic
+                        escape_sqr += w*w;
+                        #pragma omp atomic
+                        cnts_sum += cnt;
+                    } else {
+                        double E_tot = xs->Et(x);
+                        cnt += 1;
+                        if(E_tot > Esmp) { // First negative branch
+                            double D = E_tot / (2*E_tot - Esmp);
+                            double F = E_tot / (D*Esmp);
+                            w *= F;
+                            if(rand(rng) < D) {real_collision = true;}
+                            else {
+                                w *= -1.0;
+                                #pragma omp atomic
+                                sign_change += 1.0;
+                            }
+
+                        } else { // Delta tracking branch
+                            double P_real = E_tot/ Esmp;
+                            if(rand(rng) < P_real) {real_collision = true;}
+                        }
+
+                        if(real_collision) {
+                            // Record collision
+                            #pragma omp atomic
+                            collide += w;
+                            #pragma omp atomic
+                            collide_sqr += w*w;
+                            int coll_bin = std::floor(x/Fdx);
+                            #pragma omp atomic
+                            coll_density[coll_bin][0] += w;
+                            #pragma omp atomic
+                            coll_density[coll_bin][1] += w*w;
+
+                            // Determine collision type
+                            if(rand(rng) < P_abs) {
+                                alive = false;
+                                #pragma omp atomic
+                                cnts_sum += cnt;
+                            } else {
+                                if(rand(rng) > P_straight_ahead) u *= -1;
+                            }
+                        }
                     }
                 }
             }// While alive
@@ -599,8 +728,6 @@ void Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
 void Previous_XS_Bomb_Transport(std::unique_ptr<XS> const &xs) {
     std::cout << std::fixed << std::setprecision(2);
     std::cout << "\n Previous XS Bomb Paper Transport\n";
-    double Esmp = xs->Et(0.0); // Initial sampling XS is XS at birth place
-    if(Esmp < 0.1) Esmp = 0.1;
     int cnts_sum = 0;
     double sign_change = 0.0;
     #pragma omp parallel
@@ -608,18 +735,22 @@ void Previous_XS_Bomb_Transport(std::unique_ptr<XS> const &xs) {
         pcg64_unique rng;
         #pragma omp for
         for(int n = 0; n < NPART; n++) {
+            double Esmp = xs->Et(0.0); // Initial sampling XS is XS at birth place
+            if(Esmp < 0.1) Esmp = 0.1;
             double x = 0.0;
+            double u = 1.0;
             bool alive = true;
             int cnt = 0;
             double w = 1.0;
             bool real_collision = false;
 
             while(alive) {
+                real_collision = false;
                 double d = -std::log(rand(rng))/Esmp;
-                x += d;
+                x += u*d;
                 
                 // Fist check for leak
-                if(x > 2.0) {
+                if((x >= 2.0) or (x <= 0.0)) {
                     alive = false;
                     #pragma omp atomic
                     escape += w;
@@ -650,7 +781,6 @@ void Previous_XS_Bomb_Transport(std::unique_ptr<XS> const &xs) {
                     if(Esmp < 0.1) Esmp = 0.1;
 
                     if(real_collision) {
-                        alive = false;
                         #pragma omp atomic
                         collide += w;
                         #pragma omp atomic
@@ -660,96 +790,15 @@ void Previous_XS_Bomb_Transport(std::unique_ptr<XS> const &xs) {
                         coll_density[coll_bin][0] += w;
                         #pragma omp atomic
                         coll_density[coll_bin][1] += w*w;
-                        #pragma omp atomic
-                        cnts_sum += cnt;
-                    }
-                }
-            }// While alive
-        }// For all particles
-    }// Parallel
-    xs_evals += cnts_sum;
-    wgt_chngs += sign_change;
-}
 
-void Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
-    std::cout << std::fixed << std::setprecision(2);
-    std::cout << "\n Meshed Bomb Paper Transport, p = " << P  << "\n";
-    int cnts_sum = 0;
-    double sign_change = 0.0;
-    #pragma omp parallel
-    {
-        pcg64_unique rng;
-        #pragma omp for
-        for(int n = 0; n < NPART; n++) {
-            double x = 0.0;
-            int bin = 0;
-            double Esmp = P*xs->Em[bin];
-            bool alive = true;
-            int cnt = 0;
-            double w = 1.0;
-            bool real_collision = false;
-
-            while(alive) {
-                double d = -std::log(rand(rng))/Esmp;
-                double d_bin = ((double)bin*dx + dx) - x;
-                
-                // Fist check for bin change
-                if(d_bin < d) {
-                    x += d_bin; // Move to new bin
-                    bin = std::floor(x/dx);
-                    if(x > 2.0) {
-                        alive = false;
-                        #pragma omp atomic
-                        escape += w;
-                        #pragma omp atomic
-                        escape_sqr += w*w;
-                        #pragma omp atomic
-                        cnts_sum += cnt;
-                    } else {
-                        Esmp = P*xs->Em[bin];
-                    }
-                    
-                } else if (x + d > 2.0) {
-                    alive = false;
-                    #pragma omp atomic
-                    escape += w;
-                    #pragma omp atomic
-                    escape_sqr += w*w;
-                    #pragma omp atomic
-                    cnts_sum += cnt;
-                } else {
-                    x += d;
-                    double E_tot = xs->Et(x);
-                    cnt += 1;
-                    if(E_tot > Esmp) { // First negative branch
-                        double D = E_tot / (2*E_tot - Esmp);
-                        double F = E_tot / (D*Esmp);
-                        w *= F;
-                        if(rand(rng) < D) {real_collision = true;}
-                        else {
-                            w *= -1.0;
+                        // Determine collision type
+                        if(rand(rng) < P_abs) {
+                            alive = false;
                             #pragma omp atomic
-                            sign_change += 1.0;
+                            cnts_sum += cnt;
+                        } else {
+                            if(rand(rng) > P_straight_ahead) u *= -1;
                         }
-
-                    } else { // Delta tracking branch
-                        double P_real = E_tot/ Esmp;
-                        if(rand(rng) < P_real) {real_collision = true;}
-                    }
-
-                    if(real_collision) {
-                        alive = false;
-                        #pragma omp atomic
-                        collide += w;
-                        #pragma omp atomic
-                        collide_sqr += w*w;
-                        int coll_bin = std::floor(x/Fdx);
-                        #pragma omp atomic
-                        coll_density[coll_bin][0] += w;
-                        #pragma omp atomic
-                        coll_density[coll_bin][1] += w*w;
-                        #pragma omp atomic
-                        cnts_sum += cnt;
                     }
                 }
             }// While alive
@@ -758,8 +807,6 @@ void Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
     xs_evals += cnts_sum;
     wgt_chngs += sign_change;
 }
-
-
 
 void Output() {
     double collide_avg = collide / (double)NPART;
@@ -923,7 +970,7 @@ int main() {
       Meshed_Delta_Tracking(crs);
       Output();
 
-     /* collide = 0.0;
+      collide = 0.0;
       collide_sqr = 0.0;
       escape = 0.0;
       escape_sqr = 0.0;
@@ -976,7 +1023,7 @@ int main() {
       Zero_Bins();
       File << "#TM,PBT\n";
       Previous_XS_Bomb_Transport(crs);
-      Output();*/
+      Output();
     }
     File.close();
     return 0;
