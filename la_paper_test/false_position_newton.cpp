@@ -740,6 +740,7 @@ void Previous_XS_Bomb_Transport(std::unique_ptr<XS> const &xs) {
     std::cout << std::fixed << std::setprecision(2);
     std::cout << "\n Previous XS Bomb Paper Transport\n";
     double Esmp = xs->Et(0.0); // Initial sampling XS is XS at birth place
+    if(Esmp < 0.00001) Esmp = 0.02;
     int cnts_sum = 0;
     double sign_change = 0.0;
     #pragma omp parallel
