@@ -23,8 +23,8 @@ const int NBIN = 5;
 const int NFOMBINS = 100;
 const double Fdx = 2.0/(double)NFOMBINS;
 const double dx = 2.0/(double)NBIN;
-const double p = 0.75;
-const double p_mshd = 0.75;
+const double p = 0.75; // Esamp / Emaj for full system
+const double p_mshd = 0.75; // Esamp[i] / Emaj[i] for bin
 const double q = 0.3;
 const double q_mshd = 0.3;
 
@@ -68,7 +68,6 @@ class XS {
         // All virtual methods
         virtual double T(double x) {return -1.0;} // Calc. optical depth from 0 to x>0
         virtual double Et(double x) {return -1.0;}
-        virtual double dEt(double x) {return -1000000.0;}
 
         double P_nc() {return Pnc;}
 
@@ -97,8 +96,6 @@ class Constant : public XS {
         }
 
         double Et(double x) {return 1.0;}
-
-        double dEt(double x) {return 0.0;}
 
 }; // Constants
 
@@ -131,10 +128,8 @@ class Step : public XS {
             else {exit(1);}
         }
 
-        double dEt(double x) {return 0.0;}
 }; // Step
 
-// Et= 2 - x
 class Lin_Decrease : public XS {
     public:
         Lin_Decrease():XS(std::exp(-2.0), 2.0) {
@@ -156,13 +151,8 @@ class Lin_Decrease : public XS {
         double Et(double x) {
             return 2.0 - x;
         }
-
-        double dEt(double x) {
-            return -1.0;
-        }
 };
 
-// Et = x
 class Lin_Increase : public XS {
     public:
         Lin_Increase():XS(std::exp(-2.0), 2.0) {
@@ -183,10 +173,6 @@ class Lin_Increase : public XS {
 
         double Et(double x) {
             return x;
-        }
-
-        double dEt(double x) {
-            return 1.0;
         }
 };
 
@@ -211,10 +197,6 @@ class Exp_Decrease : public XS {
         double Et(double x) {
             return std::exp(-3.0*x);
         }
-
-        double dEt(double x) {
-            return -3.0*std::exp(-3.0*x);
-        }
 };
 
 class Exp_Increase : public XS {
@@ -237,10 +219,6 @@ class Exp_Increase : public XS {
 
         double Et(double x) {
             return 0.1*std::exp(2.0*x);
-        }
-
-        double dEt(double x) {
-            return 0.2*std::exp(2.0*x);
         }
 };
 
@@ -276,11 +254,6 @@ class Gauss_Sharp : public XS {
         double Et(double x) {
             return A*std::exp(-a_s*(x-z)*(x-z));
         }
-
-        double dEt(double x) {
-            double ar = (x - 1.0)/0.05;
-            return (2.0/std::sqrt(2.0*M_PI))*(-2*ar*(1.0/0.05))*std::exp(-ar*ar);
-        }
 };
 
 class Gauss_Broad : public XS {
@@ -314,11 +287,6 @@ class Gauss_Broad : public XS {
 
         double Et(double x) {
             return A*std::exp(-a_b*(x-z)*(x-z));
-        }
-
-        double dEt(double x) {
-            double ar = (x - 1.0);
-            return (2.0/std::sqrt(2.0*M_PI))*(-2*ar)*std::exp(-ar*ar);
         }
 };
 
@@ -620,6 +588,83 @@ void Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs) {
     wgt_chngs += sign_change;
 }
 
+void Meshed_Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs) {
+    std::cout << "\n Meshed Negative Weight Delta Tracking\n";
+
+    int cnts_sum = 0;
+    int bin_cnt_sum = 0;
+    double sign_change = 0.0;
+    #pragma omp parallel
+    {    
+        pcg64_unique rng;
+        #pragma omp for
+        for(int n = 0; n < NPART; n++) {
+            bool alive = true;
+            double x = 0.0;
+            int bin = 0;
+            double Esamp = xs->Esmp[bin];
+            double d,d_bin;
+            int cnt = 0;
+            int bin_cnt = 0;
+            double w = 1.0;
+            while(alive) {
+                d_bin = ((double)bin*dx + dx) - x;
+                d = -std::log(rand(rng))/Esamp;
+                if(d_bin < d) {
+                    bin_cnt++;
+                    d = d_bin + 1e-6;
+                    x += d;
+                    bin = std::floor(x/dx);
+                    if(x >= 2.0) {
+                        alive = false;
+                        #pragma omp atomic
+                        escape += w;
+                        #pragma omp atomic
+                        escape_sqr += w*w;
+                        #pragma omp atomic
+                        cnts_sum += cnt;
+                        #pragma omp atomic
+                        bin_cnt_sum += bin_cnt;
+                    }
+                    else {
+                        Esamp = xs->Esmp[bin];
+                    }
+                }
+                else {
+                    x += d;
+                    if(rand(rng) < q_mshd) {
+                        alive = false;
+                        #pragma omp atomic
+                        collide += w*(xs->Et(x)/(Esamp*q_mshd));
+                        #pragma omp atomic
+                        collide_sqr += (w*(xs->Et(x)/(Esamp*q_mshd)))*(w*(xs->Et(x)/(Esamp*q_mshd)));
+                        int coll_bin = std::floor(x/Fdx);
+                        #pragma omp atomic
+                        coll_density[coll_bin][0] += w*(xs->Et(x)/(Esamp*q_mshd));
+                        #pragma omp atomic
+                        coll_density[coll_bin][1] += (w*(xs->Et(x)/(Esamp*q_mshd)))*(w*(xs->Et(x)/(Esamp*q_mshd)));
+                        #pragma omp atomic
+                        cnts_sum += cnt;
+                        #pragma omp atomic 
+                        bin_cnt_sum += bin_cnt;
+                    }
+                    else {
+                        cnt++;
+                        double dw=((1.0-(xs->Et(x)/Esamp))/(1.0-q_mshd));
+                        if(dw < 0.0) {
+                            #pragma omp atomic
+                            sign_change += 1.0;
+                        }
+                        w = w*dw;
+                    }
+                }
+            }
+        }
+    }
+    xs_evals += cnts_sum;
+    wgt_chngs += sign_change;
+}
+
 void Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
     std::cout << std::fixed << std::setprecision(2);
     std::cout << "\n Bomb Paper Transport, p = " << P << "\n";
@@ -668,6 +713,79 @@ void Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
                         double P_real = E_tot/ Esmp;
                         if(rand(rng) < P_real) {real_collision = true;}
                     }
+
+                    if(real_collision) {
+                        alive = false;
+                        #pragma omp atomic
+                        collide += w;
+                        #pragma omp atomic
+                        collide_sqr += w*w;
+                        int coll_bin = std::floor(x/Fdx);
+                        #pragma omp atomic
+                        coll_density[coll_bin][0] += w;
+                        #pragma omp atomic
+                        coll_density[coll_bin][1] += w*w;
+                        #pragma omp atomic
+                        cnts_sum += cnt;
+                    }
+                }
+            }// While alive
+        }// For all particles
+    }// Parallel
+    xs_evals += cnts_sum;
+    wgt_chngs += sign_change;
+}
+
+void Previous_XS_Bomb_Transport(std::unique_ptr<XS> const &xs) {
+    std::cout << std::fixed << std::setprecision(2);
+    std::cout << "\n Previous XS Bomb Paper Transport\n";
+    double Esmp = xs->Et(0.0); // Initial sampling XS is XS at birth place
+    int cnts_sum = 0;
+    double sign_change = 0.0;
+    #pragma omp parallel
+    {
+        pcg64_unique rng;
+        #pragma omp for
+        for(int n = 0; n < NPART; n++) {
+            double x = 0.0;
+            bool alive = true;
+            int cnt = 0;
+            double w = 1.0;
+            bool real_collision = false;
+
+            while(alive) {
+                double d = -std::log(rand(rng))/Esmp;
+                x += d;
+                
+                // Fist check for leak
+                if(x > 2.0) {
+                    alive = false;
+                    #pragma omp atomic
+                    escape += w;
+                    #pragma omp atomic
+                    escape_sqr += w*w;
+                    #pragma omp atomic
+                    cnts_sum += cnt;
+                } else {
+                    double E_tot = xs->Et(x);
+                    cnt += 1;
+                    if(E_tot > Esmp) { // First negative branch
+                        double D = E_tot / (2*E_tot - Esmp);
+                        double F = E_tot / (D*Esmp);
+                        w *= F;
+                        if(rand(rng) < D) {real_collision = true;}
+                        else {
+                            w *= -1.0;
+                            #pragma omp atomic
+                            sign_change += 1.0;
+                        }
+
+                    } else { // Delta tracking branch
+                        double P_real = E_tot/ Esmp;
+                        if(rand(rng) < P_real) {real_collision = true;}
+                    }
+
+                    Esmp = E_tot; // Update sampling XS to current XS at location
 
                     if(real_collision) {
                         alive = false;
@@ -779,82 +897,7 @@ void Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
     wgt_chngs += sign_change;
 }
 
-void Meshed_Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs) {
-    std::cout << "\n Meshed Negative Weight Delta Tracking\n";
 
-    int cnts_sum = 0;
-    int bin_cnt_sum = 0;
-    double sign_change = 0.0;
-    #pragma omp parallel
-    {    
-        pcg64_unique rng;
-        #pragma omp for
-        for(int n = 0; n < NPART; n++) {
-            bool alive = true;
-            double x = 0.0;
-            int bin = 0;
-            double Esamp = xs->Esmp[bin];
-            double d,d_bin;
-            int cnt = 0;
-            int bin_cnt = 0;
-            double w = 1.0;
-            while(alive) {
-                d_bin = ((double)bin*dx + dx) - x;
-                d = -std::log(rand(rng))/Esamp;
-                if(d_bin < d) {
-                    bin_cnt++;
-                    d = d_bin + 1e-6;
-                    x += d;
-                    bin = std::floor(x/dx);
-                    if(x >= 2.0) {
-                        alive = false;
-                        #pragma omp atomic
-                        escape += w;
-                        #pragma omp atomic
-                        escape_sqr += w*w;
-                        #pragma omp atomic
-                        cnts_sum += cnt;
-                        #pragma omp atomic
-                        bin_cnt_sum += bin_cnt;
-                    }
-                    else {
-                        Esamp = xs->Esmp[bin];
-                    }
-                }
-                else {
-                    x += d;
-                    if(rand(rng) < q_mshd) {
-                        alive = false;
-                        #pragma omp atomic
-                        collide += w*(xs->Et(x)/(Esamp*q_mshd));
-                        #pragma omp atomic
-                        collide_sqr += (w*(xs->Et(x)/(Esamp*q_mshd)))*(w*(xs->Et(x)/(Esamp*q_mshd)));
-                        int coll_bin = std::floor(x/Fdx);
-                        #pragma omp atomic
-                        coll_density[coll_bin][0] += w*(xs->Et(x)/(Esamp*q_mshd));
-                        #pragma omp atomic
-                        coll_density[coll_bin][1] += (w*(xs->Et(x)/(Esamp*q_mshd)))*(w*(xs->Et(x)/(Esamp*q_mshd)));
-                        #pragma omp atomic
-                        cnts_sum += cnt;
-                        #pragma omp atomic 
-                        bin_cnt_sum += bin_cnt;
-                    }
-                    else {
-                        cnt++;
-                        double dw=((1.0-(xs->Et(x)/Esamp))/(1.0-q_mshd));
-                        if(dw < 0.0) {
-                            #pragma omp atomic
-                            sign_change += 1.0;
-                        }
-                        w = w*dw;
-                    }
-                }
-            }
-        }
-    }
-    xs_evals += cnts_sum;
-    wgt_chngs += sign_change;
-}
 
 void Output() {
     double collide_avg = collide / (double)NPART;
@@ -1072,7 +1115,17 @@ int main() {
       File << "#TM,MBT\n";
       Meshed_Bomb_Transport(crs,0.95);
       Output();
-
+      
+      collide = 0.0;
+      collide_sqr = 0.0;
+      escape = 0.0;
+      escape_sqr = 0.0;
+      xs_evals = 0.0;
+      wgt_chngs = 0.0;
+      Zero_Bins();
+      File << "#TM,PBT\n";
+      Previous_XS_Bomb_Transport(crs);
+      Output();
     }
     File.close();
     return 0;

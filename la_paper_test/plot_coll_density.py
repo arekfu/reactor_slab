@@ -32,7 +32,7 @@ for line in fl:
 fl.close()
 
 xsnames = ["LI", "LD", "EI", "ED", "SG", "BG"]
-tmnames = ["DS", "DT", "MDT", "NWDT", "MNWDT", "BT", "MBT"]
+tmnames = ["DS", "DT", "MDT", "NWDT", "MNWDT", "BT", "MBT", "PBT"]
 #tmnames = ["DT", "MDT", "NWDT", "MNWDT"]
 
 for xs in xsnames:
