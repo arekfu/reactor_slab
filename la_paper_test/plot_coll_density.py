@@ -38,7 +38,8 @@ tmnames = ["DS", "DT", "MDT", "NWDT", "MNWDT", "BT", "MBT", "PBT"]
 for xs in xsnames:
     # Plot coll. density
     for tm in tmnames:
-        plt.errorbar(x,XS[xs][tm][0], yerr=XS[xs][tm][1],label=tm)
+        plt.plot(x,XS[xs][tm][0], label=tm)
+        #plt.errorbar(x,XS[xs][tm][0], yerr=XS[xs][tm][1],label=tm)
     plt.title(xs+" Collision Density")
     plt.legend()
     plt.show()
