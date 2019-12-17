@@ -253,7 +253,6 @@ void Delta_Tracking(std::unique_ptr<XS> const &xs) {
                 virtual_collision = true;
                 while(virtual_collision) {
                     double d = -std::log(rand(rng))/(xs->Emax);
-                    cnt++;
                     x += u*d;
                     if((x >= 2.0) or (x <= 0.0)) {
                         #pragma omp atomic
@@ -264,8 +263,11 @@ void Delta_Tracking(std::unique_ptr<XS> const &xs) {
                         alive = false;
                         #pragma omp atomic
                         cnts_sum += cnt;
-                    } else if(rand(rng) < (xs->Et(x)/xs->Emax)) {
-                        virtual_collision = false;
+                    } else {
+                        cnt++;  
+                        if(rand(rng) < (xs->Et(x)/xs->Emax)) {
+                            virtual_collision = false;
+                        }
                     }
                 }
                 
@@ -421,6 +423,7 @@ void Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs) {
                 else if(rand(rng) < q) {
                     // Collision is real, addjust weight
                     w *= xs->Et(x)/(Esamp * q);
+                    cnt++;
                     #pragma omp atomic
                     collide += w;
                     #pragma omp atomic
@@ -506,6 +509,7 @@ void Meshed_Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs) {
                     if(rand(rng) < q_mshd) {
                         // update weight
                         w *= (xs->Et(x)/(Esamp*q_mshd));
+                        cnt++;
                         #pragma omp atomic
                         collide += w;
                         #pragma omp atomic

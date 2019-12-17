@@ -34,6 +34,7 @@ fl.close()
 xsnames = ["LI", "LD", "EI", "ED", "SG", "BG"]
 #tmnames = ["DT", "MDT", "NWDT", "MNWDT", "BT", "MBT", "PBT"]
 tmnames = ["DT", "MDT", "NWDT", "MNWDT", "BT", "MBT", "PBT"]
+tmnames = ["DT", "MDT", "NWDT", "MNWDT", "BT", "MBT", "IMBT"]
 
 for xs in xsnames:
     # Plot coll. density
