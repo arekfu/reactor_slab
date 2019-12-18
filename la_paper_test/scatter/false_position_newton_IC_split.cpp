@@ -685,11 +685,11 @@ void Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
             #pragma omp for
             for(int n = 0; n < NPART; n++) {
                 double Esmp = P*xs->Emax;
-                double x = 0.0;
-                double u = 1.0;
+                double x = Positions[n];
+                double u = Directions[n];
                 bool alive = true;
                 int cnt = 0;
-                double wgt = 1.0;
+                double wgt = Wgts[n];
                 bool real_collision = false;
 
                 while(alive) {
@@ -1074,6 +1074,134 @@ void Improving_Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
 }
 
 void Previous_XS_Bomb_Transport(std::unique_ptr<XS> const &xs) {
+    std::cout << std::fixed << std::setprecision(2);
+    std::cout << "\n Previous XS Bomb Paper Transport\n";
+    int cnts_sum = 0;
+    double sign_change = 0.0;
+    
+    // Particle bank vectors
+    std::vector<double> Positions;
+    std::vector<double> Directions;
+    std::vector<double> Wgts;
+    std::vector<double> Esmps;
+    int n_particles = NPART;
+    // Generate initial source
+    for(int i = 0; i < n_particles; i++) {
+        Positions.push_back(0.0);
+        Directions.push_back(1.0);
+        Wgts.push_back(1.0);
+        Esmps.push_back(3.0*xs->Et(0.0));
+    }
+    std::vector<double> Split_Positions;
+    std::vector<double> Split_Direction;
+    std::vector<double> Split_Wgts;
+    std::vector<double> Split_Esmps;
+
+    while(n_particles > 0) {
+        #pragma omp parallel
+        {
+            pcg64_unique rng;
+            #pragma omp for
+            for(int n = 0; n < NPART; n++) {
+                double x = Positions[n];
+                double Esmp = Esmps[n];
+                if(Esmp < 1.0) Esmp = 1.0;
+                double u = Directions[n];
+                bool alive = true;
+                int cnt = 0;
+                double wgt = Wgts[n];
+                bool real_collision = false;
+
+                while(alive) {
+                    double d = -std::log(rand(rng))/Esmp;
+                    x += u*d;
+                    real_collision = false;
+                    
+                    // Fist check for leak
+                    if((x >= 2.0) or (x <= 0.0)) {
+                        score_escape(wgt);
+                        alive = false;
+                        #pragma omp atomic
+                        cnts_sum += cnt;
+                    } else {
+                        double E_tot = xs->Et(x);
+                        cnt += 1;
+                        if(E_tot > Esmp) { // First negative branch
+                            double D = E_tot / (2*E_tot - Esmp);
+                            double F = E_tot / (D*Esmp);
+                            wgt *= F;
+                            if(rand(rng) < D) {real_collision = true;}
+                            else {
+                                wgt *= -1.0;
+                                #pragma omp atomic
+                                sign_change += 1.0;
+                            }
+
+                        } else { // Delta tracking branch
+                            double P_real = E_tot/ Esmp;
+                            if(rand(rng) < P_real) {real_collision = true;}
+                        }
+
+                        Esmp = 3.0*E_tot;
+                        if(Esmp < 1.0) Esmp = 1.0;
+
+                        if(real_collision) {
+                            // Record collision
+                            score_real_collision(wgt, x);
+
+                            // Implicit caputure
+                            wgt *= 1.0 - P_abs;
+
+                            // Scatter
+                            if(rand(rng) > P_straight_ahead) u *= -1;
+
+                            // Russian Roulette
+                            double xi = rand(rng);
+                            roulette(wgt,alive,xi);
+                            if(alive == false) {
+                                #pragma omp atomic
+                                cnts_sum += cnt;
+                            }
+                           
+                        }// End real coll.
+                    }
+
+                    // Split if needed
+                    if(alive and (std::abs(wgt) >= 2.0)) {
+                        double n_new = std::round(std::abs(wgt));
+                        wgt /= n_new;
+                        for(int j = 0; j < static_cast<int>(n_new-1); j++) {
+                            #pragma omp critical
+                            {
+                                Split_Positions.push_back(x);
+                                Split_Direction.push_back(u);
+                                Split_Wgts.push_back(wgt);
+                                Split_Esmps.push_back(Esmp);
+                            }
+                        }
+                    }// split
+
+                }// While alive
+            }// For all particles
+        }// Parallel
+
+        n_particles = static_cast<int>(Split_Positions.size());
+        Positions = Split_Positions;
+        Directions = Split_Direction;
+        Wgts = Split_Wgts;
+        Esmps = Split_Esmps;
+        
+        Split_Positions.clear();
+        Split_Direction.clear();
+        Split_Wgts.clear();
+        Split_Esmps.clear();
+    }// While still particles
+
+    xs_evals += cnts_sum;
+    wgt_chngs += sign_change;
+}
+
+void Old_Previous_XS_Bomb_Transport(std::unique_ptr<XS> const &xs) {
     std::cout << std::fixed << std::setprecision(2);
     std::cout << "\n Previous XS Bomb Paper Transport\n";
     int cnts_sum = 0;
