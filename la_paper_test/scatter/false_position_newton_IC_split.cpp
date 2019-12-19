@@ -18,7 +18,7 @@
 #include<fstream>
 
 const double EPS = 1e-6;
-const int NPART = 1e6;
+const int NPART = 1e7;
 const int NBIN = 5;
 const int NFOMBINS = 100;
 const double Fdx = 2.0/(double)NFOMBINS;
@@ -34,7 +34,8 @@ const double P_straight_ahead = 0.5;
 
 const double wgt_cutoff = 0.25;
 const double wgt_survival = 1.0;
-const double wgt_split = 1e20;
+const double wgt_split = 2.0;
+const double alpha = 1.0;
 
 // Constants for gaussians A*exp(-a*(x-z)^2)
 const double A = 2.0/std::sqrt(2.0*M_PI);
@@ -709,16 +710,18 @@ void Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
                         double E_tot = xs->Et(x);
                         cnt += 1;
                         if(E_tot > Esmp) { // First negative branch
-                            double alpha = 0.2;
                             double D_alpha = alpha*E_tot / ((2.0 + alpha)*E_tot - Esmp);
                             double D = E_tot / (2*E_tot - Esmp);
                             double F = (E_tot / (D*Esmp));
-                            if(rand(rng) < D_alpha) {
+                            //if(rand(rng) < D_alpha) {
+                            if(rand(rng) < D) {
                                 real_collision = true;
-                                wgt *=  F*(D/D_alpha);
+                                wgt *= F;
+                                //wgt *=  F*(D/D_alpha);
                             }
                             else {
-                                wgt *= -F*((1. - D)/(1. - D_alpha));
+                                wgt *= -F;
+                                //wgt *= -F*((1. - D)/(1. - D_alpha));
                                 #pragma omp atomic
                                 sign_change += 1.0;
                             }
@@ -751,7 +754,7 @@ void Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
 
                     // Split if needed
                     if(alive and (std::abs(wgt) >= wgt_split)) {
-                        double n_new = std::round(std::abs(wgt));
+                        double n_new = std::ceil(std::abs(wgt));
                         wgt /= n_new;
                         for(int j = 0; j < static_cast<int>(n_new-1); j++) {
                             #pragma omp critical
