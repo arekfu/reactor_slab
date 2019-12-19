@@ -303,7 +303,7 @@ void Delta_Tracking(std::unique_ptr<XS> const &xs) {
                             virtual_collision = false;
                         }
                         // Score every collision
-                        double score = wgt / xs->Emax;
+                        double score = wgt*xs->Et(x) / xs->Emax;
                         score_real_collision(score,x);
                     }
                 }
@@ -392,7 +392,7 @@ void Meshed_Delta_Tracking(std::unique_ptr<XS> const &xs) {
                             virtual_collision = false;
                         } else {virtual_cnt++;}
                         
-                        double score = wgt /Emax;
+                        double score = wgt*xs->Et(x) /Emax;
                         score_real_collision(score, x);
                     }
                 }// While virtual
@@ -470,7 +470,7 @@ void Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs) {
                     else if(rand(rng) < q) {
                         // Collision is real, addjust weight
                         wgt *= xs->Et(x)/(Esamp * q);
-                        double score = wgt *q/xs->Et(x);
+                        double score = wgt *q;
                         score_real_collision(score,x);
                         cnt++;
                         
@@ -495,7 +495,7 @@ void Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs) {
                             #pragma omp atomic
                             sign_change += 1.0;
                         }
-                        double score = wgt*(xs->Et(x)/Esamp)/xs->Et(x);
+                        double score = wgt*(xs->Et(x)/Esamp);
                         score_real_collision(score,x);
                         wgt = wgt*dw;
                         cnt++;
@@ -598,7 +598,7 @@ void Meshed_Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs) {
                         if(rand(rng) < q_mshd) { // Real collision
                             // update weight
                             wgt *= (xs->Et(x)/(Esamp*q_mshd));
-                            double score = wgt*(q_mshd)/xs->Et(x);
+                            double score = wgt*(q_mshd);
                             score_real_collision(score,x);
                             cnt++;
 
@@ -626,7 +626,7 @@ void Meshed_Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs) {
                                 #pragma omp atomic
                                 sign_change += 1.0;
                             }
-                            double score = wgt*(xs->Et(x)/Esamp)/xs->Et(x);
+                            double score = wgt*(xs->Et(x)/Esamp);
                             score_real_collision(score,x);
                             wgt = wgt*dw;
                         }
@@ -724,7 +724,7 @@ void Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
                             double D = E_tot / (2*E_tot - Esmp);
                             double F = (E_tot / (D*Esmp));
 
-                            double score = wgt/Esmp;
+                            double score = wgt*E_tot/Esmp;
                             score_real_collision(score,x);
 
                             //if(rand(rng) < D_alpha) {
@@ -744,7 +744,7 @@ void Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
                         } else { // Delta tracking branch
                             double P_real = E_tot/ Esmp;
                             if(rand(rng) < P_real) {real_collision = true;}
-                            double score = wgt/Esmp;
+                            double score = wgt*E_tot/Esmp;
                             score_real_collision(score,x);
                         }
 
@@ -870,7 +870,7 @@ void Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
                             if(E_tot > Esmp) { // First negative branch
                                 double D = E_tot / (2*E_tot - Esmp);
                                 double F = E_tot / (D*Esmp);
-                                double score = wgt/Esmp;
+                                double score = wgt*E_tot/Esmp;
                                 score_real_collision(score,x);
                                 wgt *= F;
                                 if(rand(rng) < D) {real_collision = true;}
@@ -882,7 +882,7 @@ void Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
 
                             } else { // Delta tracking branch
                                 double P_real = E_tot/ Esmp;
-                                double score = wgt/Esmp;
+                                double score = wgt*E_tot/Esmp;
                                 score_real_collision(score,x);
                                 if(rand(rng) < P_real) {real_collision = true;}
                             }
@@ -1018,7 +1018,7 @@ void Improving_Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
                             if(E_tot > Esmp) { // First negative branch
                                 double D = E_tot / (2*E_tot - Esmp);
                                 double F = E_tot / (D*Esmp);
-                                double score = wgt/Esmp;
+                                double score = wgt*E_tot/Esmp;
                                 score_real_collision(score,x);
                                 wgt *= F;
                                 if(rand(rng) < D) {real_collision = true;}
@@ -1032,7 +1032,7 @@ void Improving_Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
 
                             } else { // Delta tracking branch
                                 double P_real = E_tot/ Esmp;
-                                double score = wgt/Esmp;
+                                double score = wgt*E_tot/Esmp;
                                 score_real_collision(score,x);
                                 if(rand(rng) < P_real) {real_collision = true;}
                             }

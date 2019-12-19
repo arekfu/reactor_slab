@@ -10,7 +10,7 @@ for i in range(100):
     x.append(i*dx + 0.5*dx)
 
 XS = {}
-fl = open("Coll_Densities-IC-Split.txt")
+fl = open("Coll_Densities-IC-Split-Score.txt")
 line_count = 0;
 for line in fl:
     line = line.strip()
@@ -42,7 +42,7 @@ for xs in xsnames:
     for tm in tmnames:
         plt.plot(x,XS[xs][tm][0], label=tm)
         #plt.errorbar(x,XS[xs][tm][0], yerr=XS[xs][tm][1],label=tm)
-    plt.title(xs+" Collision Density")
+    plt.title(xs+" Score all Collision Density")
     plt.legend()
     plt.show()
 
