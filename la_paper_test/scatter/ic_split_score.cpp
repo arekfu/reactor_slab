@@ -49,11 +49,14 @@ std::ofstream File;
 // Tallies
 double collide; // Sum of weights that collide
 double collide_sqr; // Sum of weights squared that collide
+double all_collide; // Sum of all weights that collide at all collisions (virt. and real)
+double all_collide_sqr; // Summ of all weights squared that collide (virt. and real)
 double escape; // Sum of weights that leak
 double escape_sqr; // Sum of weights squared that lead
 double xs_evals; // # of xs look ups or xs integrations
 double wgt_chngs; // # of times particle wgt sign flipped
 std::vector<std::vector<double>> coll_density; //[0] #sum coll in box,[1] sum coll sqr, [2] coll STD, [3] Coll FOM in box
+std::vector<std::vector<double>> all_coll_density; // Same as above but scores at all collisions (virt. and real)
 
 // Constants for Gaussian XS functions
 const double T_2_s = A*std::sqrt(M_PI)*((std::erf(std::sqrt(a_s)*(2.0 - z)) 
@@ -263,6 +266,19 @@ void score_real_collision(double& wgt, double& x) {
     coll_density[coll_bin][1] += wgt*wgt;
 }
 
+void score_all_collision(double& wgt, double& x) {
+    #pragma omp atomic
+    all_collide += wgt;
+    #pragma omp atomic
+    all_collide_sqr += wgt*wgt;
+
+    int coll_bin = std::floor(x/Fdx);
+    #pragma omp atomic
+    all_coll_density[coll_bin][0] += wgt;
+    #pragma omp atomic
+    all_coll_density[coll_bin][1] += wgt*wgt;
+}
+
 void score_escape(double& wgt) {
     #pragma omp atomic
     escape += wgt;
@@ -304,12 +320,13 @@ void Delta_Tracking(std::unique_ptr<XS> const &xs) {
                         }
                         // Score every collision
                         double score = wgt*xs->Et(x) / xs->Emax;
-                        score_real_collision(score,x);
+                        score_all_collision(score,x);
                     }
                 }
                 
                 if(alive) {
-                     
+                    // Score real collision
+                    score_real_collision(wgt,x); 
 
                     // Implicit capture
                     wgt *= 1.0 - P_abs; // Equivalent to 1.0 - (Ea/Et)
@@ -393,12 +410,14 @@ void Meshed_Delta_Tracking(std::unique_ptr<XS> const &xs) {
                         } else {virtual_cnt++;}
                         
                         double score = wgt*xs->Et(x) /Emax;
-                        score_real_collision(score, x);
+                        score_all_collision(score, x);
                     }
                 }// While virtual
 
                 if(alive) {
-
+                    // Score real collision
+                    score_real_collision(wgt,x);
+                   
                     // Implicit capture
                     wgt *= 1.0 - P_abs;
                     
@@ -471,7 +490,8 @@ void Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs) {
                         // Collision is real, addjust weight
                         wgt *= xs->Et(x)/(Esamp * q);
                         double score = wgt *q;
-                        score_real_collision(score,x);
+                        score_all_collision(score,x);
+                        score_real_collision(wgt,x);
                         cnt++;
                         
                         // Implicit capture
@@ -496,7 +516,7 @@ void Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs) {
                             sign_change += 1.0;
                         }
                         double score = wgt*(xs->Et(x)/Esamp);
-                        score_real_collision(score,x);
+                        score_all_collision(score,x);
                         wgt = wgt*dw;
                         cnt++;
                     }
@@ -599,7 +619,8 @@ void Meshed_Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs) {
                             // update weight
                             wgt *= (xs->Et(x)/(Esamp*q_mshd));
                             double score = wgt*(q_mshd);
-                            score_real_collision(score,x);
+                            score_all_collision(score,x);
+                            score_real_collision(wgt,x);
                             cnt++;
 
                             // Implicit capture
@@ -627,7 +648,7 @@ void Meshed_Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs) {
                                 sign_change += 1.0;
                             }
                             double score = wgt*(xs->Et(x)/Esamp);
-                            score_real_collision(score,x);
+                            score_all_collision(score,x);
                             wgt = wgt*dw;
                         }
 
@@ -645,9 +666,7 @@ void Meshed_Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs) {
                                 }
                             }
                         }// split
-
                     }
-
                 }// While alive
             } // For all particles
         }// Parallel
@@ -725,7 +744,7 @@ void Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
                             double F = (E_tot / (D*Esmp));
 
                             double score = wgt*E_tot/Esmp;
-                            score_real_collision(score,x);
+                            score_all_collision(score,x);
 
                             //if(rand(rng) < D_alpha) {
                             if(rand(rng) < D) {
@@ -745,10 +764,13 @@ void Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
                             double P_real = E_tot/ Esmp;
                             if(rand(rng) < P_real) {real_collision = true;}
                             double score = wgt*E_tot/Esmp;
-                            score_real_collision(score,x);
+                            score_all_collision(score,x);
                         }
 
                         if(real_collision) {
+                            // Score real collision
+                            score_real_collision(wgt,x);
+
                             // Implicit caputure
                             wgt *= 1.0 - P_abs;
 
@@ -871,7 +893,7 @@ void Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
                                 double D = E_tot / (2*E_tot - Esmp);
                                 double F = E_tot / (D*Esmp);
                                 double score = wgt*E_tot/Esmp;
-                                score_real_collision(score,x);
+                                score_all_collision(score,x);
                                 wgt *= F;
                                 if(rand(rng) < D) {real_collision = true;}
                                 else {
@@ -883,11 +905,14 @@ void Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
                             } else { // Delta tracking branch
                                 double P_real = E_tot/ Esmp;
                                 double score = wgt*E_tot/Esmp;
-                                score_real_collision(score,x);
+                                score_all_collision(score,x);
                                 if(rand(rng) < P_real) {real_collision = true;}
                             }
 
                             if(real_collision) {
+                                // Score real collision
+                                score_real_collision(wgt,x);
+
                                 // Implicit capture
                                 wgt *= 1.0 - P_abs;
 
@@ -1019,7 +1044,7 @@ void Improving_Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
                                 double D = E_tot / (2*E_tot - Esmp);
                                 double F = E_tot / (D*Esmp);
                                 double score = wgt*E_tot/Esmp;
-                                score_real_collision(score,x);
+                                score_all_collision(score,x);
                                 wgt *= F;
                                 if(rand(rng) < D) {real_collision = true;}
                                 else {
@@ -1033,11 +1058,14 @@ void Improving_Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
                             } else { // Delta tracking branch
                                 double P_real = E_tot/ Esmp;
                                 double score = wgt*E_tot/Esmp;
-                                score_real_collision(score,x);
+                                score_all_collision(score,x);
                                 if(rand(rng) < P_real) {real_collision = true;}
                             }
 
                             if(real_collision) {
+                                // Score real collision
+                                score_real_collision(wgt,x);
+
                                 // Implicit capture
                                 wgt *= 1.0 - P_abs;
 
@@ -1359,6 +1387,12 @@ void Output() {
     double collide_sqr_avg = collide_sqr / (double)NPART;
     double collide_std = std::sqrt(std::abs(collide_avg*collide_avg - 
                           collide_sqr_avg)/((double)NPART - 1.0));
+
+    double all_collide_avg = all_collide / (double)NPART;
+    double all_collide_sqr_avg = all_collide_sqr / (double)NPART;
+    double all_collide_std = std::sqrt(std::abs(all_collide_avg*all_collide_avg - 
+                          all_collide_sqr_avg)/((double)NPART - 1.0));
+
     double escape_avg = escape / (double)NPART;
     double escape_sqr_avg = escape_sqr / (double)NPART;
     double escape_std = std::sqrt(std::abs(escape_avg*escape_avg - 
@@ -1367,7 +1401,7 @@ void Output() {
     double avg_xs_evals = xs_evals / (double)NPART;
     double avg_sgn_chngs = wgt_chngs / (double)NPART;
 
-    //  Calculations and output for collision density profile
+    // Calculations and output for real collision density profile
     for(int i = 0; i < NFOMBINS; i++) {
         // Get avg for bin
         double coll_avg = coll_density[i][0] / static_cast<double>(NPART);
@@ -1378,36 +1412,69 @@ void Output() {
         double rel_error = coll_sig / coll_avg;
         coll_density[i][3] = 1.0 / (avg_xs_evals * rel_error * rel_error);
 
-        // Output avg coll desnity in bin
+        // Output avg real coll desnity in bin
         if(i == 0) {File << coll_avg;}
         else {File << "," << coll_avg;}
     }
     File << "\n";
-    // Output std of coll density
+    // Output std of real coll density
     for(int i = 0; i < NFOMBINS; i++) {
         if(i == 0) {File << coll_density[i][2];}
         else {File << "," << coll_density[i][2];}
     }
     File << "\n";
-    // Output FOM of coll density
+    // Output FOM of real coll density
     for(int i = 0; i < NFOMBINS; i++) {
         if(i == 0) {File << coll_density[i][3];}
         else {File << "," << coll_density[i][3];}
     }
+    File << "\n";
+
+    // Calculations and output for all collision density profile
+    for(int i = 0; i < NFOMBINS; i++) {
+        // Get avg for bin
+        double all_coll_avg = all_coll_density[i][0] / static_cast<double>(NPART);
+        double all_coll_sqr_avg = all_coll_density[i][1] / static_cast<double>(NPART);
+        double all_coll_sig = std::sqrt(std::abs(all_coll_avg*all_coll_avg - all_coll_sqr_avg)
+                /(static_cast<double>(NPART) - 1.0));
+        all_coll_density[i][2] = all_coll_sig;
+        double all_rel_error = all_coll_sig / all_coll_avg;
+        all_coll_density[i][3] = 1.0 / (avg_xs_evals * all_rel_error * all_rel_error);
+
+        // Output avg all coll desnity in bin
+        if(i == 0) {File << all_coll_avg;}
+        else {File << "," << all_coll_avg;}
+    }
+    File << "\n";
+    // Output std of all coll density
+    for(int i = 0; i < NFOMBINS; i++) {
+        if(i == 0) {File << all_coll_density[i][2];}
+        else {File << "," << all_coll_density[i][2];}
+    }
+    File << "\n";
+    // Output FOM of all coll density
+    for(int i = 0; i < NFOMBINS; i++) {
+        if(i == 0) {File << all_coll_density[i][3];}
+        else {File << "," << all_coll_density[i][3];}
+    }
     File << "\n\n";
 
     double coll_rel_error = collide_std / collide_avg;
+    double all_coll_rel_error = all_collide_std / all_collide_avg;
     double escape_rel_error = escape_std / escape_avg;
     double FOM_col = 1.0 / (avg_xs_evals * coll_rel_error * coll_rel_error);
+    double FOM_all_coll = 1.0 / (avg_xs_evals * all_coll_rel_error * all_coll_rel_error);
     double FOM_esc = 1.0 / (avg_xs_evals*escape_rel_error*escape_rel_error);
     
     std::cout << std::fixed << std::setprecision(6);
     std::cout << " Colsn. Rate: " << collide_avg << " +/- " << collide_std;
     std::cout << ", Trans. Rate: " << escape_avg << " +/- " << escape_std << "\n";
+    std::cout << " All Colsn. Rate: " << all_collide_avg << " +/- " << all_collide_std << "\n";
     std::cout << " Avg XS/Integration Evals: " << avg_xs_evals;
     std::cout << ", Avg Sign Changes: " << avg_sgn_chngs << "\n";
     std::cout << std::scientific;
-    std::cout << " FOM_coll = " << FOM_col << ", FOM_escp = " << FOM_esc << "\n\n";
+    std::cout << " FOM_coll = " << FOM_col << ", FOM_all_coll = " << FOM_all_coll;
+    std::cout << ", FOM_escp = " << FOM_esc << "\n\n";
 }
 
 std::unique_ptr<XS> make_cross_section(int type)
@@ -1467,19 +1534,31 @@ std::unique_ptr<XS> make_cross_section(int type)
 
 }
 
-void Zero_Bins() {
+void Zero_Values() {
+    collide = 0.0;
+    collide_sqr = 0.0;
+    all_collide = 0.0;
+    all_collide_sqr = 0.0;
+    escape = 0.0;
+    escape_sqr = 0.0;
+    xs_evals = 0.0;
+    wgt_chngs = 0.0;
     for(int i = 0; i < NFOMBINS; i++) {
         coll_density[i][0] = 0.0;
         coll_density[i][1] = 0.0;
         coll_density[i][2] = 0.0;
         coll_density[i][3] = 0.0;
+        all_coll_density[i][0] = 0.0;
+        all_coll_density[i][1] = 0.0;
+        all_coll_density[i][2] = 0.0;
+        all_coll_density[i][3] = 0.0;
     }
 }
 
 int main() {
     std::cout << "\n NParticles = " << NPART << ", NBins = " << NBIN << "\n\n";
 
-     // Create and zero coll_density array
+    // Create and zero coll_density array
     for(int i = 0; i < NFOMBINS; i++) {
         std::vector<double> bin;
         bin.push_back(0.0);
@@ -1487,6 +1566,7 @@ int main() {
         bin.push_back(0.0);
         bin.push_back(0.0);
         coll_density.push_back(bin);
+        all_coll_density.push_back(bin);
     }
 
     File.open("Coll_Densities.txt");
@@ -1494,94 +1574,47 @@ int main() {
     for(int type = 1; type <= 6; type++) {
       std::unique_ptr<XS> crs = make_cross_section(type);
 
-      collide = 0.0;
-      collide_sqr = 0.0;
-      escape = 0.0;
-      escape_sqr = 0.0;
-      xs_evals = 0.0;
-      wgt_chngs = 0.0;
-      Zero_Bins();
+      Zero_Values();
       File << "#TM,DT\n";
       Delta_Tracking(crs);
       Output();
 
-      collide = 0.0;
-      collide_sqr = 0.0;
-      escape = 0.0;
-      escape_sqr = 0.0;
-      xs_evals = 0.0;
-      wgt_chngs = 0.0;
-      Zero_Bins();
+      Zero_Values();
       File << "#TM,MDT\n";
       Meshed_Delta_Tracking(crs);
       Output();
 
-      collide = 0.0;
-      collide_sqr = 0.0;
-      escape = 0.0;
-      escape_sqr = 0.0;
-      xs_evals = 0.0;
-      wgt_chngs = 0.0;
-      Zero_Bins();
+      Zero_Values();
       File << "#TM,NWDT\n";
       Negative_Weight_Delta_Tracking(crs);
       Output();
 
-      collide = 0.0;
-      collide_sqr = 0.0;
-      escape = 0.0;
-      escape_sqr = 0.0;
-      xs_evals = 0.0;
-      wgt_chngs = 0.0;
-      Zero_Bins();
+      Zero_Values();
       File << "#TM,MNWDT\n";
       Meshed_Negative_Weight_Delta_Tracking(crs);
       Output();
 
-      collide = 0.0;
-      collide_sqr = 0.0;
-      escape = 0.0;
-      escape_sqr = 0.0;
-      xs_evals = 0.0;
-      wgt_chngs = 0.0;
-      Zero_Bins();
+      Zero_Values();
       File << "#TM,BT\n";
       Bomb_Transport(crs,0.95);
       Output();
 
-      collide = 0.0;
-      collide_sqr = 0.0;
-      escape = 0.0;
-      escape_sqr = 0.0;
-      xs_evals = 0.0;
-      wgt_chngs = 0.0;
-      Zero_Bins();
+      Zero_Values();
       File << "#TM,MBT\n";
       Meshed_Bomb_Transport(crs,0.95);
       Output();
      
-      collide = 0.0;
-      collide_sqr = 0.0;
-      escape = 0.0;
-      escape_sqr = 0.0;
-      xs_evals = 0.0;
-      wgt_chngs = 0.0;
-      Zero_Bins();
+      Zero_Values();
       File << "#TM,IMBT\n";
       Improving_Meshed_Bomb_Transport(crs,0.95);
       Output();
 
-
-      /*collide = 0.0;
-      collide_sqr = 0.0;
-      escape = 0.0;
-      escape_sqr = 0.0;
-      xs_evals = 0.0;
-      wgt_chngs = 0.0;
-      Zero_Bins();
+      /*
+      Zero_Values();
       File << "#TM,PBT\n";
       Previous_XS_Bomb_Transport(crs);
       Output();*/
+
     }
     File.close();
     return 0;
