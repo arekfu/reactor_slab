@@ -49,8 +49,10 @@ const double z = 1.23;
 // Seed variables for PCG RNG
 std::vector<uint64_t> pcg_seeds;
 
-// Outputfile
-std::ofstream File;
+// Vectors to hold avg Coll rates
+std::vector<double> avg_coll_rates_real;
+std::vector<double> avg_coll_rates_all;
+const int NTRIALS = 20;
 
 // Tallies
 double collide; // Sum of weights that collide
@@ -80,7 +82,7 @@ class XS {
         }
 
         // All virtual methods
-        virtual double Et(double x) {return -1.0;}
+        virtual double Et(double /*x*/) {return -1.0;}
 
         double P_nc() {return Pnc;}
 
@@ -102,7 +104,7 @@ class Constant : public XS {
             }
         }
 
-        double Et(double x) {return 1.0;}
+        double Et(double /*x*/) {return 1.0;}
 
 }; // Constants
 
@@ -473,6 +475,7 @@ void Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs) {
     std::vector<double> Split_Wgts;
 
     while(n_particles > 0) {
+        //std::cout << " nparticles = " << n_particles << "\n";
         #pragma omp parallel
         {    
             PCG rng;
@@ -594,6 +597,7 @@ void Meshed_Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs) {
     std::vector<int> Split_Bins;
 
     while(n_particles > 0) {
+        //std::cout << " nparticles = " << n_particles << "\n";
         #pragma omp parallel
         {    
             PCG rng;
@@ -735,7 +739,7 @@ void Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
     std::vector<double> Split_Wgts;
 
     while(n_particles > 0) {
-        std::cout << " nparticles = " << n_particles << "\n";
+        //std::cout << " nparticles = " << n_particles << "\n";
         #pragma omp parallel
         {
             PCG rng;
@@ -746,7 +750,7 @@ void Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
             rng.seed(pcg_seed);
 
             #pragma omp for
-            for(int n = 0; n < NPART; n++) {
+            for(int n = 0; n < n_particles; n++) {
                 double Esmp = P*xs->Emax;
                 double x = Positions[n];
                 double u = Directions[n];
@@ -770,7 +774,7 @@ void Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
                         double E_tot = xs->Et(x);
                         cnt += 1;
                         if(E_tot > Esmp) { // First negative branch
-                            double D_alpha = alpha*E_tot / ((2.0 + alpha)*E_tot - Esmp);
+                            //double D_alpha = alpha*E_tot / ((2.0 + alpha)*E_tot - Esmp);
                             double D = E_tot / (2*E_tot - Esmp);
                             double F = (E_tot / (D*Esmp));
 
@@ -815,13 +819,13 @@ void Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
                                 #pragma omp atomic
                                 cnts_sum += cnt;
                             }
-                           
+                            
                         }// End real coll.
                     }
 
                     // Split if needed
                     if(alive and (std::abs(wgt) >= wgt_split)) {
-                        double n_new = std::ceil(std::abs(wgt));
+                        double n_new = std::floor(std::abs(wgt));
                         wgt /= n_new;
                         for(int j = 0; j < static_cast<int>(n_new-1); j++) {
                             #pragma omp critical
@@ -878,6 +882,7 @@ void Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
     std::vector<int> Split_Bins;
 
     while(n_particles > 0) {
+        //std::cout << " nparticles = " << n_particles << "\n";
         #pragma omp parallel
         {
             PCG rng;
@@ -887,7 +892,7 @@ void Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
             pcg_seed = pcg_seeds[thread_id];
 
             #pragma omp for
-            for(int n = 0; n < NPART; n++) {
+            for(int n = 0; n < n_particles; n++) {
                 double x = Positions[n];
                 double u = Directions[n];
                 double d_bin;
@@ -1046,7 +1051,7 @@ void Improving_Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
             rng.seed(pcg_seed);
 
             #pragma omp for
-            for(int n = 0; n < NPART; n++) {
+            for(int n = 0; n < n_particles; n++) {
                 double x = Positions[n];
                 double u = Directions[n];
                 double d_bin;
@@ -1209,7 +1214,7 @@ void Previous_XS_Bomb_Transport(std::unique_ptr<XS> const &xs) {
             rng.seed(pcg_seed);
 
             #pragma omp for
-            for(int n = 0; n < NPART; n++) {
+            for(int n = 0; n < n_particles; n++) {
                 double x = Positions[n];
                 double Esmp = Esmps[n];
                 if(Esmp < 1.0) Esmp = 1.0;
@@ -1346,7 +1351,7 @@ void Old_Previous_XS_Bomb_Transport(std::unique_ptr<XS> const &xs) {
             rng.seed(pcg_seed);
 
             #pragma omp for
-            for(int n = 0; n < NPART; n++) {
+            for(int n = 0; n < n_particles; n++) {
                 double Esmp = Esmps[n];
                 if(Esmp < 1.0) Esmp = 1.0;
                 double x = Positions[n];
@@ -1452,10 +1457,14 @@ void Output() {
     double collide_std = std::sqrt(std::abs(collide_avg*collide_avg - 
                           collide_sqr_avg)/((double)NPART - 1.0));
 
+    avg_coll_rates_real.push_back(collide_avg);
+
     double all_collide_avg = all_collide / (double)NPART;
     double all_collide_sqr_avg = all_collide_sqr / (double)NPART;
     double all_collide_std = std::sqrt(std::abs(all_collide_avg*all_collide_avg - 
                           all_collide_sqr_avg)/((double)NPART - 1.0));
+
+    avg_coll_rates_all.push_back(all_collide_avg);
 
     double escape_avg = escape / (double)NPART;
     double escape_sqr_avg = escape_sqr / (double)NPART;
@@ -1464,64 +1473,6 @@ void Output() {
 
     double avg_xs_evals = xs_evals / (double)NPART;
     double avg_sgn_chngs = wgt_chngs / (double)NPART;
-
-    // Calculations and output for real collision density profile
-    for(int i = 0; i < NFOMBINS; i++) {
-        // Get avg for bin
-        double coll_avg = coll_density[i][0] / static_cast<double>(NPART);
-        double coll_sqr_avg = coll_density[i][1] / static_cast<double>(NPART);
-        double coll_sig = std::sqrt(std::abs(coll_avg*coll_avg - coll_sqr_avg)
-                /(static_cast<double>(NPART) - 1.0));
-        coll_density[i][2] = coll_sig;
-        double rel_error = coll_sig / coll_avg;
-        coll_density[i][3] = 1.0 / (avg_xs_evals * rel_error * rel_error);
-
-        // Output avg real coll desnity in bin
-        if(i == 0) {File << coll_avg;}
-        else {File << "," << coll_avg;}
-    }
-    File << "\n";
-    // Output std of real coll density
-    for(int i = 0; i < NFOMBINS; i++) {
-        if(i == 0) {File << coll_density[i][2];}
-        else {File << "," << coll_density[i][2];}
-    }
-    File << "\n";
-    // Output FOM of real coll density
-    for(int i = 0; i < NFOMBINS; i++) {
-        if(i == 0) {File << coll_density[i][3];}
-        else {File << "," << coll_density[i][3];}
-    }
-    File << "\n";
-
-    // Calculations and output for all collision density profile
-    for(int i = 0; i < NFOMBINS; i++) {
-        // Get avg for bin
-        double all_coll_avg = all_coll_density[i][0] / static_cast<double>(NPART);
-        double all_coll_sqr_avg = all_coll_density[i][1] / static_cast<double>(NPART);
-        double all_coll_sig = std::sqrt(std::abs(all_coll_avg*all_coll_avg - all_coll_sqr_avg)
-                /(static_cast<double>(NPART) - 1.0));
-        all_coll_density[i][2] = all_coll_sig;
-        double all_rel_error = all_coll_sig / all_coll_avg;
-        all_coll_density[i][3] = 1.0 / (avg_xs_evals * all_rel_error * all_rel_error);
-
-        // Output avg all coll desnity in bin
-        if(i == 0) {File << all_coll_avg;}
-        else {File << "," << all_coll_avg;}
-    }
-    File << "\n";
-    // Output std of all coll density
-    for(int i = 0; i < NFOMBINS; i++) {
-        if(i == 0) {File << all_coll_density[i][2];}
-        else {File << "," << all_coll_density[i][2];}
-    }
-    File << "\n";
-    // Output FOM of all coll density
-    for(int i = 0; i < NFOMBINS; i++) {
-        if(i == 0) {File << all_coll_density[i][3];}
-        else {File << "," << all_coll_density[i][3];}
-    }
-    File << "\n\n";
 
     double coll_rel_error = collide_std / collide_avg;
     double all_coll_rel_error = all_collide_std / all_collide_avg;
@@ -1547,49 +1498,41 @@ std::unique_ptr<XS> make_cross_section(int type)
   if(type == -1) {
     std::cout << "\n------------------------------------------------------";
     std::cout << "\n Step\n\n";
-    File << "#XS,S\n";
     return std::make_unique<Step>();
   }
   else if(type == 0) {
     std::cout << "\n------------------------------------------------------";
     std::cout << "\n Constant\n\n";
-    File << "#XS,C\n";
     return std::make_unique<Constant>();
   }
   else if(type == 1) {
     std::cout << "\n------------------------------------------------------";
     std::cout << "\n Linearly Increasing\n\n";
-    File << "#XS,LI\n";
     return std::make_unique<Lin_Increase>();
   }
   else if(type == 2) {
     std::cout << "\n------------------------------------------------------";
     std::cout << "\n Linearly Decreasing\n\n";
-    File << "#XS,LD\n"; 
     return std::make_unique<Lin_Decrease>();
   }
   else if(type == 4) {
     std::cout << "\n------------------------------------------------------";
     std::cout << "\n Exponentially Decreasing\n\n";
-    File << "#XS,ED\n";
     return std::make_unique<Exp_Decrease>();
   }
   else if(type == 3) {
     std::cout << "\n------------------------------------------------------";
     std::cout << "\n Exponentially Increasing\n\n";
-    File << "#XS,EI\n";
     return std::make_unique<Exp_Increase>();
   }
   else if(type == 5) {
     std::cout << "\n------------------------------------------------------";
     std::cout << "\n Sharp Gaussian\n\n";
-    File << "#XS,SG\n";
     return std::make_unique<Gauss_Sharp>();
   }
   else if(type == 6) {
     std::cout << "\n------------------------------------------------------";
     std::cout << "\n Broad Gaussian\n\n";
-    File << "#XS,BG\n";
     return std::make_unique<Gauss_Broad>();
   }
   else {
@@ -1642,54 +1585,66 @@ int main() {
         coll_density.push_back(bin);
         all_coll_density.push_back(bin);
     }
-
-    File.open("Coll_Densities.txt");
-    int xs_type = 1; 
-    for(int type = 1; type <= 20; type++) {
+    int xs_type = 1;
+    for(int type = 1; type <= NTRIALS; type++) {
       std::unique_ptr<XS> crs = make_cross_section(xs_type);
+      std::cout << " " << type << "\n";
 
       Zero_Values();
-      File << "#TM,DT\n";
       Delta_Tracking(crs);
       Output();
 
       /*Zero_Values();
-      File << "#TM,MDT\n";
       Meshed_Delta_Tracking(crs);
       Output();
 
       Zero_Values();
-      File << "#TM,NWDT\n";
       Negative_Weight_Delta_Tracking(crs);
       Output();
 
       Zero_Values();
-      File << "#TM,MNWDT\n";
       Meshed_Negative_Weight_Delta_Tracking(crs);
       Output();
 
       Zero_Values();
-      File << "#TM,BT\n";
-      Bomb_Transport(crs,0.95);
+      Bomb_Transport(crs,0.80);
       Output();
 
       Zero_Values();
-      File << "#TM,MBT\n";
-      Meshed_Bomb_Transport(crs,0.95);
+      Meshed_Bomb_Transport(crs,0.80);
       Output();
      
       Zero_Values();
-      File << "#TM,IMBT\n";
-      Improving_Meshed_Bomb_Transport(crs,0.95);
-      Output();
+      Improving_Meshed_Bomb_Transport(crs,0.80);
+      Output();*/
       
-      Zero_Values();
-      File << "#TM,PBT\n";
+      /*Zero_Values();
       Previous_XS_Bomb_Transport(crs);
       Output();*/
 
     }
-    File.close();
+
+    // Get avge of vectors and std
+    double real_coll_sum = 0.0;
+    double real_coll_sqr_sum = 0.0;
+    double all_coll_sum = 0.0;
+    double all_coll_sqr_sum = 0.0;
+    for(int i = 0; i < static_cast<int>(avg_coll_rates_real.size()); i++) {
+        real_coll_sum += avg_coll_rates_real[i];
+        real_coll_sqr_sum += avg_coll_rates_real[i]*avg_coll_rates_real[i];
+        all_coll_sum += avg_coll_rates_all[i];
+        all_coll_sqr_sum += avg_coll_rates_all[i]*avg_coll_rates_all[i];
+    }
+    double n_trials = static_cast<double>(NTRIALS);
+    double avg_coll_real = real_coll_sum / n_trials;
+    double avg_coll_all = all_coll_sum / n_trials;
+    double avg_coll_sqr_real = real_coll_sqr_sum / n_trials;
+    double avg_coll_sqr_all = all_coll_sqr_sum / n_trials;
+    double std_avg_real = std::sqrt(std::abs(avg_coll_real*avg_coll_real - avg_coll_sqr_real)/(n_trials - 1.0));
+    double std_avg_all = std::sqrt(std::abs(avg_coll_all*avg_coll_all - avg_coll_sqr_all)/(n_trials - 1.0));
+    std::cout << "\n\n RESUTLS:\n";
+    std::cout << " Avg Coll Rate Real = " << avg_coll_real << " +/- " << std_avg_real << "\n";
+    std::cout << " Avg Coll Rate All  = " << avg_coll_all <<  " +/- " << std_avg_all << "\n";
 
     pcg_seeds.clear();
     return 0;

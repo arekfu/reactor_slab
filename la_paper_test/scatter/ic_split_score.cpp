@@ -473,7 +473,7 @@ void Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs) {
     std::vector<double> Split_Wgts;
 
     while(n_particles > 0) {
-        std::cout << " nparticles = " << n_particles << "\n";
+        //std::cout << " nparticles = " << n_particles << "\n";
         #pragma omp parallel
         {    
             PCG rng;
@@ -595,7 +595,7 @@ void Meshed_Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs) {
     std::vector<int> Split_Bins;
 
     while(n_particles > 0) {
-        std::cout << " nparticles = " << n_particles << "\n";
+        //std::cout << " nparticles = " << n_particles << "\n";
         #pragma omp parallel
         {    
             PCG rng;
@@ -737,7 +737,7 @@ void Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
     std::vector<double> Split_Wgts;
 
     while(n_particles > 0) {
-        std::cout << " nparticles = " << n_particles << "\n";
+        //std::cout << " nparticles = " << n_particles << "\n";
         #pragma omp parallel
         {
             PCG rng;
@@ -880,7 +880,7 @@ void Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
     std::vector<int> Split_Bins;
 
     while(n_particles > 0) {
-        std::cout << " nparticles = " << n_particles << "\n";
+        //std::cout << " nparticles = " << n_particles << "\n";
         #pragma omp parallel
         {
             PCG rng;
@@ -1650,7 +1650,7 @@ int main() {
     for(int type = 1; type <= 6; type++) {
       std::unique_ptr<XS> crs = make_cross_section(type);
 
-     /* Zero_Values();
+      Zero_Values();
       File << "#TM,DT\n";
       Delta_Tracking(crs);
       Output();
@@ -1668,21 +1668,21 @@ int main() {
       Zero_Values();
       File << "#TM,MNWDT\n";
       Meshed_Negative_Weight_Delta_Tracking(crs);
-      Output();*/
+      Output();
 
       Zero_Values();
       File << "#TM,BT\n";
-      Bomb_Transport(crs,0.85);
+      Bomb_Transport(crs,0.80);
       Output();
 
       Zero_Values();
       File << "#TM,MBT\n";
-      Meshed_Bomb_Transport(crs,0.95);
+      Meshed_Bomb_Transport(crs,0.80);
       Output();
      
       Zero_Values();
       File << "#TM,IMBT\n";
-      Improving_Meshed_Bomb_Transport(crs,0.95);
+      Improving_Meshed_Bomb_Transport(crs,0.80);
       Output();
       
       /*Zero_Values();
