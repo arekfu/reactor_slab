@@ -36,12 +36,13 @@ xsnames = ["LI", "LD", "EI", "ED", "SG", "BG"]
 #tmnames = ["DT", "MDT", "NWDT", "MNWDT", "BT", "MBT", "PBT"]
 tmnames = ["DT", "MDT", "NWDT", "MNWDT", "BT", "MBT", "PBT", "IMBT"]
 tmnames = ["DT", "MDT","BT", "MBT"]
-#tmnames = ["DT", "NWDT", "BT"]
+tmnames = ["MNWDT"]
 
 for xs in xsnames:
     # Plot coll. density
     for tm in tmnames:
         plt.plot(x,XS[xs][tm][0], label=tm)
+        plt.plot(x,XS[xs][tm][3], label=tm+" all")
         #plt.errorbar(x,XS[xs][tm][0], yerr=XS[xs][tm][1],label=tm)
     plt.title(xs+" Collision Density")
     plt.legend()

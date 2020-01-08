@@ -473,7 +473,6 @@ void Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs) {
     std::vector<double> Split_Wgts;
 
     while(n_particles > 0) {
-        std::cout << " nparticles = " << n_particles << "\n";
         #pragma omp parallel
         {    
             PCG rng;
@@ -595,7 +594,6 @@ void Meshed_Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs) {
     std::vector<int> Split_Bins;
 
     while(n_particles > 0) {
-        std::cout << " nparticles = " << n_particles << "\n";
         #pragma omp parallel
         {    
             PCG rng;
@@ -748,7 +746,7 @@ void Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
             rng.seed(pcg_seed);
 
             #pragma omp for
-            for(int n = 0; n < n_particles; n++) {
+            for(int n = 0; n < NPART; n++) {
                 double Esmp = P*xs->Emax;
                 double x = Positions[n];
                 double u = Directions[n];
@@ -817,13 +815,13 @@ void Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
                                 #pragma omp atomic
                                 cnts_sum += cnt;
                             }
-                            
+                           
                         }// End real coll.
                     }
 
                     // Split if needed
                     if(alive and (std::abs(wgt) >= wgt_split)) {
-                        double n_new = std::floor(std::abs(wgt));
+                        double n_new = std::ceil(std::abs(wgt));
                         wgt /= n_new;
                         for(int j = 0; j < static_cast<int>(n_new-1); j++) {
                             #pragma omp critical
@@ -880,7 +878,6 @@ void Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
     std::vector<int> Split_Bins;
 
     while(n_particles > 0) {
-        std::cout << " nparticles = " << n_particles << "\n";
         #pragma omp parallel
         {
             PCG rng;
@@ -890,7 +887,7 @@ void Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
             pcg_seed = pcg_seeds[thread_id];
 
             #pragma omp for
-            for(int n = 0; n < n_particles; n++) {
+            for(int n = 0; n < NPART; n++) {
                 double x = Positions[n];
                 double u = Directions[n];
                 double d_bin;
@@ -1049,7 +1046,7 @@ void Improving_Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
             rng.seed(pcg_seed);
 
             #pragma omp for
-            for(int n = 0; n < n_particles; n++) {
+            for(int n = 0; n < NPART; n++) {
                 double x = Positions[n];
                 double u = Directions[n];
                 double d_bin;
@@ -1212,7 +1209,7 @@ void Previous_XS_Bomb_Transport(std::unique_ptr<XS> const &xs) {
             rng.seed(pcg_seed);
 
             #pragma omp for
-            for(int n = 0; n < n_particles; n++) {
+            for(int n = 0; n < NPART; n++) {
                 double x = Positions[n];
                 double Esmp = Esmps[n];
                 if(Esmp < 1.0) Esmp = 1.0;
@@ -1349,7 +1346,7 @@ void Old_Previous_XS_Bomb_Transport(std::unique_ptr<XS> const &xs) {
             rng.seed(pcg_seed);
 
             #pragma omp for
-            for(int n = 0; n < n_particles; n++) {
+            for(int n = 0; n < NPART; n++) {
                 double Esmp = Esmps[n];
                 if(Esmp < 1.0) Esmp = 1.0;
                 double x = Positions[n];
@@ -1647,15 +1644,16 @@ int main() {
     }
 
     File.open("Coll_Densities.txt");
-    for(int type = 1; type <= 6; type++) {
-      std::unique_ptr<XS> crs = make_cross_section(type);
+    int xs_type = 1; 
+    for(int type = 1; type <= 20; type++) {
+      std::unique_ptr<XS> crs = make_cross_section(xs_type);
 
-     /* Zero_Values();
+      Zero_Values();
       File << "#TM,DT\n";
       Delta_Tracking(crs);
       Output();
 
-      Zero_Values();
+      /*Zero_Values();
       File << "#TM,MDT\n";
       Meshed_Delta_Tracking(crs);
       Output();
@@ -1668,11 +1666,11 @@ int main() {
       Zero_Values();
       File << "#TM,MNWDT\n";
       Meshed_Negative_Weight_Delta_Tracking(crs);
-      Output();*/
+      Output();
 
       Zero_Values();
       File << "#TM,BT\n";
-      Bomb_Transport(crs,0.85);
+      Bomb_Transport(crs,0.95);
       Output();
 
       Zero_Values();
@@ -1685,7 +1683,7 @@ int main() {
       Improving_Meshed_Bomb_Transport(crs,0.95);
       Output();
       
-      /*Zero_Values();
+      Zero_Values();
       File << "#TM,PBT\n";
       Previous_XS_Bomb_Transport(crs);
       Output();*/
