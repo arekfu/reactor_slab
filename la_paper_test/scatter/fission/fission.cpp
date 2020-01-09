@@ -22,6 +22,7 @@ using namespace lmct; // namespace for my personal PCG RNG wrapper
 
 const double EPS = 1e-6;
 const int NPART = 1e7;
+const int NGENS = 1;
 const int NBIN = 5;
 const int NFOMBINS = 100;
 const double Fdx = 2.0/(double)NFOMBINS;
@@ -32,6 +33,8 @@ const double q = 0.3;
 const double q_mshd = 0.3;
 
 const double P_abs = 0.3;
+const double P_fis = 0.4;
+const double nu    = 2.5;
 const double P_sct = 0.7;
 const double P_straight_ahead = 0.5;
 
@@ -72,7 +75,6 @@ const double T_2_s = A*std::sqrt(M_PI)*((std::erf(std::sqrt(a_s)*(2.0 - z))
 const double T_2_b = A*std::sqrt(M_PI)*((std::erf(std::sqrt(a_b)*(2.0 - z)) 
                      - std::erf(std::sqrt(a_b)*(-z)))/(2.0*std::sqrt(a_b)));
 
-
 // Base Cross Section Class
 class XS {
     public:
@@ -92,6 +94,7 @@ class XS {
         double G; // 1 - Pnc (Prob. of collision)
         double Emax; // Maj over region
         double Em[NBIN]; // Maj in each bin
+        double Em_imp[NBIN]; // p*Em[bin] for IBT
         double Esmp[NBIN]; // Sampling XS in each bin for NWDT and MNWDT
 };
 
@@ -101,6 +104,7 @@ class Constant : public XS {
         Constant():XS(1.0) {
             for(int b = 0; b < NBIN; b++) {
                 Em[b] = 1.0;
+                Em_imp[b] = Em[b];
                 Esmp[b] = p_mshd;
             }
         }
@@ -118,6 +122,7 @@ class Step : public XS {
             for(int b = 0; b < NBIN; b++) {
                 double x = b*dx;
                 Em[b] = Et(x);
+                Em_imp[b] = Em[b];
                 Esmp[b] = p_mshd*Et(x);
             }
         }
@@ -137,6 +142,7 @@ class Lin_Decrease : public XS {
             for(int b = 0; b < NBIN; b++) {
                 double x = b*dx;
                 Em[b] = Et(x);
+                Em_imp[b] = Em[b];
                 Esmp[b] = p_mshd*Et(x);
             }    
         }
@@ -153,6 +159,7 @@ class Lin_Increase : public XS {
             for(int b = 0; b < NBIN; b++) {
                 double x = b*dx + dx;
                 Em[b] = Et(x);
+                Em_imp[b] = Em[b];
                 Esmp[b] = p_mshd*Et(x);
             }
         }
@@ -169,6 +176,7 @@ class Exp_Decrease : public XS {
             for(int b = 0; b < NBIN; b++) {
                 double x = b*dx;
                 Em[b] = Et(x);
+                Em_imp[b] = Em[b];
                 Esmp[b] = p_mshd*Et(x);
             }
         }
@@ -185,6 +193,7 @@ class Exp_Increase : public XS {
             for(int b = 0; b < NBIN; b++) {
                 double x = b*dx + dx;
                 Em[b] = Et(x);
+                Em_imp[b] = Em[b];
                 Esmp[b] = p_mshd*Et(x);
             }
         }
@@ -211,6 +220,7 @@ class Gauss_Sharp : public XS {
                     x = z;
                 }
                 Em[b] = Et(x);
+                Em_imp[b] = Em[b];
                 Esmp[b] = p_mshd*Et(x);
             }
         }
@@ -237,6 +247,7 @@ class Gauss_Broad : public XS {
                     x = z;
                 }
                 Em[b] = Et(x);
+                Em_imp[b] = Em[b];
                 Esmp[b] = p_mshd*Et(x);
             }
         }
@@ -245,6 +256,36 @@ class Gauss_Broad : public XS {
         double Et(double x) {
             return A*std::exp(-a_b*(x-z)*(x-z));
         }
+};
+
+struct Particle {
+    Particle(double x_=0.0, double u_=1.0, double wgt_=1.0) {
+        x = x_;
+        bin = std::floor(x / dx);
+        u = u_;
+        wgt = wgt_;
+        alive = true;
+    }
+
+    void kill() {alive = false;}
+    void move(double dist) {
+        x += u*dist;
+        bin = std::floor(x / dx);
+    }
+    void turn() {u *= -1.0;}
+    void xs_eval() {xs_evals_cnt++;}
+    void virt_coll() {virtual_colls++;}
+    void bin_crs() {bin_cross++;}
+
+    double x;
+    int bin;
+    double u;
+    double wgt;
+    double Esmp;
+    bool alive;
+    int xs_evals_cnt = 0;
+    int virtual_colls = 0;
+    int bin_cross = 0;
 };
 
 void roulette(double& wgt, bool& alive, const double& xi) {
@@ -291,7 +332,8 @@ void score_escape(double& wgt) {
     escape_sqr += wgt*wgt;
 }
 
-void Delta_Tracking(std::unique_ptr<XS> const &xs) {
+void Delta_Tracking(std::unique_ptr<XS> const &xs,
+        std::vector<Particle> &bank) {
     std::cout << "\n Delta Tracking\n";
 
     int cnts_sum = 0;
@@ -300,11 +342,11 @@ void Delta_Tracking(std::unique_ptr<XS> const &xs) {
     {    
         PCG rng;
         int thread_id;
-#ifdef _OPENMP
+        #ifdef _OPENMP
         thread_id = omp_get_thread_num();
-#else
+        #else
         thread_id = 0;
-#endif
+        #endif
         uint64_t pcg_seed;
         #pragma omp atomic read
         pcg_seed = pcg_seeds[thread_id];
@@ -313,49 +355,45 @@ void Delta_Tracking(std::unique_ptr<XS> const &xs) {
         #pragma omp for
         for(int n = 0; n < NPART; n++) {
             bool virtual_collision;
-            double x = 0.0;
-            double u = 1.0;
-            int cnt = 0;
-            double wgt = 1.0;
-            bool alive = true;
-            while(alive) {
+            Particle p = bank[n];
+            while(p.alive) {
                 virtual_collision = true;
                 while(virtual_collision) {
                     double d = -std::log(rng.rand())/(xs->Emax);
-                    x += u*d;
-                    if((x >= 2.0) or (x <= 0.0)) {
-                        score_escape(wgt); 
+                    p.move(d);
+                    if((p.x >= 2.0) or (p.x <= 0.0)) {
+                        score_escape(p.wgt); 
                         virtual_collision = false;
-                        alive = false;
+                        p.kill();
                         #pragma omp atomic
-                        cnts_sum += cnt;
+                        cnts_sum += p.xs_evals_cnt;
                     } else {
-                        cnt++;
-                        if(rng.rand() < (xs->Et(x)/xs->Emax)) {
+                        p.xs_eval();
+                        if(rng.rand() < (xs->Et(p.x)/xs->Emax)) {
                             virtual_collision = false;
                         }
                         // Score every collision
-                        double score = wgt*xs->Et(x) / xs->Emax;
-                        score_all_collision(score,x);
+                        double score = p.wgt*xs->Et(p.x) / xs->Emax;
+                        score_all_collision(score,p.x);
                     }
                 }
                 
-                if(alive) {
+                if(p.alive) {
                     // Score real collision
-                    score_real_collision(wgt,x); 
+                    score_real_collision(p.wgt,p.x); 
 
                     // Implicit capture
-                    wgt *= 1.0 - P_abs; // Equivalent to 1.0 - (Ea/Et)
+                    p.wgt *= 1.0 - P_abs; // Equivalent to 1.0 - (Ea/Et)
 
                     // Scatter
-                    if(rng.rand() > P_straight_ahead) u *= -1;
+                    if(rng.rand() > P_straight_ahead) p.turn();
 
                     // Russian Roulette
                     double xi = rng.rand();
-                    roulette(wgt, alive, xi);
-                    if(alive == false) {
+                    roulette(p.wgt, p.alive, xi);
+                    if(p.alive == false) {
                         #pragma omp atomic
-                        cnts_sum += cnt;
+                        cnts_sum += p.xs_evals_cnt;
                     }
                 } // If alive for real collision
             } // While alive
@@ -368,7 +406,8 @@ void Delta_Tracking(std::unique_ptr<XS> const &xs) {
     xs_evals += cnts_sum;
 }
 
-void Meshed_Delta_Tracking(std::unique_ptr<XS> const &xs) {
+void Meshed_Delta_Tracking(std::unique_ptr<XS> const &xs,
+        std::vector<Particle> const &bank) {
     std::cout << "\n Meshed Delta Tracking\n";
 
     int cnts_sum = 0;
@@ -379,11 +418,11 @@ void Meshed_Delta_Tracking(std::unique_ptr<XS> const &xs) {
     {    
         PCG rng;
         int thread_id;
-#ifdef _OPENMP
+        #ifdef _OPENMP
         thread_id = omp_get_thread_num();
-#else
+        #else
         thread_id = 0;
-#endif
+        #endif
         uint64_t pcg_seed;
         #pragma omp atomic read
         pcg_seed = pcg_seeds[thread_id];
@@ -392,78 +431,70 @@ void Meshed_Delta_Tracking(std::unique_ptr<XS> const &xs) {
         #pragma omp for
         for(int n = 0; n < NPART; n++) {
             bool virtual_collision = true;
-            double x = 0.0;
-            double u = 1.0;
-            double wgt = 1.0;
-            double Emax = xs->Em[0];
-            int bin = 0;
+            Particle p = bank[n];
+            double Emax = xs->Em[p.bin];
             double d,d_bin;
-            int cnt = 0;
-            int virtual_cnt = 0;
-            int bin_cnt = 0;
-            bool alive = true;
-            while(alive) {
+            while(p.alive) {
                 virtual_collision = true;
                 while(virtual_collision) {
-                    if(u == -1.0) d_bin = x - static_cast<double>(bin)*dx;
-                    else d_bin = (static_cast<double>(bin)*dx + dx) - x;
+                    if(p.u == -1.0) d_bin = p.x-static_cast<double>(p.bin)*dx;
+                    else d_bin = (static_cast<double>(p.bin)*dx + dx) - p.x;
                     d = -std::log(rng.rand())/Emax;
                     if(d_bin < d) {
-                        bin_cnt++;
+                        p.bin_crs();
                         d = d_bin + 1e-6;
-                        x += u*d;
-                        bin = std::floor(x/dx);
-                        if((x >= 2.0) or (x  <= 0.0)) {
-                            score_escape(wgt);
+                        p.move(d);
+                        if((p.x >= 2.0) or (p.x  <= 0.0)) {
+                            score_escape(p.wgt);
                             virtual_collision = false;
-                            alive = false;
+                            p.kill();
                             
                             // Score other tallies 
                             #pragma omp atomic
-                            cnts_sum += cnt;
+                            cnts_sum += p.xs_evals_cnt;
                             #pragma omp atomic
-                            virtual_cnt_sum += virtual_cnt;
+                            virtual_cnt_sum += p.virtual_colls;
                             #pragma omp atomic
-                            bin_cnt_sum += bin_cnt;
+                            bin_cnt_sum += p.bin_cross;
                         }
                         else {
-                            Emax = xs->Em[bin];
+                            Emax = xs->Em[p.bin];
                         }
                     }
                     else {
-                        cnt++;
-                        x += u*d;
+                        p.xs_eval();
+                        p.move(d);
                         double xi = rng.rand();
-                        double Pr = xs->Et(x)/Emax;
+                        double Pr = xs->Et(p.x)/Emax;
                         if(xi < Pr) {
                             virtual_collision = false;
-                        } else {virtual_cnt++;}
+                        } else {p.virt_coll();}
                         
-                        double score = wgt*xs->Et(x) /Emax;
-                        score_all_collision(score, x);
+                        double score = p.wgt*xs->Et(p.x) /Emax;
+                        score_all_collision(score, p.x);
                     }
                 }// While virtual
 
-                if(alive) {
+                if(p.alive) {
                     // Score real collision
-                    score_real_collision(wgt,x);
+                    score_real_collision(p.wgt,p.x);
                    
                     // Implicit capture
-                    wgt *= 1.0 - P_abs;
+                    p.wgt *= 1.0 - P_abs;
                     
                     // Scatter
-                    if(rng.rand() > P_straight_ahead) u *= -1;
+                    if(rng.rand() > P_straight_ahead) p.turn();
 
                     // Russian Roulette
                     double xi = rng.rand();
-                    roulette(wgt, alive, xi);
-                    if(alive == false){
+                    roulette(p.wgt, p.alive, xi);
+                    if(p.alive == false){
                         #pragma omp atomic
-                        cnts_sum += cnt;
+                        cnts_sum += p.xs_evals_cnt;
                         #pragma omp atomic
-                        virtual_cnt_sum += virtual_cnt;
+                        virtual_cnt_sum += p.virtual_colls;
                         #pragma omp atomic
-                        bin_cnt_sum += bin_cnt;
+                        bin_cnt_sum += p.bin_cross;
                     }
                 }
             } // While alive
@@ -474,26 +505,15 @@ void Meshed_Delta_Tracking(std::unique_ptr<XS> const &xs) {
     xs_evals += cnts_sum;
 }
 
-void Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs) {
+void Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs,
+        std::vector<Particle> const &bank) {
     std::cout << "\n Negative Weight Delta Tracking\n";
 
     int cnts_sum = 0;
     double sign_change = 0.0;
 
-    // Particle bank vectors
-    std::vector<double> Positions;
-    std::vector<double> Directions;
-    std::vector<double> Wgts;
-    int n_particles = NPART;
-    // Generate initial source
-    for(int i = 0; i < n_particles; i++) {
-        Positions.push_back(0.0);
-        Directions.push_back(1.0);
-        Wgts.push_back(1.0);
-    }
-    std::vector<double> Split_Positions;
-    std::vector<double> Split_Direction;
-    std::vector<double> Split_Wgts;
+   std::vector<Particle> Bank = bank; // Copy for re-writing after splits
+   int n_particles = static_cast<int>(Bank.size());
 
     while(n_particles > 0) {
         //std::cout << " nparticles = " << n_particles << "\n";
@@ -501,126 +521,116 @@ void Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs) {
         {    
             PCG rng;
             int thread_id;
-#ifdef _OPENMP
+            #ifdef _OPENMP
             thread_id = omp_get_thread_num();
-#else
+            #else
             thread_id = 0;
-#endif
+            #endif
             uint64_t pcg_seed;
             #pragma omp atomic read
             pcg_seed = pcg_seeds[thread_id];
             rng.seed(pcg_seed);
 
+            std::vector<Particle> this_thread_Splits;
+
             #pragma omp for
             for(int n = 0; n < n_particles; n++) {
                 double Esamp = p*(xs->Emax);
-                double x = Positions[n];
-                double u = Directions[n];
-                double wgt = Wgts[n];
-                bool alive = true;
-                int cnt = 0;
-                while(alive) {
+                Particle p = Bank[n];
+                while(p.alive) {
                     double d = -std::log(rng.rand())/Esamp;
-                    x += u*d;
+                    p.move(d);
                     
-                    if((x >= 2.0) or (x <= 0.0)) {
-                        score_escape(wgt);
+                    if((p.x >= 2.0) or (p.x <= 0.0)) {
+                        score_escape(p.wgt);
 
-                        alive = false;
+                        p.kill();
                         #pragma omp atomic
-                        cnts_sum += cnt;
+                        cnts_sum += p.xs_evals_cnt;
                     }
                     else if(rng.rand() < q) {
                         // Collision is real, addjust weight
-                        wgt *= xs->Et(x)/(Esamp * q);
-                        double score = wgt *q;
-                        score_all_collision(score,x);
-                        score_real_collision(wgt,x);
-                        cnt++;
+                        p.wgt *= xs->Et(p.x)/(Esamp * q);
+                        double score = p.wgt *q;
+                        score_all_collision(score,p.x);
+                        score_real_collision(p.wgt,p.x);
+                        p.xs_eval();
                         
                         // Implicit capture
-                        wgt *= 1.0 - P_abs;
+                        p.wgt *= 1.0 - P_abs;
                         
                         // Scatter
-                        if(rng.rand() > P_straight_ahead) {u *= -1;}
+                        if(rng.rand() > P_straight_ahead) p.turn();
 
                         // Russian Roulette
                         double xi = rng.rand();
-                        roulette(wgt,alive,xi);
-                        if(alive == false) {
+                        roulette(p.wgt,p.alive,xi);
+                        if(p.alive == false) {
                             #pragma omp atomic
-                            cnts_sum += cnt;
+                            cnts_sum += p.xs_evals_cnt;
                         }
                         
                     }
                     else { // Collision is virtual
-                        double dw = ((1.0 - (xs->Et(x)/Esamp))/(1.0 - q));
+                        double dw = ((1.0 - (xs->Et(p.x)/Esamp))/(1.0 - q));
                         if(dw < 0.0) {
                             #pragma omp atomic
                             sign_change += 1.0;
                         }
-                        double score = wgt*(xs->Et(x)/Esamp);
-                        score_all_collision(score,x);
-                        wgt = wgt*dw;
-                        cnt++;
+                        double score = p.wgt*(xs->Et(p.x)/Esamp);
+                        score_all_collision(score,p.x);
+                        p.wgt = p.wgt*dw;
+                        p.xs_eval();
                     }
 
                     // Split if needed
-                    if(alive and (std::abs(wgt) >= wgt_split)) {
-                        double n_new = std::round(std::abs(wgt));
-                        wgt /= n_new;
+                    if(p.alive and (std::abs(p.wgt) >= wgt_split)) {
+                        double n_new = std::round(std::abs(p.wgt));
+                        p.wgt /= n_new;
                         for(int j = 0; j < static_cast<int>(n_new-1); j++) {
-                            #pragma omp critical
-                            {
-                                Split_Positions.push_back(x);
-                                Split_Direction.push_back(u);
-                                Split_Wgts.push_back(wgt);
-                            }
+                            Particle p_daughter(p.x,p.u,p.wgt);
+                            p_daughter.xs_evals_cnt = p.xs_evals_cnt;
+                            p_daughter.virtual_colls = p.virtual_colls;
+                            p_daughter.bin = p.bin;
+                            this_thread_Splits.push_back(p_daughter);
                         }
                     }// split
                 } // While alive
             }// For all particles
             #pragma omp atomic write
             pcg_seeds[thread_id] = rng.get_seed();
+
+            // Clear Bank to accept splits
+            #pragma omp single
+            {
+                Bank.clear();
+            }
+            // Add thread splits to Bank
+            #pragma omp barrier
+            #pragma omp critical
+            {
+                Bank.insert(std::end(Bank), std::begin(this_thread_Splits),
+                        std::end(this_thread_Splits));
+            }
         }// Parallel
-        n_particles = static_cast<int>(Split_Positions.size());
-        Positions = Split_Positions;
-        Directions = Split_Direction;
-        Wgts = Split_Wgts;
-        
-        Split_Positions.clear();
-        Split_Direction.clear();
-        Split_Wgts.clear();
+        n_particles = static_cast<int>(Bank.size());
+
     } // While still split particles
     
     xs_evals += cnts_sum;
     wgt_chngs += sign_change;
 }
 
-void Meshed_Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs) {
+void Meshed_Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs,
+        std::vector<Particle> const &bank) {
     std::cout << "\n Meshed Negative Weight Delta Tracking\n";
 
     int cnts_sum = 0;
     int bin_cnt_sum = 0;
     double sign_change = 0.0;
 
-    // Particle bank vectors
-    std::vector<double> Positions;
-    std::vector<double> Directions;
-    std::vector<double> Wgts;
-    std::vector<int> Bins;
-    int n_particles = NPART;
-    // Generate initial source
-    for(int i = 0; i < n_particles; i++) {
-        Positions.push_back(0.0);
-        Directions.push_back(1.0);
-        Wgts.push_back(1.0);
-        Bins.push_back(0);
-    }
-    std::vector<double> Split_Positions;
-    std::vector<double> Split_Direction;
-    std::vector<double> Split_Wgts;
-    std::vector<int> Split_Bins;
+    std::vector<Particle> Bank = bank;
+    int n_particles = static_cast<int>(Bank.size()); 
 
     while(n_particles > 0) {
         //std::cout << " nparticles = " << n_particles << "\n";
@@ -628,100 +638,93 @@ void Meshed_Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs) {
         {    
             PCG rng;
             int thread_id;
-#ifdef _OPENMP
+            #ifdef _OPENMP
             thread_id = omp_get_thread_num();
-#else
+            #else
             thread_id = 0;
-#endif
+            #endif
             uint64_t pcg_seed;
             #pragma omp atomic read
             pcg_seed = pcg_seeds[thread_id];
             rng.seed(pcg_seed);
 
+            std::vector<Particle> this_thread_Splits;
+
             #pragma omp for
             for(int n = 0; n < n_particles; n++) {
-                bool alive = true;
-                double x = Positions[n];
-                double u = Directions[n];
-                int bin = Bins[n];
-                double Esamp = xs->Esmp[bin];
+                Particle p = Bank[n];
+                double Esamp = xs->Esmp[p.bin];
                 double d,d_bin;
-                int cnt = 0;
-                int bin_cnt = 0;
-                double wgt = Wgts[n];
-                while(alive) {
-                    if(u == -1.0) d_bin = x - static_cast<double>(bin)*dx;
-                    else d_bin = (static_cast<double>(bin)*dx + dx) - x;
+                while(p.alive) {
+                    if(p.u == -1.0) d_bin = p.x-static_cast<double>(p.bin)*dx;
+                    else d_bin = (static_cast<double>(p.bin)*dx + dx) - p.x;
                     d = -std::log(rng.rand())/Esamp;
                     if(d_bin < d) {
-                        bin_cnt++;
+                        p.bin_crs();
                         d = d_bin + 1e-6;
-                        x += u*d;
-                        bin = std::floor(x/dx);
-                        if((x >= 2.0) or (x <= 0.0)) {
-                            score_escape(wgt);
-                            alive = false;
+                        p.move(d);
+                        if((p.x >= 2.0) or (p.x <= 0.0)) {
+                            score_escape(p.wgt);
+                            p.kill();
                             
                             #pragma omp atomic
-                            cnts_sum += cnt;
+                            cnts_sum += p.xs_evals_cnt;
                             #pragma omp atomic
-                            bin_cnt_sum += bin_cnt;
+                            bin_cnt_sum += p.bin_cross;
                         }
                         else {
-                            Esamp = xs->Esmp[bin];
+                            Esamp = xs->Esmp[p.bin];
                         }
                     }
                     else {
-                        x += u*d;
+                        p.move(d);
                         if(rng.rand() < q_mshd) { // Real collision
                             // update weight
-                            wgt *= (xs->Et(x)/(Esamp*q_mshd));
-                            double score = wgt*(q_mshd);
-                            score_all_collision(score,x);
-                            score_real_collision(wgt,x);
-                            cnt++;
+                            p.wgt *= (xs->Et(p.x)/(Esamp*q_mshd));
+                            double score = p.wgt*(q_mshd);
+                            score_all_collision(score,p.x);
+                            score_real_collision(p.wgt,p.x);
+                            p.xs_eval();
 
                             // Implicit capture
-                            wgt *= 1.0 - P_abs;
+                            p.wgt *= 1.0 - P_abs;
 
                             // Scatter
-                            if(rng.rand() > P_straight_ahead) u *= -1;
+                            if(rng.rand() > P_straight_ahead) p.turn();
 
                             // Russian Roulette
                             double xi = rng.rand();
-                            roulette(wgt,alive,xi);
-                            if(alive == false) {
+                            roulette(p.wgt,p.alive,xi);
+                            if(p.alive == false) {
                                 #pragma omp atomic
-                                cnts_sum += cnt;
+                                cnts_sum += p.xs_evals_cnt;
                                 #pragma omp atomic
-                                bin_cnt_sum += bin_cnt;
+                                bin_cnt_sum += p.bin_cross;
                             }
                             
                         }
                         else {
-                            cnt++;
-                            double dw=((1.0-(xs->Et(x)/Esamp))/(1.0-q_mshd));
+                            p.xs_eval();
+                            double dw=(1.0-(xs->Et(p.x)/Esamp))/(1.0-q_mshd);
                             if(dw < 0.0) {
                                 #pragma omp atomic
                                 sign_change += 1.0;
                             }
-                            double score = wgt*(xs->Et(x)/Esamp);
-                            score_all_collision(score,x);
-                            wgt = wgt*dw;
+                            double score = p.wgt*(xs->Et(p.x)/Esamp);
+                            score_all_collision(score,p.x);
+                            p.wgt = p.wgt*dw;
                         }
 
                         // Split if needed
-                        if(alive and (std::abs(wgt) >= wgt_split)) {
-                            double n_new = std::round(std::abs(wgt));
-                            wgt /= n_new;
-                            for(int j = 0; j < static_cast<int>(n_new-1); j++) {
-                                #pragma omp critical
-                                {
-                                    Split_Positions.push_back(x);
-                                    Split_Direction.push_back(u);
-                                    Split_Wgts.push_back(wgt);
-                                    Split_Bins.push_back(bin);
-                                }
+                        if(p.alive and (std::abs(p.wgt) >= wgt_split)) {
+                            double n_new = std::round(std::abs(p.wgt));
+                            p.wgt /= n_new;
+                            for(int j=0; j < static_cast<int>(n_new-1); j++) {
+                                Particle p_daughter(p.x,p.u,p.wgt);
+                                p_daughter.xs_evals_cnt = p.xs_evals_cnt;
+                                p_daughter.bin_cross = p.bin_cross;
+                                p_daughter.bin = p.bin;
+                                this_thread_Splits.push_back(p_daughter);
                             }
                         }// split
                     }
@@ -729,18 +732,23 @@ void Meshed_Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs) {
             } // For all particles
             #pragma omp atomic write
             pcg_seeds[thread_id] = rng.get_seed();
+
+            // Clear bank for new particles
+            #pragma omp single
+            {
+                Bank.clear();
+            }
+
+            // Add thread splits to Bank
+            #pragma omp barrier
+            #pragma omp critical
+            {
+                Bank.insert(std::end(Bank), std::begin(this_thread_Splits),
+                        std::end(this_thread_Splits));
+            }
         }// Parallel
         
-        n_particles = static_cast<int>(Split_Positions.size());
-        Positions = Split_Positions;
-        Directions = Split_Direction;
-        Wgts = Split_Wgts;
-        Bins = Split_Bins;
-        
-        Split_Positions.clear();
-        Split_Direction.clear();
-        Split_Wgts.clear();
-        Split_Bins.clear();
+        n_particles = static_cast<int>(Bank.size());
 
     }// While still split particles
 
@@ -748,83 +756,70 @@ void Meshed_Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs) {
     wgt_chngs += sign_change;
 }
 
-void Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
+void Bomb_Transport(std::unique_ptr<XS> const &xs, double P,
+        std::vector<Particle> const &bank) {
     std::cout << std::fixed << std::setprecision(2);
     std::cout << "\n Bomb Paper Transport, p = " << P << "\n";
     int cnts_sum = 0;
     double sign_change = 0.0;
     
     // Particle bank vectors
-    std::vector<double> Positions;
-    std::vector<double> Directions;
-    std::vector<double> Wgts;
-    int n_particles = NPART;
-    // Generate initial source
-    for(int i = 0; i < n_particles; i++) {
-        Positions.push_back(0.0);
-        Directions.push_back(1.0);
-        Wgts.push_back(1.0);
-    }
-    std::vector<double> Split_Positions;
-    std::vector<double> Split_Direction;
-    std::vector<double> Split_Wgts;
-
+    std::vector<Particle> Bank = bank;
+    int n_particles = static_cast<int>(Bank.size());
+    
     while(n_particles > 0) {
         //std::cout << " nparticles = " << n_particles << "\n";
         #pragma omp parallel
         {
             PCG rng;
             int thread_id;
-#ifdef _OPENMP
+            #ifdef _OPENMP
             thread_id = omp_get_thread_num();
-#else
+            #else
             thread_id = 0;
-#endif
+            #endif
             uint64_t pcg_seed;
             #pragma omp atomic read
             pcg_seed = pcg_seeds[thread_id];
             rng.seed(pcg_seed);
 
+            std::vector<Particle> this_thread_Splits;
+
             #pragma omp for
             for(int n = 0; n < n_particles; n++) {
+                Particle p = Bank[n];
                 double Esmp = P*xs->Emax;
-                double x = Positions[n];
-                double u = Directions[n];
-                bool alive = true;
-                int cnt = 0;
-                double wgt = Wgts[n];
                 bool real_collision = false;
 
-                while(alive) {
+                while(p.alive) {
                     double d = -std::log(rng.rand())/Esmp;
-                    x += u*d;
+                    p.move(d);
                     real_collision = false;
                     
                     // Fist check for leak
-                    if((x >= 2.0) or (x <= 0.0)) {
-                        score_escape(wgt);
-                        alive = false;
+                    if((p.x >= 2.0) or (p.x <= 0.0)) {
+                        score_escape(p.wgt);
+                        p.kill();
                         #pragma omp atomic
-                        cnts_sum += cnt;
+                        cnts_sum += p.xs_evals_cnt;
                     } else {
-                        double E_tot = xs->Et(x);
-                        cnt += 1;
+                        double E_tot = xs->Et(p.x);
+                        p.xs_eval();
                         if(E_tot > Esmp) { // First negative branch
                            //double D_alpha = alpha*E_tot / ((2.0 + alpha)*E_tot - Esmp);
                             double D = E_tot / (2*E_tot - Esmp);
                             double F = (E_tot / (D*Esmp));
-
-                            double score = wgt*E_tot/Esmp;
-                            score_all_collision(score,x);
+                            double score = p.wgt*E_tot/Esmp;
+                            score_all_collision(score,p.x);
 
                             //if(rand(rng) < D_alpha) {
                             if(rng.rand() < D) {
                                 real_collision = true;
-                                wgt *= F;
+                                p.wgt *= F;
                                 //wgt *=  F*(D/D_alpha);
                             }
                             else {
-                                wgt *= -F;
+                                p.wgt *= -F;
                                 //wgt *= -F*((1. - D)/(1. - D_alpha));
                                 #pragma omp atomic
                                 sign_change += 1.0;
@@ -834,42 +829,41 @@ void Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
                         } else { // Delta tracking branch
                             double P_real = E_tot/ Esmp;
                             if(rng.rand() < P_real) {real_collision = true;}
-                            double score = wgt*E_tot/Esmp;
-                            score_all_collision(score,x);
+                            double score = p.wgt*E_tot/Esmp;
+                            score_all_collision(score,p.x);
                         }
 
                         if(real_collision) {
                             // Score real collision
-                            score_real_collision(wgt,x);
+                            score_real_collision(p.wgt,p.x);
 
                             // Implicit caputure
-                            wgt *= 1.0 - P_abs;
+                            p.wgt *= 1.0 - P_abs;
 
                             // Scatter
-                            if(rng.rand() > P_straight_ahead) u *= -1;
+                            if(rng.rand() > P_straight_ahead) p.turn();
 
                             // Russian Roulette
                             double xi = rng.rand();
-                            roulette(wgt,alive,xi);
-                            if(alive == false) {
+                            roulette(p.wgt,p.alive,xi);
+                            if(p.alive == false) {
                                 #pragma omp atomic
-                                cnts_sum += cnt;
+                                cnts_sum += p.xs_evals_cnt;
                             }
                             
                         }// End real coll.
                     }
 
                     // Split if needed
-                    if(alive and (std::abs(wgt) >= wgt_split)) {
-                        double n_new = std::floor(std::abs(wgt));
-                        wgt /= n_new;
+                    if(p.alive and (std::abs(p.wgt) >= wgt_split)) {
+                        double n_new = std::floor(std::abs(p.wgt));
+                        p.wgt /= n_new;
                         for(int j = 0; j < static_cast<int>(n_new-1); j++) {
-                            #pragma omp critical
-                            {
-                                Split_Positions.push_back(x);
-                                Split_Direction.push_back(u);
-                                Split_Wgts.push_back(wgt);
-                            }
+                            Particle p_daughter(p.x,p.u,p.wgt);
+                            p_daughter.xs_evals_cnt = p.xs_evals_cnt;
+                            p_daughter.bin_cross = p.bin_cross;
+                            p_daughter.bin = p.bin;
+                            this_thread_Splits.push_back(p_daughter);
                         }
                     }// split
 
@@ -877,154 +871,141 @@ void Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
             }// For all particles
             #pragma omp atomic write
             pcg_seeds[thread_id] = rng.get_seed();
+
+            #pragma omp single
+            {
+                Bank.clear();
+            }
+            
+            #pragma omp barrier
+            #pragma omp critical
+            {
+                Bank.insert(std::end(Bank), std::begin(this_thread_Splits),
+                        std::end(this_thread_Splits));
+            }
         }// Parallel
 
-        n_particles = static_cast<int>(Split_Positions.size());
-        Positions = Split_Positions;
-        Directions = Split_Direction;
-        Wgts = Split_Wgts;
-        
-        Split_Positions.clear();
-        Split_Direction.clear();
-        Split_Wgts.clear();
+        n_particles = static_cast<int>(Bank.size());
+
     }// While still particles
 
     xs_evals += cnts_sum;
     wgt_chngs += sign_change;
 }
 
-void Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
+void Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P,
+        std::vector<Particle> const &bank) {
     std::cout << std::fixed << std::setprecision(2);
     std::cout << "\n Meshed Bomb Paper Transport, p = " << P << "\n";
     int cnts_sum = 0;
     double sign_change = 0.0;
 
     // Particle bank vectors
-    std::vector<double> Positions;
-    std::vector<double> Directions;
-    std::vector<double> Wgts;
-    std::vector<int> Bins;
-    int n_particles = NPART;
-    // Generate initial source
-    for(int i = 0; i < n_particles; i++) {
-        Positions.push_back(0.0);
-        Directions.push_back(1.0);
-        Wgts.push_back(1.0);
-        Bins.push_back(0);
-    }
-    std::vector<double> Split_Positions;
-    std::vector<double> Split_Direction;
-    std::vector<double> Split_Wgts;
-    std::vector<int> Split_Bins;
-
+    std::vector<Particle> Bank = bank;
+    int n_particles = static_cast<int>(Bank.size());
+    
     while(n_particles > 0) {
         //std::cout << " nparticles = " << n_particles << "\n";
         #pragma omp parallel
         {
             PCG rng;
             int thread_id;
-#ifdef _OPENMP
+            #ifdef _OPENMP
             thread_id = omp_get_thread_num();
-#else
+            #else
             thread_id = 0;
-#endif
+            #endif
             uint64_t pcg_seed;
             #pragma omp atomic read
             pcg_seed = pcg_seeds[thread_id];
 
+            std::vector<Particle> this_thread_Splits;
+
             #pragma omp for
             for(int n = 0; n < n_particles; n++) {
-                double x = Positions[n];
-                double u = Directions[n];
+                Particle p = Bank[n];
                 double d_bin;
-                int bin = Bins[n];
-                double Esmp = P*xs->Em[bin];
-                bool alive = true;
-                int cnt = 0;
-                double wgt = Wgts[n];
+                double Esmp = P*xs->Em[p.bin];
                 bool real_collision = false;
 
-                while(alive) {
+                while(p.alive) {
                     double d = -std::log(rng.rand())/Esmp;
-                    if(u == -1.0) d_bin = x - static_cast<double>(bin)*dx;
-                    else d_bin = (static_cast<double>(bin)*dx + dx) - x;
+                    if(p.u == -1.0) d_bin = p.x-static_cast<double>(p.bin)*dx;
+                    else d_bin = (static_cast<double>(p.bin)*dx + dx) - p.x;
                     real_collision = false;
                     
                     if(d_bin < d) {
-                        x += u*(d_bin+1e-6);
-                        if((x >= 2.0) or (x <= 0.0)) {
-                            alive = false;
-                            score_escape(wgt);
+                        p.move(d_bin+1e-6);
+                        if((p.x >= 2.0) or (p.x <= 0.0)) {
+                            p.kill();
+                            score_escape(p.wgt);
                             #pragma omp atomic
-                            cnts_sum += cnt;
+                            cnts_sum += p.xs_evals_cnt;
                         } else {
-                            bin = std::floor(x/dx);
-                            Esmp = P*xs->Em[bin];
+                            Esmp = P*xs->Em[p.bin];
                         }
 
                     } else {
-                        x += u*d;
+                        p.move(d);
                         // Fist check for leak
-                        if((x >= 2.0) or (x <= 0.0)) {
-                            alive = false;
-                            score_escape(wgt);
+                        if((p.x >= 2.0) or (p.x <= 0.0)) {
+                            p.kill();
+                            score_escape(p.wgt);
                             #pragma omp atomic
-                            cnts_sum += cnt;
+                            cnts_sum += p.xs_evals_cnt;
                         } else {
-                            double E_tot = xs->Et(x);
-                            cnt += 1;
+                            double E_tot = xs->Et(p.x);
+                            p.xs_eval();
                             if(E_tot > Esmp) { // First negative branch
                                 double D = E_tot / (2*E_tot - Esmp);
                                 double F = E_tot / (D*Esmp);
-                                double score = wgt*E_tot/Esmp;
-                                score_all_collision(score,x);
-                                wgt *= F;
+                                double score = p.wgt*E_tot/Esmp;
+                                score_all_collision(score,p.x);
+                                p.wgt *= F;
                                 if(rng.rand() < D) {real_collision = true;}
                                 else {
-                                    wgt *= -1.0;
+                                    p.wgt *= -1.0;
                                     #pragma omp atomic
                                     sign_change += 1.0;
                                 }
 
                             } else { // Delta tracking branch
                                 double P_real = E_tot/ Esmp;
-                                double score = wgt*E_tot/Esmp;
-                                score_all_collision(score,x);
-                                if(rng.rand() < P_real) {real_collision = true;}
+                                double score = p.wgt*E_tot/Esmp;
+                                score_all_collision(score,p.x);
+                                if(rng.rand() < P_real) {real_collision=true;}
                             }
 
                             if(real_collision) {
                                 // Score real collision
-                                score_real_collision(wgt,x);
+                                score_real_collision(p.wgt,p.x);
 
                                 // Implicit capture
-                                wgt *= 1.0 - P_abs;
+                                p.wgt *= 1.0 - P_abs;
 
                                 // Scatter
-                                if(rng.rand() > P_straight_ahead) u *= -1;
+                                if(rng.rand() > P_straight_ahead) p.turn();
 
                                 // Russian Roulette
                                 double xi = rng.rand();
-                                roulette(wgt,alive,xi);
-                                if(alive == false) {
+                                roulette(p.wgt,p.alive,xi);
+                                if(p.alive == false) {
                                     #pragma omp atomic
-                                    cnts_sum += cnt;
+                                    cnts_sum += p.xs_evals_cnt;
                                 }
 
                             }
 
                             // Split if needed
-                            if(alive and (std::abs(wgt) >= wgt_split)) {
-                                double n_new = std::round(std::abs(wgt));
-                                wgt /= n_new;
-                                for(int j = 0;j<static_cast<int>(n_new-1);j++) {
-                                    #pragma omp critical
-                                    {
-                                        Split_Positions.push_back(x);
-                                        Split_Direction.push_back(u);
-                                        Split_Wgts.push_back(wgt);
-                                        Split_Bins.push_back(bin);
-                                    }
+                            if(p.alive and (std::abs(p.wgt) >= wgt_split)) {
+                                double n_new = std::round(std::abs(p.wgt));
+                                p.wgt /= n_new;
+                                for(int j=0;j<static_cast<int>(n_new-1);j++) {
+                                    Particle p_daughter(p.x,p.u,p.wgt);
+                                    p_daughter.xs_evals_cnt = p.xs_evals_cnt;
+                                    p_daughter.bin_cross = p.bin_cross;
+                                    p_daughter.bin = p.bin;
+                                    this_thread_Splits.push_back(p_daughter);
                                 }
                             }// split
                         }
@@ -1033,119 +1014,100 @@ void Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
             }// For all particles
             #pragma omp atomic write
             pcg_seeds[thread_id] = pcg_seed;
+
+            #pragma omp single
+            {
+                Bank.clear();
+            }
+            
+            #pragma omp barrier
+            #pragma omp critical
+            {
+                Bank.insert(std::end(Bank),std::begin(this_thread_Splits),
+                        std::end(this_thread_Splits));
+            }
         }// Parallel
 
-        n_particles = static_cast<int>(Split_Positions.size());
-        Positions = Split_Positions;
-        Directions = Split_Direction;
-        Wgts = Split_Wgts;
-        Bins = Split_Bins;
-        
-        Split_Positions.clear();
-        Split_Direction.clear();
-        Split_Wgts.clear();
-        Split_Bins.clear();
-    } // While split particles
+        n_particles = static_cast<int>(Bank.size());
 
+    } // While split particles
     
     xs_evals += cnts_sum;
     wgt_chngs += sign_change;
 }
 
-void Improving_Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
+void Improving_Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P,
+        std::vector<Particle> const &bank) {
     std::cout << std::fixed << std::setprecision(2);
     std::cout << "\n Improving Meshed Bomb Paper Transport, p = " << P << "\n";
     int cnts_sum = 0;
     double sign_change = 0.0;
 
     // Particle bank vectors
-    std::vector<double> Positions;
-    std::vector<double> Directions;
-    std::vector<double> Wgts;
-    std::vector<int> Bins;
-    int n_particles = NPART;
-    // Generate initial source
-    for(int i = 0; i < n_particles; i++) {
-        Positions.push_back(0.0);
-        Directions.push_back(1.0);
-        Wgts.push_back(1.0);
-        Bins.push_back(0);
-    }
-    std::vector<double> Split_Positions;
-    std::vector<double> Split_Direction;
-    std::vector<double> Split_Wgts;
-    std::vector<int> Split_Bins;
-
-    std::vector<double> Em;
-    for(int i = 0; i < NBIN; i++) {
-        Em.push_back(P*xs->Em[i]);
-    }
-
+    std::vector<Particle> Bank = bank;
+    int n_particles = static_cast<int>(Bank.size());
+    
     while(n_particles > 0) {
         #pragma omp parallel
         {
             PCG rng;
             int thread_id;
-#ifdef _OPENMP
+            #ifdef _OPENMP
             thread_id = omp_get_thread_num();
-#else
+            #else
             thread_id = 0;
-#endif
+            #endif
             uint64_t pcg_seed;
             #pragma omp atomic read
             pcg_seed = pcg_seeds[thread_id];
             rng.seed(pcg_seed);
 
+            std::vector<Particle> this_thread_Splits;
+
             #pragma omp for
             for(int n = 0; n < n_particles; n++) {
-                double x = Positions[n];
-                double u = Directions[n];
+                Particle p = Bank[n];
                 double d_bin;
-                int bin = Bins[n];
-                double Esmp = Em[bin];
-                bool alive = true;
-                int cnt = 0;
-                double wgt = Wgts[n];
+                double Esmp = xs->Em_imp[p.bin];
                 bool real_collision = false;
 
-                while(alive) {
+                while(p.alive) {
                     double d = -std::log(rng.rand())/Esmp;
-                    if(u == -1.0) d_bin = x - static_cast<double>(bin)*dx;
-                    else d_bin = (static_cast<double>(bin)*dx + dx) - x;
+                    if(p.u == -1.0) d_bin = p.x-static_cast<double>(p.bin)*dx;
+                    else d_bin = (static_cast<double>(p.bin)*dx + dx) - p.x;
                     real_collision = false;
                     
                     if(d_bin < d) {
-                        x += u*(d_bin+1e-6);
-                        if((x >= 2.0) or (x <= 0.0)) {
-                            alive = false;
-                            score_escape(wgt);
+                        p.move(d_bin+1e-6);
+                        if((p.x >= 2.0) or (p.x <= 0.0)) {
+                            p.kill();
+                            score_escape(p.wgt);
                             #pragma omp atomic
-                            cnts_sum += cnt;
+                            cnts_sum += p.xs_evals_cnt;
                         } else {
-                            bin = std::floor(x/dx);
-                            Esmp = xs->Em[bin];
+                            Esmp = xs->Em_imp[p.bin];
                         }
 
                     } else {
-                        x += u*d;
+                        p.move(d);
                         // Fist check for leak
-                        if((x >= 2.0) or (x <= 0.0)) {
-                            alive = false;
-                            score_escape(wgt);
+                        if((p.x >= 2.0) or (p.x <= 0.0)) {
+                            p.kill();
+                            score_escape(p.wgt);
                             #pragma omp atomic
-                            cnts_sum += cnt;
+                            cnts_sum += p.xs_evals_cnt;
                         } else {
-                            double E_tot = xs->Et(x);
-                            cnt += 1;
+                            double E_tot = xs->Et(p.x);
+                            p.xs_eval();
                             if(E_tot > Esmp) { // First negative branch
                                 double D = E_tot / (2*E_tot - Esmp);
                                 double F = E_tot / (D*Esmp);
-                                double score = wgt*E_tot/Esmp;
-                                score_all_collision(score,x);
-                                wgt *= F;
+                                double score = p.wgt*E_tot/Esmp;
+                                score_all_collision(score,p.x);
+                                p.wgt *= F;
                                 if(rng.rand() < D) {real_collision = true;}
                                 else {
-                                    wgt *= -1.0;
+                                    p.wgt *= -1.0;
                                     #pragma omp atomic
                                     sign_change += 1.0;
                                 }
@@ -1154,27 +1116,27 @@ void Improving_Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
 
                             } else { // Delta tracking branch
                                 double P_real = E_tot/ Esmp;
-                                double score = wgt*E_tot/Esmp;
-                                score_all_collision(score,x);
+                                double score = p.wgt*E_tot/Esmp;
+                                score_all_collision(score,p.x);
                                 if(rng.rand() < P_real) {real_collision = true;}
                             }
 
                             if(real_collision) {
                                 // Score real collision
-                                score_real_collision(wgt,x);
+                                score_real_collision(p.wgt,p.x);
 
                                 // Implicit capture
-                                wgt *= 1.0 - P_abs;
+                                p.wgt *= 1.0 - P_abs;
 
                                 // Scatter
-                                if(rng.rand() > P_straight_ahead) u *= -1;
+                                if(rng.rand() > P_straight_ahead) p.turn();
 
                                 // Russian Roulette
                                 double xi = rng.rand();
-                                roulette(wgt,alive,xi);
-                                if(alive == false) {
+                                roulette(p.wgt,p.alive,xi);
+                                if(p.alive == false) {
                                     #pragma omp atomic
-                                    cnts_sum += cnt;
+                                    cnts_sum += p.xs_evals_cnt;
                                 }
 
                             }
@@ -1182,22 +1144,21 @@ void Improving_Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
                             if(E_tot > Esmp) {
                                 // Improve Esmp
                                 Esmp = E_tot;
-                                Em[bin] = Esmp;
+                                #pragma omp atomic write
+                                xs->Em_imp[p.bin] = Esmp;
                             }
                             
 
                             // Split if needed
-                            if(alive and (std::abs(wgt) >= wgt_split)) {
-                                double n_new = std::round(std::abs(wgt));
-                                wgt /= n_new;
-                                for(int j = 0;j<static_cast<int>(n_new-1);j++) {
-                                    #pragma omp critical
-                                    {
-                                        Split_Positions.push_back(x);
-                                        Split_Direction.push_back(u);
-                                        Split_Wgts.push_back(wgt);
-                                        Split_Bins.push_back(bin);
-                                    }
+                            if(p.alive and (std::abs(p.wgt) >= wgt_split)) {
+                                double n_new = std::round(std::abs(p.wgt));
+                                p.wgt /= n_new;
+                                for(int j=0;j<static_cast<int>(n_new-1);j++) {
+                                    Particle p_daughter(p.x,p.u,p.wgt);
+                                    p_daughter.bin = p.bin;
+                                    p_daughter.xs_evals_cnt = p.xs_evals_cnt;
+                                    p_daughter.bin_cross = p.bin_cross;
+                                    this_thread_Splits.push_back(p_daughter);
                                 }
                             }// split
                         }
@@ -1206,18 +1167,22 @@ void Improving_Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
             }// For all particles
             #pragma omp atomic write
             pcg_seeds[thread_id] = rng.get_seed();
+
+            #pragma omp single
+            {
+                Bank.clear();
+            }
+            
+            #pragma omp barrier
+            #pragma omp critical
+            {
+                Bank.insert(std::end(Bank), std::begin(this_thread_Splits),
+                        std::end(this_thread_Splits));
+            }
         }// Parallel
 
-        n_particles = static_cast<int>(Split_Positions.size());
-        Positions = Split_Positions;
-        Directions = Split_Direction;
-        Wgts = Split_Wgts;
-        Bins = Split_Bins;
-        
-        Split_Positions.clear();
-        Split_Direction.clear();
-        Split_Wgts.clear();
-        Split_Bins.clear();
+        n_particles = static_cast<int>(Bank.size());
+
     } // While split particles
 
     
@@ -1225,77 +1190,65 @@ void Improving_Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P) {
     wgt_chngs += sign_change;
 }
 
-void Previous_XS_Bomb_Transport(std::unique_ptr<XS> const &xs) {
+void Previous_XS_Bomb_Transport(std::unique_ptr<XS> const &xs,
+        std::vector<Particle> const &bank) {
     std::cout << std::fixed << std::setprecision(2);
     std::cout << "\n Previous XS Bomb Paper Transport\n";
     int cnts_sum = 0;
     double sign_change = 0.0;
     
     // Particle bank vectors
-    std::vector<double> Positions;
-    std::vector<double> Directions;
-    std::vector<double> Wgts;
-    std::vector<double> Esmps;
-    int n_particles = NPART;
-    // Generate initial source
+    std::vector<Particle> Bank = bank;
+    int n_particles = static_cast<int>(Bank.size());
     for(int i = 0; i < n_particles; i++) {
-        Positions.push_back(0.0);
-        Directions.push_back(1.0);
-        Wgts.push_back(1.0);
-        Esmps.push_back(3.0*xs->Et(0.0));
+        Bank[i].Esmp = xs->Et(Bank[i].x);
     }
-    std::vector<double> Split_Positions;
-    std::vector<double> Split_Direction;
-    std::vector<double> Split_Wgts;
-    std::vector<double> Split_Esmps;
 
     while(n_particles > 0) {
         #pragma omp parallel
         {
             PCG rng;
             int thread_id;
-#ifdef _OPENMP
+            #ifdef _OPENMP
             thread_id = omp_get_thread_num();
-#else
+            #else
             thread_id = 0;
-#endif
+            #endif
             uint64_t pcg_seed;
             #pragma omp atomic read
             pcg_seed = pcg_seeds[thread_id];
             rng.seed(pcg_seed);
 
+            std::vector<Particle> this_thread_Splits;
+
             #pragma omp for
             for(int n = 0; n < n_particles; n++) {
-                double x = Positions[n];
-                double Esmp = Esmps[n];
+                Particle p = Bank[n];
+                double Esmp = p.Esmp;
                 if(Esmp < 1.0) Esmp = 1.0;
-                double u = Directions[n];
-                bool alive = true;
-                int cnt = 0;
-                double wgt = Wgts[n];
                 bool real_collision = false;
 
-                while(alive) {
+                while(p.alive) {
                     double d = -std::log(rng.rand())/Esmp;
-                    x += u*d;
+                    p.move(d);
                     real_collision = false;
                     
                     // Fist check for leak
-                    if((x >= 2.0) or (x <= 0.0)) {
-                        score_escape(wgt);
-                        alive = false;
+                    if((p.x >= 2.0) or (p.x <= 0.0)) {
+                        score_escape(p.wgt);
+                        p.kill();
                         #pragma omp atomic
-                        cnts_sum += cnt;
+                        cnts_sum += p.xs_evals_cnt;
                     } else {
-                        double E_tot = xs->Et(x);
-                        cnt += 1;
+                        double E_tot = xs->Et(p.x);
+                        p.xs_eval();
                         if(E_tot > Esmp) { // First negative branch
                             double D = E_tot / (2*E_tot - Esmp);
                             double F = E_tot / (D*Esmp);
-                            wgt *= F;
+                            p.wgt *= F;
                             if(rng.rand() < D) {real_collision = true;}
                             else {
-                                wgt *= -1.0;
+                                p.wgt *= -1.0;
                                 #pragma omp atomic
                                 sign_change += 1.0;
                             }
@@ -1310,37 +1263,35 @@ void Previous_XS_Bomb_Transport(std::unique_ptr<XS> const &xs) {
 
                         if(real_collision) {
                             // Record collision
-                            score_real_collision(wgt, x);
+                            score_real_collision(p.wgt, p.x);
 
                             // Implicit caputure
-                            wgt *= 1.0 - P_abs;
+                            p.wgt *= 1.0 - P_abs;
 
                             // Scatter
-                            if(rng.rand() > P_straight_ahead) u *= -1;
+                            if(rng.rand() > P_straight_ahead) p.turn();
 
                             // Russian Roulette
                             double xi = rng.rand();
-                            roulette(wgt,alive,xi);
-                            if(alive == false) {
+                            roulette(p.wgt,p.alive,xi);
+                            if(p.alive == false) {
                                 #pragma omp atomic
-                                cnts_sum += cnt;
+                                cnts_sum += p.xs_evals_cnt;
                             }
                            
                         }// End real coll.
                     }
 
                     // Split if needed
-                    if(alive and (std::abs(wgt) >= wgt_split)) {
-                        double n_new = std::round(std::abs(wgt));
-                        wgt /= n_new;
+                    if(p.alive and (std::abs(p.wgt) >= wgt_split)) {
+                        double n_new = std::round(std::abs(p.wgt));
+                        p.wgt /= n_new;
                         for(int j = 0; j < static_cast<int>(n_new-1); j++) {
-                            #pragma omp critical
-                            {
-                                Split_Positions.push_back(x);
-                                Split_Direction.push_back(u);
-                                Split_Wgts.push_back(wgt);
-                                Split_Esmps.push_back(Esmp);
-                            }
+                            Particle p_daughter(p.x,p.u,p.wgt);
+                            p_daughter.bin = p.bin;
+                            p_daughter.xs_evals_cnt = p.xs_evals_cnt;
+                            p_daughter.bin_cross = p.bin_cross;
+                            this_thread_Splits.push_back(p_daughter); 
                         }
                     }// split
 
@@ -1348,161 +1299,24 @@ void Previous_XS_Bomb_Transport(std::unique_ptr<XS> const &xs) {
             }// For all particles
             #pragma omp atomic write
             pcg_seeds[thread_id] = rng.get_seed();
+            
+            #pragma omp barrier
+            #pragma omp single
+            {
+                Bank.clear();
+            }
+
+            #pragma omp critical
+            {
+                Bank.insert(std::end(Bank), std::begin(this_thread_Splits),
+                        std::end(this_thread_Splits));
+            }
         }// Parallel
 
-        n_particles = static_cast<int>(Split_Positions.size());
-        Positions = Split_Positions;
-        Directions = Split_Direction;
-        Wgts = Split_Wgts;
-        Esmps = Split_Esmps;
-        
-        Split_Positions.clear();
-        Split_Direction.clear();
-        Split_Wgts.clear();
-        Split_Esmps.clear();
+        n_particles = static_cast<int>(Bank.size());
+
     }// While still particles
 
-    xs_evals += cnts_sum;
-    wgt_chngs += sign_change;
-}
-
-void Old_Previous_XS_Bomb_Transport(std::unique_ptr<XS> const &xs) {
-    std::cout << std::fixed << std::setprecision(2);
-    std::cout << "\n Previous XS Bomb Paper Transport\n";
-    int cnts_sum = 0;
-    double sign_change = 0.0;
-
-    // Particle bank vectors
-    std::vector<double> Positions;
-    std::vector<double> Directions;
-    std::vector<double> Wgts;
-    std::vector<double> Esmps;
-    int n_particles = NPART;
-    // Generate initial source
-    for(int i = 0; i < n_particles; i++) {
-        Positions.push_back(0.0);
-        Directions.push_back(1.0);
-        Wgts.push_back(1.0);
-        Esmps.push_back(15.0*xs->Et(0.0));
-    }
-    std::vector<double> Split_Positions;
-    std::vector<double> Split_Direction;
-    std::vector<double> Split_Wgts;
-    std::vector<double> Split_Esmps;
-
-    while(n_particles > 0) {
-        std::cout << " NParticles = " << n_particles << "\n";
-        #pragma omp parallel
-        {
-            PCG rng;
-            int thread_id;
-#ifdef _OPENMP
-            thread_id = omp_get_thread_num();
-#else
-            thread_id = 0;
-#endif
-            uint64_t pcg_seed;
-            #pragma omp atomic read
-            pcg_seed = pcg_seeds[thread_id];
-            rng.seed(pcg_seed);
-
-            #pragma omp for
-            for(int n = 0; n < n_particles; n++) {
-                double Esmp = Esmps[n];
-                if(Esmp < 1.0) Esmp = 1.0;
-                double x = Positions[n];
-                double u = Directions[n];
-                bool alive = true;
-                int cnt = 1;
-                double wgt = Wgts[n];
-                bool real_collision = false;
-
-                while(alive) {
-                    real_collision = false;
-                    double d = -std::log(rng.rand())/Esmp;
-                    x += u*d;
-                    
-                    // Fist check for leak
-                    if((x >= 2.0) or (x <= 0.0)) {
-                        score_escape(wgt);
-                        alive = false;
-                        #pragma omp atomic
-                        cnts_sum += cnt;
-                    } else {
-                        double E_tot = xs->Et(x);
-                        cnt += 1;
-                        if(E_tot > Esmp) { // First negative branch
-                            double D = E_tot / (2*E_tot - Esmp);
-                            double F = E_tot / (D*Esmp);
-                            wgt *= F;
-                            if(rng.rand() < D) {real_collision = true;}
-                            else {
-                                wgt *= -1.0;
-                                #pragma omp atomic
-                                sign_change += 1.0;
-                            }
-
-                        } else { // Delta tracking branch
-                            double P_real = E_tot/ Esmp;
-                            if(rng.rand() < P_real) {real_collision = true;}
-                        }
-
-                        Esmp = 15.0*E_tot; // Update sampling XS to current XS at location
-                        if(Esmp < 1.0) Esmp = 1.0;
-
-                        if(real_collision) {
-                            score_real_collision(wgt,x);
-
-                            // Implicit capture
-                            wgt *= 1.0 - P_abs;
-
-                            // Scatter
-                            if(rng.rand() > P_straight_ahead) u *= -1;
-
-                            // Russian Roulette
-                            double xi = rng.rand();
-                            roulette(wgt,alive,xi);
-                            if(alive == false) {
-                                #pragma omp atomic
-                                cnts_sum += cnt;
-                            }
-                            
-                        }
-
-                        // Split if needed
-                        if(alive and (std::abs(wgt) >= 2.0)) {
-                            double n_new = std::round(std::abs(wgt));
-                            wgt /= n_new;
-                            for(int j = 0;j<static_cast<int>(n_new-1);j++) {
-                                #pragma omp critical
-                                {
-                                    Split_Positions.push_back(x);
-                                    Split_Direction.push_back(u);
-                                    Split_Wgts.push_back(wgt);
-                                    Split_Esmps.push_back(Esmp);
-                                }
-                            }
-                        }// split
-                    }
-                }// While alive
-            }// For all particles
-            #pragma omp atomic write
-            pcg_seeds[thread_id] = rng.get_seed();
-        }// Parallel
-
-        n_particles = static_cast<int>(Split_Positions.size());
-        Positions = Split_Positions;
-        Directions = Split_Direction;
-        Wgts = Split_Wgts;
-        Esmps = Split_Esmps;
-        
-        Split_Positions.clear();
-        Split_Direction.clear();
-        Split_Wgts.clear();
-        Split_Esmps.clear();
-
-    } // While split particles
-    
     xs_evals += cnts_sum;
     wgt_chngs += sign_change;
 }
@@ -1709,52 +1523,56 @@ int main() {
     }
 
     File.open("Coll_Densities.txt");
-    for(int type = 1; type <= 2; type++) {
-      std::unique_ptr<XS> crs = make_cross_section(type);
 
-      Zero_Values();
-      File << "#TM,DT\n";
-      Delta_Tracking(crs);
-      Output();
-
-      Zero_Values();
-      File << "#TM,MDT\n";
-      Meshed_Delta_Tracking(crs);
-      Output();
-
-      Zero_Values();
-      File << "#TM,NWDT\n";
-      Negative_Weight_Delta_Tracking(crs);
-      Output();
-
-      Zero_Values();
-      File << "#TM,MNWDT\n";
-      Meshed_Negative_Weight_Delta_Tracking(crs);
-      Output();
-
-      Zero_Values();
-      File << "#TM,BT\n";
-      Bomb_Transport(crs,0.80);
-      Output();
-
-      Zero_Values();
-      File << "#TM,MBT\n";
-      Meshed_Bomb_Transport(crs,0.80);
-      Output();
-     
-      Zero_Values();
-      File << "#TM,IMBT\n";
-      Improving_Meshed_Bomb_Transport(crs,0.80);
-      Output();
-      
-      /*Zero_Values();
-      File << "#TM,PBT\n";
-      Previous_XS_Bomb_Transport(crs);
-      Output();*/
-
+    int xs_type = 1;
+    //int trk_type = 1;
+    
+    std::unique_ptr<XS> crs = make_cross_section(xs_type);
+    
+    // Make initial source distribution
+    std::vector<Particle> particle_bank;
+    for(int i = 0; i < NPART; i++) {
+        particle_bank.push_back(Particle(0.0,1.0,1.0));
+        // Initials source, particles start at x = 0.0 in bin 0,
+        // in forward direction, with wgt = 1.0
     }
+
+    Zero_Values();
+    File << "#TM,DT\n";
+    Delta_Tracking(crs, particle_bank);
+    Output();
+
+    Zero_Values();
+    File << "#TM,MDT\n";
+    Meshed_Delta_Tracking(crs, particle_bank);
+    Output();
+
+    Zero_Values();
+    File << "#TM,NWDT\n";
+    Negative_Weight_Delta_Tracking(crs, particle_bank);
+    Output();
+
+    Zero_Values();
+    File << "#TM,MNWDT\n";
+    Meshed_Negative_Weight_Delta_Tracking(crs,particle_bank);
+    Output();
+
+    Zero_Values();
+    File << "#TM,BT\n";
+    Bomb_Transport(crs,0.8,particle_bank);
+    Output();
+
+    Zero_Values();
+    File << "#TM,MBT\n";
+    Meshed_Bomb_Transport(crs,0.8,particle_bank);
+    Output();
+
+    Zero_Values();
+    File << "#TM,IBT\n";
+    Improving_Meshed_Bomb_Transport(crs,0.8,particle_bank);
+    Output();
+    
     File.close();
 
-    pcg_seeds.clear();
     return 0;
 }
