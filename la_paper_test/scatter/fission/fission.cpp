@@ -68,6 +68,12 @@ double wgt_chngs; // # of times particle wgt sign flipped
 std::vector<std::vector<double>> coll_density; //[0] #sum coll in box,[1] sum coll sqr, [2] coll STD, [3] Coll FOM in box
 std::vector<std::vector<double>> all_coll_density; // Same as above but scores at all collisions (virt. and real)
 
+double keff = 1.0;
+double k_sum = 0.0;
+double k_sqr_sum = 0.0;
+double total_weight = static_cast<double>(NPART);
+double new_neutron_tally = 0.0;
+
 // Constants for Gaussian XS functions
 const double T_2_s = A*std::sqrt(M_PI)*((std::erf(std::sqrt(a_s)*(2.0 - z)) 
                      - std::erf(std::sqrt(a_s)*(-z)))/(2.0*std::sqrt(a_s)));
@@ -332,11 +338,12 @@ void score_escape(double& wgt) {
     escape_sqr += wgt*wgt;
 }
 
-void Delta_Tracking(std::unique_ptr<XS> const &xs,
+std::vector<Particle> Delta_Tracking(std::unique_ptr<XS> const &xs,
         std::vector<Particle> &bank) {
     std::cout << "\n Delta Tracking\n";
 
     int cnts_sum = 0;
+    std::vector<Particle> fission_daughters;
 
     #pragma omp parallel
     {    
@@ -351,6 +358,8 @@ void Delta_Tracking(std::unique_ptr<XS> const &xs,
         #pragma omp atomic read
         pcg_seed = pcg_seeds[thread_id];
         rng.seed(pcg_seed);
+
+        std::vector<Particle> this_thread_fission;
 
         #pragma omp for
         for(int n = 0; n < NPART; n++) {
@@ -382,6 +391,19 @@ void Delta_Tracking(std::unique_ptr<XS> const &xs,
                     // Score real collision
                     score_real_collision(p.wgt,p.x); 
 
+                    // Score fission
+                    #pragma omp atomic
+                    new_neutron_tally += p.wgt*nu*P_fis;
+
+                    // Fission
+                    int n_new = std::floor(p.wgt*nu*P_fis/keff + rng.rand());
+                    for(int i = 0; i < n_new; i++) {
+                        double u;
+                        if(rng.rand() < 0.5) u = 1.0;
+                        else u = -1.0;
+                        this_thread_fission.push_back(Particle(p.x,u,p.wgt));
+                    }
+                    
                     // Implicit capture
                     p.wgt *= 1.0 - P_abs; // Equivalent to 1.0 - (Ea/Et)
 
@@ -402,17 +424,30 @@ void Delta_Tracking(std::unique_ptr<XS> const &xs,
         {
             pcg_seeds[thread_id] = rng.get_seed();
         }
+
+        #pragma omp barrier
+        #pragma omp critical
+        {
+            fission_daughters.insert(std::end(fission_daughters),
+                    std::begin(this_thread_fission),
+                    std::end(this_thread_fission));
+        }
     } // Parallel
     xs_evals += cnts_sum;
+
+    return fission_daughters;
 }
 
-void Meshed_Delta_Tracking(std::unique_ptr<XS> const &xs,
+
+std::vector<Particle> Meshed_Delta_Tracking(std::unique_ptr<XS> const &xs,
         std::vector<Particle> const &bank) {
     std::cout << "\n Meshed Delta Tracking\n";
 
     int cnts_sum = 0;
     int virtual_cnt_sum = 0;
     int bin_cnt_sum = 0;
+
+    std::vector<Particle> fission_daughters;
 
     #pragma omp parallel
     {    
@@ -427,6 +462,8 @@ void Meshed_Delta_Tracking(std::unique_ptr<XS> const &xs,
         #pragma omp atomic read
         pcg_seed = pcg_seeds[thread_id];
         rng.seed(pcg_seed);
+
+        std::vector<Particle> this_thread_fission;
 
         #pragma omp for
         for(int n = 0; n < NPART; n++) {
@@ -478,6 +515,18 @@ void Meshed_Delta_Tracking(std::unique_ptr<XS> const &xs,
                 if(p.alive) {
                     // Score real collision
                     score_real_collision(p.wgt,p.x);
+
+                    // Tally new neutrons
+                    #pragma omp atomic
+                    new_neutron_tally += p.wgt*nu*P_fis;
+
+                    int n_new = std::floor(p.wgt*nu*P_fis/keff + rng.rand());
+                    for(int i = 0; i < n_new; i++) {
+                        double u;
+                        if(rng.rand() < 0.5) u = 1.0;
+                        else u = -1.0;
+                        this_thread_fission.push_back(Particle(p.x,u,p.wgt));
+                    }
                    
                     // Implicit capture
                     p.wgt *= 1.0 - P_abs;
@@ -501,11 +550,21 @@ void Meshed_Delta_Tracking(std::unique_ptr<XS> const &xs,
         }// For all particles
         #pragma omp atomic write
         pcg_seeds[thread_id] = rng.get_seed();
+
+        #pragma omp barrier
+        #pragma omp critical
+        {
+            fission_daughters.insert(std::end(fission_daughters),
+                    std::begin(this_thread_fission),
+                    std::end(this_thread_fission));
+        }
     }// Parallel
     xs_evals += cnts_sum;
+
+    return fission_daughters;
 }
 
-void Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs,
+std::vector<Particle> Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs,
         std::vector<Particle> const &bank) {
     std::cout << "\n Negative Weight Delta Tracking\n";
 
@@ -514,6 +573,8 @@ void Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs,
 
    std::vector<Particle> Bank = bank; // Copy for re-writing after splits
    int n_particles = static_cast<int>(Bank.size());
+
+   std::vector<Particle> fission_daughters;
 
     while(n_particles > 0) {
         //std::cout << " nparticles = " << n_particles << "\n";
@@ -532,6 +593,7 @@ void Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs,
             rng.seed(pcg_seed);
 
             std::vector<Particle> this_thread_Splits;
+            std::vector<Particle> this_thread_fission;
 
             #pragma omp for
             for(int n = 0; n < n_particles; n++) {
@@ -555,6 +617,19 @@ void Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs,
                         score_all_collision(score,p.x);
                         score_real_collision(p.wgt,p.x);
                         p.xs_eval();
+
+                        // Count new fission neutrons
+                        #pragma omp atomic
+                        new_neutron_tally += p.wgt*nu*P_fis;
+
+                        int n_new=std::floor(p.wgt*nu*P_fis/keff+rng.rand());
+                        for(int i = 0; i < n_new; i++) {
+                            double u;
+                            if(rng.rand() < 0.5) u = 1.0;
+                            else u = -1.0;
+                            this_thread_fission.push_back(
+                                    Particle(p.x,u,p.wgt));
+                        }
                         
                         // Implicit capture
                         p.wgt *= 1.0 - P_abs;
@@ -611,6 +686,10 @@ void Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs,
             {
                 Bank.insert(std::end(Bank), std::begin(this_thread_Splits),
                         std::end(this_thread_Splits));
+
+                fission_daughters.insert(std::end(fission_daughters),
+                        std::begin(this_thread_fission),
+                        std::end(this_thread_fission));
             }
         }// Parallel
         n_particles = static_cast<int>(Bank.size());
@@ -619,9 +698,11 @@ void Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs,
     
     xs_evals += cnts_sum;
     wgt_chngs += sign_change;
+
+    return fission_daughters;
 }
 
-void Meshed_Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs,
+std::vector<Particle> Meshed_Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs,
         std::vector<Particle> const &bank) {
     std::cout << "\n Meshed Negative Weight Delta Tracking\n";
 
@@ -631,6 +712,8 @@ void Meshed_Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs,
 
     std::vector<Particle> Bank = bank;
     int n_particles = static_cast<int>(Bank.size()); 
+
+    std::vector<Particle> fission_daughters;
 
     while(n_particles > 0) {
         //std::cout << " nparticles = " << n_particles << "\n";
@@ -649,6 +732,7 @@ void Meshed_Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs,
             rng.seed(pcg_seed);
 
             std::vector<Particle> this_thread_Splits;
+            std::vector<Particle> this_thread_fission;
 
             #pragma omp for
             for(int n = 0; n < n_particles; n++) {
@@ -685,6 +769,18 @@ void Meshed_Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs,
                             score_all_collision(score,p.x);
                             score_real_collision(p.wgt,p.x);
                             p.xs_eval();
+
+                            // Count new neutrons
+                            #pragma omp atomic
+                            new_neutron_tally += p.wgt*nu*P_fis;
+
+                            int n_new = std::floor(p.wgt*nu*P_fis/keff + rng.rand());
+                            for(int i = 0; i < n_new; i++) {
+                                double u;
+                                if(rng.rand() < 0.5) u = 1.0;
+                                else u = -1.0;
+                                this_thread_fission.push_back(Particle(p.x,u,p.wgt));
+                            }
 
                             // Implicit capture
                             p.wgt *= 1.0 - P_abs;
@@ -745,6 +841,10 @@ void Meshed_Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs,
             {
                 Bank.insert(std::end(Bank), std::begin(this_thread_Splits),
                         std::end(this_thread_Splits));
+
+                fission_daughters.insert(std::end(fission_daughters),
+                        std::begin(this_thread_fission),
+                        std::end(this_thread_fission));
             }
         }// Parallel
         
@@ -754,9 +854,11 @@ void Meshed_Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs,
 
     xs_evals += cnts_sum;
     wgt_chngs += sign_change;
+
+    return fission_daughters;
 }
 
-void Bomb_Transport(std::unique_ptr<XS> const &xs, double P,
+std::vector<Particle> Bomb_Transport(std::unique_ptr<XS> const &xs, double P,
         std::vector<Particle> const &bank) {
     std::cout << std::fixed << std::setprecision(2);
     std::cout << "\n Bomb Paper Transport, p = " << P << "\n";
@@ -766,6 +868,7 @@ void Bomb_Transport(std::unique_ptr<XS> const &xs, double P,
     // Particle bank vectors
     std::vector<Particle> Bank = bank;
     int n_particles = static_cast<int>(Bank.size());
+    std::vector<Particle> fission_daughters;
     
     while(n_particles > 0) {
         //std::cout << " nparticles = " << n_particles << "\n";
@@ -784,6 +887,7 @@ void Bomb_Transport(std::unique_ptr<XS> const &xs, double P,
             rng.seed(pcg_seed);
 
             std::vector<Particle> this_thread_Splits;
+            std::vector<Particle> this_thread_fission;
 
             #pragma omp for
             for(int n = 0; n < n_particles; n++) {
@@ -837,6 +941,17 @@ void Bomb_Transport(std::unique_ptr<XS> const &xs, double P,
                             // Score real collision
                             score_real_collision(p.wgt,p.x);
 
+                            #pragma omp atomic
+                            new_neutron_tally += p.wgt*nu*P_fis;
+
+                            int n_new = std::floor(p.wgt*nu*P_fis/keff - rng.rand());
+                            for(int i = 0; i < n_new; i++) {
+                                double u;
+                                if(rng.rand() < 0.5) u = 1.0;
+                                else u = -1.0;
+                                this_thread_fission.push_back(Particle(p.x,u,p.wgt));
+                            }
+
                             // Implicit caputure
                             p.wgt *= 1.0 - P_abs;
 
@@ -882,6 +997,10 @@ void Bomb_Transport(std::unique_ptr<XS> const &xs, double P,
             {
                 Bank.insert(std::end(Bank), std::begin(this_thread_Splits),
                         std::end(this_thread_Splits));
+
+                fission_daughters.insert(std::end(fission_daughters),
+                        std::begin(this_thread_fission),
+                        std::end(this_thread_fission));
             }
         }// Parallel
 
@@ -891,9 +1010,11 @@ void Bomb_Transport(std::unique_ptr<XS> const &xs, double P,
 
     xs_evals += cnts_sum;
     wgt_chngs += sign_change;
+
+    return fission_daughters;
 }
 
-void Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P,
+std::vector<Particle> Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P,
         std::vector<Particle> const &bank) {
     std::cout << std::fixed << std::setprecision(2);
     std::cout << "\n Meshed Bomb Paper Transport, p = " << P << "\n";
@@ -903,6 +1024,7 @@ void Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P,
     // Particle bank vectors
     std::vector<Particle> Bank = bank;
     int n_particles = static_cast<int>(Bank.size());
+    std::vector<Particle> fission_daughters;
     
     while(n_particles > 0) {
         //std::cout << " nparticles = " << n_particles << "\n";
@@ -920,6 +1042,7 @@ void Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P,
             pcg_seed = pcg_seeds[thread_id];
 
             std::vector<Particle> this_thread_Splits;
+            std::vector<Particle> this_thread_fission;
 
             #pragma omp for
             for(int n = 0; n < n_particles; n++) {
@@ -980,6 +1103,17 @@ void Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P,
                                 // Score real collision
                                 score_real_collision(p.wgt,p.x);
 
+                                #pragma omp atomic
+                                new_neutron_tally += p.wgt*nu*P_fis;
+
+                                int n_new = std::floor(p.wgt*nu*P_fis/keff + rng.rand());
+                                for(int i = 0; i < n_new; i++) {
+                                    double u;
+                                    if(rng.rand() < 0.5) u = 1.0;
+                                    else u = -1.0;
+                                    this_thread_fission.push_back(Particle(p.x,u,p.wgt));
+                                }
+
                                 // Implicit capture
                                 p.wgt *= 1.0 - P_abs;
 
@@ -1025,6 +1159,10 @@ void Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P,
             {
                 Bank.insert(std::end(Bank),std::begin(this_thread_Splits),
                         std::end(this_thread_Splits));
+
+                fission_daughters.insert(std::end(fission_daughters),
+                        std::begin(this_thread_fission),
+                        std::end(this_thread_fission));
             }
         }// Parallel
 
@@ -1034,9 +1172,11 @@ void Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P,
     
     xs_evals += cnts_sum;
     wgt_chngs += sign_change;
+
+    return fission_daughters;
 }
 
-void Improving_Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P,
+std::vector<Particle> Improving_Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P,
         std::vector<Particle> const &bank) {
     std::cout << std::fixed << std::setprecision(2);
     std::cout << "\n Improving Meshed Bomb Paper Transport, p = " << P << "\n";
@@ -1046,6 +1186,7 @@ void Improving_Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P,
     // Particle bank vectors
     std::vector<Particle> Bank = bank;
     int n_particles = static_cast<int>(Bank.size());
+    std::vector<Particle> fission_daughters;
     
     while(n_particles > 0) {
         #pragma omp parallel
@@ -1063,6 +1204,7 @@ void Improving_Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P,
             rng.seed(pcg_seed);
 
             std::vector<Particle> this_thread_Splits;
+            std::vector<Particle> this_thread_fission;
 
             #pragma omp for
             for(int n = 0; n < n_particles; n++) {
@@ -1125,6 +1267,16 @@ void Improving_Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P,
                                 // Score real collision
                                 score_real_collision(p.wgt,p.x);
 
+                                #pragma omp atomic
+                                new_neutron_tally += p.wgt*nu*P_fis;
+                                int n_new = std::floor(p.wgt*nu*P_fis/keff + rng.rand());
+                                for(int i = 0; i < n_new; i++) {
+                                    double u;
+                                    if(rng.rand() < 0.5) u = 1.0;
+                                    else u = -1.0;
+                                    this_thread_fission.push_back(Particle(p.x,u,p.wgt));
+                                }
+
                                 // Implicit capture
                                 p.wgt *= 1.0 - P_abs;
 
@@ -1178,6 +1330,10 @@ void Improving_Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P,
             {
                 Bank.insert(std::end(Bank), std::begin(this_thread_Splits),
                         std::end(this_thread_Splits));
+
+                fission_daughters.insert(std::end(fission_daughters),
+                        std::begin(this_thread_fission),
+                        std::end(this_thread_fission));
             }
         }// Parallel
 
@@ -1188,9 +1344,11 @@ void Improving_Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P,
     
     xs_evals += cnts_sum;
     wgt_chngs += sign_change;
+
+    return fission_daughters;
 }
 
-void Previous_XS_Bomb_Transport(std::unique_ptr<XS> const &xs,
+std::vector<Particle> Previous_XS_Bomb_Transport(std::unique_ptr<XS> const &xs,
         std::vector<Particle> const &bank) {
     std::cout << std::fixed << std::setprecision(2);
     std::cout << "\n Previous XS Bomb Paper Transport\n";
@@ -1203,6 +1361,8 @@ void Previous_XS_Bomb_Transport(std::unique_ptr<XS> const &xs,
     for(int i = 0; i < n_particles; i++) {
         Bank[i].Esmp = xs->Et(Bank[i].x);
     }
+
+    std::vector<Particle> fission_daughters;
 
     while(n_particles > 0) {
         #pragma omp parallel
@@ -1220,6 +1380,7 @@ void Previous_XS_Bomb_Transport(std::unique_ptr<XS> const &xs,
             rng.seed(pcg_seed);
 
             std::vector<Particle> this_thread_Splits;
+            std::vector<Particle> this_thread_fission;
 
             #pragma omp for
             for(int n = 0; n < n_particles; n++) {
@@ -1264,6 +1425,16 @@ void Previous_XS_Bomb_Transport(std::unique_ptr<XS> const &xs,
                         if(real_collision) {
                             // Record collision
                             score_real_collision(p.wgt, p.x);
+
+                            #pragma omp atomic
+                            new_neutron_tally += p.wgt*nu*P_fis;
+                            int n_new = std::floor(p.wgt*nu*P_fis/keff + rng.rand());
+                            for(int i = 0; i < n_new; i++) {
+                                double u;
+                                if(rng.rand() < 0.5) u = 1.0;
+                                else u = -1.0;
+                                this_thread_fission.push_back(Particle(p.x,u,p.wgt));
+                            }
 
                             // Implicit caputure
                             p.wgt *= 1.0 - P_abs;
@@ -1310,6 +1481,10 @@ void Previous_XS_Bomb_Transport(std::unique_ptr<XS> const &xs,
             {
                 Bank.insert(std::end(Bank), std::begin(this_thread_Splits),
                         std::end(this_thread_Splits));
+
+                fission_daughters.insert(std::end(fission_daughters),
+                        std::begin(this_thread_fission),
+                        std::end(this_thread_fission));
             }
         }// Parallel
 
@@ -1319,6 +1494,8 @@ void Previous_XS_Bomb_Transport(std::unique_ptr<XS> const &xs,
 
     xs_evals += cnts_sum;
     wgt_chngs += sign_change;
+
+    return fission_daughters;
 }
 
 void Output() {
