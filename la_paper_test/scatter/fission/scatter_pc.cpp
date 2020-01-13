@@ -33,7 +33,7 @@ const double q = 0.3;
 const double q_mshd = 0.3;
 
 const double P_abs = 0.3; // Ea/Et
-const double P_fis = 0.1; // Ef/Et
+const double P_fis = 0.0; // Ef/Et
 const double nu    = 2.5;
 const double P_sct = 0.7; // Es/Et
 const double P_straight_ahead = 0.5;
@@ -1582,41 +1582,49 @@ std::unique_ptr<XS> make_cross_section(int type)
 {
   // Determine cross section type for run
   if(type == -1) {
+    std::cout << "\n------------------------------------------------------";
     std::cout << "\n Step\n\n";
     File << "#XS,S\n";
     return std::make_unique<Step>();
   }
   else if(type == 0) {
+    std::cout << "\n------------------------------------------------------";
     std::cout << "\n Constant\n\n";
     File << "#XS,C\n";
     return std::make_unique<Constant>();
   }
   else if(type == 1) {
+    std::cout << "\n------------------------------------------------------";
     std::cout << "\n Linearly Increasing\n\n";
     File << "#XS,LI\n";
     return std::make_unique<Lin_Increase>();
   }
   else if(type == 2) {
+    std::cout << "\n------------------------------------------------------";
     std::cout << "\n Linearly Decreasing\n\n";
     File << "#XS,LD\n"; 
     return std::make_unique<Lin_Decrease>();
   }
   else if(type == 4) {
+    std::cout << "\n------------------------------------------------------";
     std::cout << "\n Exponentially Decreasing\n\n";
     File << "#XS,ED\n";
     return std::make_unique<Exp_Decrease>();
   }
   else if(type == 3) {
+    std::cout << "\n------------------------------------------------------";
     std::cout << "\n Exponentially Increasing\n\n";
     File << "#XS,EI\n";
     return std::make_unique<Exp_Increase>();
   }
   else if(type == 5) {
+    std::cout << "\n------------------------------------------------------";
     std::cout << "\n Sharp Gaussian\n\n";
     File << "#XS,SG\n";
     return std::make_unique<Gauss_Sharp>();
   }
   else if(type == 6) {
+    std::cout << "\n------------------------------------------------------";
     std::cout << "\n Broad Gaussian\n\n";
     File << "#XS,BG\n";
     return std::make_unique<Gauss_Broad>();
@@ -1624,6 +1632,7 @@ std::unique_ptr<XS> make_cross_section(int type)
   else {
     exit(1);
   }
+
 }
 
 void Zero_Values() {
@@ -1656,10 +1665,11 @@ void RNG_Seeds() {
 }
 
 int main() {
-    #ifdef _OPENMP
+#ifdef _OPENMP
     omp_set_num_threads(NTHREADS);
-    #endif
+#endif
 
+    std::cout << "\n NParticles = " << NPART << ", NBins = " << NBIN << "\n\n";
 
     RNG_Seeds();
 
@@ -1674,7 +1684,7 @@ int main() {
         all_coll_density.push_back(bin);
     }
 
-    File.open("Fission_Output.txt");
+    File.open("Coll_Densities.txt");
 
     // Make initial source distribution
     std::vector<Particle> particle_bank;
@@ -1684,57 +1694,46 @@ int main() {
         // in forward direction, with wgt = 1.0
     }
 
-    // Determine ngens, xs type, tracking type
-    int xs_type;
-    std::cout << " 1) Linearly Increasing    2) Linearly Decreasing    3) Exponentially Increasing\n";
-    std::cout << " 4) Exponentially Decreasing    5) Sharp Gaussian    6) Broad Gaussian\n\n";
-    std::cout << " Select XS => ";
-    std::cin >> xs_type;
-    if(xs_type < 1 or xs_type > 6) exit(1);
+    // Iterate through all XSs
+    for(int type = 1; type <= 6; type ++) {
+        std::unique_ptr<XS> crs = make_cross_section(type);
 
-    std::unique_ptr<XS> crs = make_cross_section(xs_type);
+        Zero_Values();
+        File << "#TM,DT\n";
+        Delta_Tracking(crs, particle_bank);
+        Output();
 
-    // Determine tracking method
-    int track_method;
-    std::cout << " \n\n 1) Delta Tracking    2) Meshed Delta Tracking    3) Negative Weighted Delta Tracking\n";
-    std::cout << " 4) Meshed Negative Weighted Delta Tracking    5) Carter Transport    6) Mehsed Carter Transport\n";
-    std::cout << " 7) Improving Meshed Carter Transport\n";
-    std::cout << " Select Tracking Method => ";
-    std::cin >> track_method;
-    if(track_method < 1 or track_method > 7) exit(1);
-    if(track_method == 1) std::cout << "\n Delta Tracking\n\n";
-    else if(track_method == 2) std::cout << "\n Meshed Delta Tracking\n\n";
-    else if(track_method == 3) std::cout << "\n Negative Weighted Delta Tracking\n\n";
-    else if(track_method == 4) std::cout << "\n Meshed Negative Weighted Delta Tracking\n\n";
-    else if(track_method == 5) std::cout << "\n Carter Transport\n\n";
-    else if(track_method == 6) std::cout << "\n Meshed Carter Transport\n\n";
-    else if(track_method == 7) std::cout << "\n Impoving Meshed Carter Transport\n\n";
+        Zero_Values();
+        File << "#TM,MDT\n";
+        Meshed_Delta_Tracking(crs, particle_bank);
+        Output();
 
-    std::cout << "\n NParticles = " << NPART << ", NBins = " << NBIN << "\n\n";
+        Zero_Values();
+        File << "#TM,NWDT\n";
+        Negative_Weight_Delta_Tracking(crs, particle_bank);
+        Output();
 
-    Zero_Values();
+        Zero_Values();
+        File << "#TM,MNWDT\n";
+        Meshed_Negative_Weight_Delta_Tracking(crs,particle_bank);
+        Output();
 
-    for(int g = 1; g <= NGENS; g++) {
-        std::vector<Particle> next_gen_particles;
-        if(track_method == 1) next_gen_particles = Delta_Tracking(crs, particle_bank);
-        else if(track_method == 2) next_gen_particles = Meshed_Delta_Tracking(crs, particle_bank);
-        else if(track_method == 3) next_gen_particles = Negative_Weight_Delta_Tracking(crs, particle_bank);
-        else if(track_method == 4) next_gen_particles = Meshed_Negative_Weight_Delta_Tracking(crs, particle_bank);
-        else if(track_method == 5) next_gen_particles = Bomb_Transport(crs, 0.8, particle_bank);
-        else if(track_method == 6) next_gen_particles = Meshed_Bomb_Transport(crs, 0.8, particle_bank);
-        else if(track_method == 7) next_gen_particles = Improving_Meshed_Bomb_Transport(crs, 0.8, particle_bank);
+        Zero_Values();
+        File << "#TM,BT\n";
+        Bomb_Transport(crs,0.8,particle_bank);
+        Output();
 
-        // Calculate keff for generation
-        
-        // Get FOM
-        
-        // Save coll density and coll density sqr
-        
-        // Fix weights for next gen
+        Zero_Values();
+        File << "#TM,MBT\n";
+        Meshed_Bomb_Transport(crs,0.8,particle_bank);
+        Output();
+
+        Zero_Values();
+        File << "#TM,IBT\n";
+        Improving_Meshed_Bomb_Transport(crs,0.8,particle_bank);
+        Output();
     }
 
-    Output();
-        
     File.close();
 
     return 0;

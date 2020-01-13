@@ -10,8 +10,8 @@ for i in range(NFOMBIN):
     x.append(i*dx + 0.5*dx)
 
 XS = {}
-#fl = open("Coll_Densities.txt")
-fl = open("CONTROL.txt")
+fl = open("Coll_Densities.txt")
+#fl = open("CONTROL.txt")
 line_count = 0; 
 # 0 = real avg, 1 = real std, 2 = real FOM, 3 = all avg, 4 = all std, 5 = all FOM
 for line in fl:
@@ -36,7 +36,7 @@ fl.close()
 xsnames = ["LI"]
 #tmnames = ["DT", "MDT", "NWDT", "MNWDT", "BT", "MBT", "PBT"]
 tmnames = ["DT", "MDT", "NWDT", "MNWDT", "BT", "MBT", "IBT"]
-tmnames = ["NWDT"]
+tmnames = ["DT","MDT","IBT"]
 
 for xs in xsnames:
     # Plot coll. density
