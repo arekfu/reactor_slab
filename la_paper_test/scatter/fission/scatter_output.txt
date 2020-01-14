@@ -1,0 +1,363 @@
+
+ NParticles = 10000000, NBins = 5
+
+
+------------------------------------------------------
+ Linearly Increasing
+
+
+ Delta Tracking
+ Colsn. Rate: 1.430482 +/- 0.000288, Trans. Rate: 0.571116 +/- 0.000091
+ All Colsn. Rate: 1.430658 +/- 0.000368
+ XS Evals: 4.344080e+07, Avg Sign Changes: 0.000000
+ FOM_coll = 5.687972e-01, FOM_all_coll = 3.471030e-01, FOM_escp = 9.069280e-01
+ N Particles Transported = 10000000
+
+
+ Meshed Delta Tracking
+ Colsn. Rate: 1.434392 +/- 0.000289, Trans. Rate: 0.570388 +/- 0.000091
+ All Colsn. Rate: 1.433430 +/- 0.000323
+ XS Evals: 2.287048e+07, Avg Sign Changes: 0.000000
+ FOM_coll = 1.075544e+00, FOM_all_coll = 8.632787e-01, FOM_escp = 1.720841e+00
+ N Particles Transported = 10000000
+
+
+ Negative Weight Delta Tracking
+ Colsn. Rate: 1.427954 +/- 0.000437, Trans. Rate: 0.570473 +/- 0.000185
+ All Colsn. Rate: 1.430738 +/- 0.000294
+ XS Evals: 3.198872e+07, Avg Sign Changes: 0.449540
+ FOM_coll = 3.342886e-01, FOM_all_coll = 7.424985e-01, FOM_escp = 2.978698e-01
+ N Particles Transported = 12760440
+
+
+ Meshed Negative Weight Delta Tracking
+ Colsn. Rate: 1.433928 +/- 0.000669, Trans. Rate: 0.573745 +/- 0.000226
+ All Colsn. Rate: 1.429894 +/- 0.000094
+ XS Evals: 2.378068e+07, Avg Sign Changes: 1.354620
+ FOM_coll = 1.933680e-01, FOM_all_coll = 9.676993e+00, FOM_escp = 2.721813e-01
+ N Particles Transported = 16831040
+
+
+ Carter Paper Transport, p = 0.80
+ Colsn. Rate: 1.431644 +/- 0.000270, Trans. Rate: 0.571450 +/- 0.000122
+ All Colsn. Rate: 1.430786 +/- 0.000339
+ XS Evals: 3.497144e+07, Avg Sign Changes: 0.034912
+ FOM_coll = 8.042081e-01, FOM_all_coll = 5.099425e-01, FOM_escp = 6.279362e-01
+ N Particles Transported = 10000960
+
+
+ Meshed Carter Paper Transport, p = 0.80
+ Colsn. Rate: 1.433501 +/- 0.000170, Trans. Rate: 0.572570 +/- 0.000175
+ All Colsn. Rate: 1.431663 +/- 0.000219
+ XS Evals: 1.925172e+07, Avg Sign Changes: 0.113864
+ FOM_coll = 3.677820e+00, FOM_all_coll = 2.216417e+00, FOM_escp = 5.531620e-01
+ N Particles Transported = 10005160
+
+
+ Improving Meshed Carter Paper Transport, p = 0.80
+ Colsn. Rate: 1.429083 +/- 0.000287, Trans. Rate: 0.571239 +/- 0.000091
+ All Colsn. Rate: 1.428821 +/- 0.000321
+ XS Evals: 2.277268e+07, Avg Sign Changes: 0.000000
+ FOM_coll = 1.087019e+00, FOM_all_coll = 8.702700e-01, FOM_escp = 1.737728e+00
+ N Particles Transported = 10000000
+
+
+------------------------------------------------------
+ Linearly Decreasing
+
+
+ Delta Tracking
+ Colsn. Rate: 1.434157 +/- 0.000289, Trans. Rate: 0.570155 +/- 0.000091
+ All Colsn. Rate: 1.431584 +/- 0.000335
+ XS Evals: 3.019120e+07, Avg Sign Changes: 0.000000
+ FOM_coll = 8.149060e-01, FOM_all_coll = 6.055655e-01, FOM_escp = 1.302003e+00
+ N Particles Transported = 10000000
+
+
+ Meshed Delta Tracking
+ Colsn. Rate: 1.429497 +/- 0.000287, Trans. Rate: 0.570713 +/- 0.000091
+ All Colsn. Rate: 1.429291 +/- 0.000310
+ XS Evals: 2.117744e+07, Avg Sign Changes: 0.000000
+ FOM_coll = 1.168369e+00, FOM_all_coll = 1.002581e+00, FOM_escp = 1.861099e+00
+ N Particles Transported = 10000000
+
+
+ Negative Weight Delta Tracking
+ Colsn. Rate: 1.427587 +/- 0.000608, Trans. Rate: 0.569108 +/- 0.000205
+ All Colsn. Rate: 1.430476 +/- 0.000180
+ XS Evals: 3.410016e+07, Avg Sign Changes: 0.756232
+ FOM_coll = 1.617051e-01, FOM_all_coll = 1.844817e+00, FOM_escp = 2.253619e-01
+ N Particles Transported = 15445080
+
+
+ Meshed Negative Weight Delta Tracking
+ Colsn. Rate: 1.422538 +/- 0.000733, Trans. Rate: 0.567934 +/- 0.000238
+ All Colsn. Rate: 1.427585 +/- 0.000136
+ XS Evals: 2.513892e+07, Avg Sign Changes: 1.508188
+ FOM_coll = 1.499649e-01, FOM_all_coll = 4.363391e+00, FOM_escp = 2.270270e-01
+ N Particles Transported = 18081600
+
+
+ Carter Paper Transport, p = 0.80
+ Colsn. Rate: 1.436173 +/- 0.000187, Trans. Rate: 0.570981 +/- 0.000157
+ All Colsn. Rate: 1.434263 +/- 0.000254
+ XS Evals: 2.625384e+07, Avg Sign Changes: 0.081496
+ FOM_coll = 2.250754e+00, FOM_all_coll = 1.219219e+00, FOM_escp = 5.057634e-01
+ N Particles Transported = 10002760
+
+
+ Meshed Carter Paper Transport, p = 0.80
+ Colsn. Rate: 1.431433 +/- 0.000072, Trans. Rate: 0.571914 +/- 0.000199
+ All Colsn. Rate: 1.430716 +/- 0.000131
+ XS Evals: 1.890336e+07, Avg Sign Changes: 0.149056
+ FOM_coll = 2.067454e+01, FOM_all_coll = 6.342114e+00, FOM_escp = 4.354844e-01
+ N Particles Transported = 10011520
+
+
+ Improving Meshed Carter Paper Transport, p = 0.80
+ Colsn. Rate: 1.428691 +/- 0.000287, Trans. Rate: 0.571693 +/- 0.000091
+ All Colsn. Rate: 1.428797 +/- 0.000310
+ XS Evals: 2.117004e+07, Avg Sign Changes: 0.000000
+ FOM_coll = 1.170074e+00, FOM_all_coll = 1.003287e+00, FOM_escp = 1.872630e+00
+ N Particles Transported = 10000000
+
+
+------------------------------------------------------
+ Exponentially Increasing
+
+
+ Delta Tracking
+ Colsn. Rate: 1.701180 +/- 0.000385, Trans. Rate: 0.489708 +/- 0.000096
+ All Colsn. Rate: 1.701404 +/- 0.000489
+ XS Evals: 1.278030e+08, Avg Sign Changes: 0.000000
+ FOM_coll = 1.524192e-01, FOM_all_coll = 9.484022e-02, FOM_escp = 2.053560e-01
+ N Particles Transported = 10000000
+
+
+ Meshed Delta Tracking
+ Colsn. Rate: 1.699131 +/- 0.000385, Trans. Rate: 0.490047 +/- 0.000096
+ All Colsn. Rate: 1.700003 +/- 0.000437
+ XS Evals: 3.408808e+07, Avg Sign Changes: 0.000000
+ FOM_coll = 5.719868e-01, FOM_all_coll = 4.444092e-01, FOM_escp = 7.672789e-01
+ N Particles Transported = 10000000
+
+
+ Negative Weight Delta Tracking
+ Colsn. Rate: 1.695567 +/- 0.000167, Trans. Rate: 0.489506 +/- 0.000188
+ All Colsn. Rate: 1.699374 +/- 0.000440
+ XS Evals: 7.725788e+07, Avg Sign Changes: 0.235312
+ FOM_coll = 1.337528e+00, FOM_all_coll = 1.928970e-01, FOM_escp = 8.755477e-02
+ N Particles Transported = 17331160
+
+
+ Meshed Negative Weight Delta Tracking
+ Colsn. Rate: 1.691138 +/- 0.000551, Trans. Rate: 0.488447 +/- 0.000198
+ All Colsn. Rate: 1.695844 +/- 0.000332
+ XS Evals: 3.338956e+07, Avg Sign Changes: 0.780844
+ FOM_coll = 2.822216e-01, FOM_all_coll = 7.804061e-01, FOM_escp = 1.820837e-01
+ N Particles Transported = 14475200
+
+
+ Carter Paper Transport, p = 0.80
+ Colsn. Rate: 1.704648 +/- 0.000382, Trans. Rate: 0.488786 +/- 0.000109
+ All Colsn. Rate: 1.703181 +/- 0.000475
+ XS Evals: 1.026911e+08, Avg Sign Changes: 0.018112
+ FOM_coll = 1.941186e-01, FOM_all_coll = 1.251515e-01, FOM_escp = 1.967894e-01
+ N Particles Transported = 10000080
+
+
+ Meshed Carter Paper Transport, p = 0.80
+ Colsn. Rate: 1.702619 +/- 0.000352, Trans. Rate: 0.488648 +/- 0.000130
+ All Colsn. Rate: 1.703356 +/- 0.000394
+ XS Evals: 2.885504e+07, Avg Sign Changes: 0.059164
+ FOM_coll = 8.107828e-01, FOM_all_coll = 6.486152e-01, FOM_escp = 4.876745e-01
+ N Particles Transported = 10000800
+
+
+ Improving Meshed Carter Paper Transport, p = 0.80
+ Colsn. Rate: 1.701318 +/- 0.000386, Trans. Rate: 0.489830 +/- 0.000096
+ All Colsn. Rate: 1.698897 +/- 0.000436
+ XS Evals: 3.407484e+07, Avg Sign Changes: 0.000000
+ FOM_coll = 5.715516e-01, FOM_all_coll = 4.446166e-01, FOM_escp = 7.684357e-01
+ N Particles Transported = 10000000
+
+
+------------------------------------------------------
+ Exponentially Decreasing
+
+
+ Delta Tracking
+ Colsn. Rate: 0.315075 +/- 0.000143, Trans. Rate: 0.905470 +/- 0.000050
+ All Colsn. Rate: 0.315862 +/- 0.000078
+ XS Evals: 1.808956e+07, Avg Sign Changes: 0.000000
+ FOM_coll = 2.673992e-01, FOM_all_coll = 8.990382e-01, FOM_escp = 1.813577e+01
+ N Particles Transported = 10000000
+
+
+ Meshed Delta Tracking
+ Colsn. Rate: 0.315120 +/- 0.000143, Trans. Rate: 0.905495 +/- 0.000050
+ All Colsn. Rate: 0.314810 +/- 0.000101
+ XS Evals: 5.602240e+06, Avg Sign Changes: 0.000000
+ FOM_coll = 8.630623e-01, FOM_all_coll = 1.738056e+00, FOM_escp = 5.883079e+01
+ N Particles Transported = 10000000
+
+
+ Negative Weight Delta Tracking
+ Colsn. Rate: 0.313570 +/- 0.000254, Trans. Rate: 0.903810 +/- 0.000174
+ All Colsn. Rate: 0.314734 +/- 0.000112
+ XS Evals: 1.380584e+07, Avg Sign Changes: 0.055368
+ FOM_coll = 1.106175e-01, FOM_all_coll = 5.739496e-01, FOM_escp = 1.952231e+00
+ N Particles Transported = 11029960
+
+
+ Meshed Negative Weight Delta Tracking
+ Colsn. Rate: 0.315505 +/- 0.000292, Trans. Rate: 0.904484 +/- 0.000107
+ All Colsn. Rate: 0.316427 +/- 0.000136
+ XS Evals: 4.440680e+06, Avg Sign Changes: 0.076472
+ FOM_coll = 2.635608e-01, FOM_all_coll = 1.216393e+00, FOM_escp = 1.617453e+01
+ N Particles Transported = 10718400
+
+
+ Carter Paper Transport, p = 0.80
+ Colsn. Rate: 0.315716 +/- 0.000151, Trans. Rate: 0.905298 +/- 0.000069
+ All Colsn. Rate: 0.316021 +/- 0.000102
+ XS Evals: 1.452804e+07, Avg Sign Changes: 0.006060
+ FOM_coll = 2.992375e-01, FOM_all_coll = 6.548927e-01, FOM_escp = 1.175481e+01
+ N Particles Transported = 10000040
+
+
+ Meshed Carter Paper Transport, p = 0.80
+ Colsn. Rate: 0.314694 +/- 0.000154, Trans. Rate: 0.905589 +/- 0.000075
+ All Colsn. Rate: 0.315141 +/- 0.000126
+ XS Evals: 4.500240e+06, Avg Sign Changes: 0.008248
+ FOM_coll = 9.304053e-01, FOM_all_coll = 1.392745e+00, FOM_escp = 3.224204e+01
+ N Particles Transported = 10000040
+
+
+ Improving Meshed Carter Paper Transport, p = 0.80
+ Colsn. Rate: 0.317119 +/- 0.000143, Trans. Rate: 0.904908 +/- 0.000050
+ All Colsn. Rate: 0.316405 +/- 0.000101
+ XS Evals: 5.633600e+06, Avg Sign Changes: 0.000000
+ FOM_coll = 8.674301e-01, FOM_all_coll = 1.746948e+00, FOM_escp = 5.784776e+01
+ N Particles Transported = 10000000
+
+
+------------------------------------------------------
+ Sharp Gaussian
+
+
+ Delta Tracking
+ Colsn. Rate: 0.070113 +/- 0.000080, Trans. Rate: 0.978966 +/- 0.000025
+ All Colsn. Rate: 0.069965 +/- 0.000067
+ XS Evals: 1.613500e+07, Avg Sign Changes: 0.000000
+ FOM_coll = 4.710912e-02, FOM_all_coll = 6.848160e-02, FOM_escp = 9.681388e+01
+ N Particles Transported = 10000000
+
+
+ Meshed Delta Tracking
+ Colsn. Rate: 0.071377 +/- 0.000081, Trans. Rate: 0.978587 +/- 0.000025
+ All Colsn. Rate: 0.071214 +/- 0.000069
+ XS Evals: 5.409280e+06, Avg Sign Changes: 0.000000
+ FOM_coll = 1.432405e-01, FOM_all_coll = 1.970181e-01, FOM_escp = 2.839148e+02
+ N Particles Transported = 10000000
+
+
+ Negative Weight Delta Tracking
+ Colsn. Rate: 0.070307 +/- 0.000159, Trans. Rate: 0.980731 +/- 0.000152
+ All Colsn. Rate: 0.069345 +/- 0.000085
+ XS Evals: 1.097412e+07, Avg Sign Changes: 0.019696
+ FOM_coll = 1.782232e-02, FOM_all_coll = 6.121516e-02, FOM_escp = 3.804556e+00
+ N Particles Transported = 11752200
+
+
+ Meshed Negative Weight Delta Tracking
+ Colsn. Rate: 0.069220 +/- 0.000154, Trans. Rate: 0.977594 +/- 0.000116
+ All Colsn. Rate: 0.070084 +/- 0.000083
+ XS Evals: 3.941600e+06, Avg Sign Changes: 0.025236
+ FOM_coll = 5.113038e-02, FOM_all_coll = 1.808593e-01, FOM_escp = 1.817162e+01
+ N Particles Transported = 10404880
+
+
+ Carter Paper Transport, p = 0.80
+ Colsn. Rate: 0.069912 +/- 0.000088, Trans. Rate: 0.979360 +/- 0.000048
+ All Colsn. Rate: 0.069808 +/- 0.000076
+ XS Evals: 1.276852e+07, Avg Sign Changes: 0.003500
+ FOM_coll = 4.967437e-02, FOM_all_coll = 6.674694e-02, FOM_escp = 3.290774e+01
+ N Particles Transported = 10000040
+
+
+ Meshed Carter Paper Transport, p = 0.80
+ Colsn. Rate: 0.070138 +/- 0.000088, Trans. Rate: 0.979019 +/- 0.000050
+ All Colsn. Rate: 0.070189 +/- 0.000078
+ XS Evals: 4.307880e+06, Avg Sign Changes: 0.003916
+ FOM_coll = 1.460750e-01, FOM_all_coll = 1.891538e-01, FOM_escp = 8.993709e+01
+ N Particles Transported = 10000000
+
+
+ Improving Meshed Carter Paper Transport, p = 0.80
+ Colsn. Rate: 0.069574 +/- 0.000080, Trans. Rate: 0.979127 +/- 0.000025
+ All Colsn. Rate: 0.069621 +/- 0.000068
+ XS Evals: 5.413840e+06, Avg Sign Changes: 0.000000
+ FOM_coll = 1.392317e-01, FOM_all_coll = 1.924251e-01, FOM_escp = 2.907293e+02
+ N Particles Transported = 10000000
+
+
+------------------------------------------------------
+ Broad Gaussian
+
+
+ Delta Tracking
+ Colsn. Rate: 0.960166 +/- 0.000078, Trans. Rate: 0.712125 +/- 0.000079
+ All Colsn. Rate: 0.960535 +/- 0.000160
+ XS Evals: 1.629140e+07, Avg Sign Changes: 0.000000
+ FOM_coll = 9.402770e+00, FOM_all_coll = 2.223414e+00, FOM_escp = 5.009031e+00
+ N Particles Transported = 10000000
+
+
+ Meshed Delta Tracking
+ Colsn. Rate: 0.959944 +/- 0.000078, Trans. Rate: 0.711808 +/- 0.000079
+ All Colsn. Rate: 0.958772 +/- 0.000130
+ XS Evals: 1.324640e+07, Avg Sign Changes: 0.000000
+ FOM_coll = 1.154674e+01, FOM_all_coll = 4.137136e+00, FOM_escp = 6.110353e+00
+ N Particles Transported = 10000000
+
+
+ Negative Weight Delta Tracking
+ Colsn. Rate: 0.961001 +/- 0.000531, Trans. Rate: 0.711205 +/- 0.000196
+ All Colsn. Rate: 0.961807 +/- 0.000142
+ XS Evals: 1.403196e+07, Avg Sign Changes: 0.516496
+ FOM_coll = 2.331385e-01, FOM_all_coll = 3.289681e+00, FOM_escp = 9.353882e-01
+ N Particles Transported = 13369120
+
+
+ Meshed Negative Weight Delta Tracking
+ Colsn. Rate: 0.964973 +/- 0.000589, Trans. Rate: 0.712544 +/- 0.000210
+ All Colsn. Rate: 0.963427 +/- 0.000197
+ XS Evals: 1.241144e+07, Avg Sign Changes: 0.685976
+ FOM_coll = 2.162312e-01, FOM_all_coll = 1.928424e+00, FOM_escp = 9.240246e-01
+ N Particles Transported = 14567600
+
+
+ Carter Paper Transport, p = 0.80
+ Colsn. Rate: 0.965500 +/- 0.000166, Trans. Rate: 0.712434 +/- 0.000164
+ All Colsn. Rate: 0.964043 +/- 0.000079
+ XS Evals: 1.321436e+07, Avg Sign Changes: 0.067296
+ FOM_coll = 2.559039e+00, FOM_all_coll = 1.133826e+01, FOM_escp = 1.431564e+00
+ N Particles Transported = 10008520
+
+
+ Meshed Carter Paper Transport, p = 0.80
+ Colsn. Rate: 0.960800 +/- 0.000208, Trans. Rate: 0.712280 +/- 0.000190
+ All Colsn. Rate: 0.960581 +/- 0.000160
+ XS Evals: 1.079084e+07, Avg Sign Changes: 0.091796
+ FOM_coll = 1.982370e+00, FOM_all_coll = 3.338007e+00, FOM_escp = 1.300503e+00
+ N Particles Transported = 10013600
+
+
+ Improving Meshed Carter Paper Transport, p = 0.80
+ Colsn. Rate: 0.961037 +/- 0.000078, Trans. Rate: 0.711471 +/- 0.000079
+ All Colsn. Rate: 0.961317 +/- 0.000131
+ XS Evals: 1.327000e+07, Avg Sign Changes: 0.000000
+ FOM_coll = 1.139038e+01, FOM_all_coll = 4.088441e+00, FOM_escp = 6.112586e+00
+ N Particles Transported = 10000000
+

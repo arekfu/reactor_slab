@@ -33,10 +33,10 @@ for line in fl:
         line_count += 1
 fl.close()
 
-xsnames = ["LI"]
+xsnames = ["LI","LD","EI","ED","SG","BG"]
 #tmnames = ["DT", "MDT", "NWDT", "MNWDT", "BT", "MBT", "PBT"]
 tmnames = ["DT", "MDT", "NWDT", "MNWDT", "BT", "MBT", "IBT"]
-tmnames = ["DT","MDT","IBT"]
+tmnames = ["DT","NWDT"]
 
 for xs in xsnames:
     # Plot coll. density

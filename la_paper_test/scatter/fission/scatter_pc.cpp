@@ -57,6 +57,7 @@ std::vector<uint64_t> pcg_seeds;
 std::ofstream File;
 
 // Tallies
+int n_particles_transported;
 double collide; // Sum of weights that collide
 double collide_sqr; // Sum of weights squared that collide
 double all_collide; // Sum of all weights that collide at all collisions (virt. and real)
@@ -363,6 +364,9 @@ std::vector<Particle> Delta_Tracking(std::unique_ptr<XS> const &xs,
 
         #pragma omp for
         for(int n = 0; n < NPART; n++) {
+            #pragma omp atomic
+            n_particles_transported++;
+
             bool virtual_collision;
             Particle p = bank[n];
             while(p.alive) {
@@ -467,6 +471,9 @@ std::vector<Particle> Meshed_Delta_Tracking(std::unique_ptr<XS> const &xs,
 
         #pragma omp for
         for(int n = 0; n < NPART; n++) {
+            #pragma omp atomic
+            n_particles_transported++;
+
             bool virtual_collision = true;
             Particle p = bank[n];
             double Emax = xs->Em[p.bin];
@@ -597,6 +604,9 @@ std::vector<Particle> Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &
 
             #pragma omp for
             for(int n = 0; n < n_particles; n++) {
+                #pragma omp atomic
+                n_particles_transported++;
+
                 double Esamp = p*(xs->Emax);
                 Particle p = Bank[n];
                 while(p.alive) {
@@ -732,6 +742,9 @@ std::vector<Particle> Meshed_Negative_Weight_Delta_Tracking(std::unique_ptr<XS> 
 
             #pragma omp for
             for(int n = 0; n < n_particles; n++) {
+                #pragma omp atomic
+                n_particles_transported++;
+
                 Particle p = Bank[n];
                 double Esamp = xs->Esmp[p.bin];
                 double d,d_bin;
@@ -852,10 +865,10 @@ std::vector<Particle> Meshed_Negative_Weight_Delta_Tracking(std::unique_ptr<XS> 
     return fission_daughters;
 }
 
-std::vector<Particle> Bomb_Transport(std::unique_ptr<XS> const &xs, double P,
+std::vector<Particle> Carter_Transport(std::unique_ptr<XS> const &xs, double P,
         std::vector<Particle> const &bank) {
     std::cout << std::fixed << std::setprecision(2);
-    std::cout << "\n Bomb Paper Transport, p = " << P << "\n";
+    std::cout << "\n Carter Paper Transport, p = " << P << "\n";
     int cnts_sum = 0;
     double sign_change = 0.0;
     
@@ -885,6 +898,9 @@ std::vector<Particle> Bomb_Transport(std::unique_ptr<XS> const &xs, double P,
 
             #pragma omp for
             for(int n = 0; n < n_particles; n++) {
+                #pragma omp atomic
+                n_particles_transported++;
+
                 Particle p = Bank[n];
                 double Esmp = P*xs->Emax;
                 bool real_collision = false;
@@ -1006,10 +1022,10 @@ std::vector<Particle> Bomb_Transport(std::unique_ptr<XS> const &xs, double P,
     return fission_daughters;
 }
 
-std::vector<Particle> Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P,
+std::vector<Particle> Meshed_Carter_Transport(std::unique_ptr<XS> const &xs, double P,
         std::vector<Particle> const &bank) {
     std::cout << std::fixed << std::setprecision(2);
-    std::cout << "\n Meshed Bomb Paper Transport, p = " << P << "\n";
+    std::cout << "\n Meshed Carter Paper Transport, p = " << P << "\n";
     int cnts_sum = 0;
     double sign_change = 0.0;
 
@@ -1038,6 +1054,9 @@ std::vector<Particle> Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, doubl
 
             #pragma omp for
             for(int n = 0; n < n_particles; n++) {
+                #pragma omp atomic
+                n_particles_transported++;
+
                 Particle p = Bank[n];
                 double d_bin;
                 double Esmp = P*xs->Em[p.bin];
@@ -1165,10 +1184,10 @@ std::vector<Particle> Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, doubl
     return fission_daughters;
 }
 
-std::vector<Particle> Improving_Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P,
+std::vector<Particle> Improving_Meshed_Carter_Transport(std::unique_ptr<XS> const &xs, double P,
         std::vector<Particle> const &bank) {
     std::cout << std::fixed << std::setprecision(2);
-    std::cout << "\n Improving Meshed Bomb Paper Transport, p = " << P << "\n";
+    std::cout << "\n Improving Meshed Carter Paper Transport, p = " << P << "\n";
     int cnts_sum = 0;
     double sign_change = 0.0;
 
@@ -1197,6 +1216,9 @@ std::vector<Particle> Improving_Meshed_Bomb_Transport(std::unique_ptr<XS> const 
 
             #pragma omp for
             for(int n = 0; n < n_particles; n++) {
+                #pragma omp atomic
+                n_particles_transported++;
+
                 Particle p = Bank[n];
                 double d_bin;
                 double Esmp = xs->Em_imp[p.bin];
@@ -1335,10 +1357,10 @@ std::vector<Particle> Improving_Meshed_Bomb_Transport(std::unique_ptr<XS> const 
     return fission_daughters;
 }
 
-std::vector<Particle> Previous_XS_Bomb_Transport(std::unique_ptr<XS> const &xs,
+std::vector<Particle> Previous_XS_Carter_Transport(std::unique_ptr<XS> const &xs,
         std::vector<Particle> const &bank) {
     std::cout << std::fixed << std::setprecision(2);
-    std::cout << "\n Previous XS Bomb Paper Transport\n";
+    std::cout << "\n Previous XS Carter Paper Transport\n";
     int cnts_sum = 0;
     double sign_change = 0.0;
     
@@ -1371,6 +1393,9 @@ std::vector<Particle> Previous_XS_Bomb_Transport(std::unique_ptr<XS> const &xs,
 
             #pragma omp for
             for(int n = 0; n < n_particles; n++) {
+                #pragma omp atomic
+                n_particles_transported++;
+
                 Particle p = Bank[n];
                 double Esmp = p.Esmp;
                 if(Esmp < 1.0) Esmp = 1.0;
@@ -1575,7 +1600,8 @@ void Output() {
     std::cout << std::fixed << std::setprecision(6) << ", Avg Sign Changes: " << avg_sgn_chngs << "\n";
     std::cout << std::scientific;
     std::cout << " FOM_coll = " << FOM_col << ", FOM_all_coll = " << FOM_all_coll;
-    std::cout << ", FOM_escp = " << FOM_esc << "\n\n";
+    std::cout << ", FOM_escp = " << FOM_esc << "\n";
+    std::cout << " N Particles Transported = " << n_particles_transported << "\n\n";
 }
 
 std::unique_ptr<XS> make_cross_section(int type)
@@ -1636,6 +1662,7 @@ std::unique_ptr<XS> make_cross_section(int type)
 }
 
 void Zero_Values() {
+    n_particles_transported = 0;
     collide = 0.0;
     collide_sqr = 0.0;
     all_collide = 0.0;
@@ -1719,18 +1746,18 @@ int main() {
         Output();
 
         Zero_Values();
-        File << "#TM,BT\n";
-        Bomb_Transport(crs,0.8,particle_bank);
+        File << "#TM,CT\n";
+        Carter_Transport(crs,0.8,particle_bank);
         Output();
 
         Zero_Values();
-        File << "#TM,MBT\n";
-        Meshed_Bomb_Transport(crs,0.8,particle_bank);
+        File << "#TM,MCT\n";
+        Meshed_Carter_Transport(crs,0.8,particle_bank);
         Output();
 
         Zero_Values();
-        File << "#TM,IBT\n";
-        Improving_Meshed_Bomb_Transport(crs,0.8,particle_bank);
+        File << "#TM,IMCT\n";
+        Improving_Meshed_Carter_Transport(crs,0.8,particle_bank);
         Output();
     }
 

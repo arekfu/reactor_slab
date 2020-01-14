@@ -24,6 +24,7 @@ for line in fl:
         XS[xsname] = TM = {} # Dic for data of all tracking methods
     elif(line[0] == "#TM"):
         tmname = line[1]
+        tmname = tmname.replace("B","C")
         XS[xsname][tmname] = [[], [], [], [], [], []]
         line_count = 0
     else:
@@ -34,23 +35,28 @@ fl.close()
 
 xsnames = ["LI", "LD", "EI", "ED", "SG", "BG"]
 #tmnames = ["DT", "MDT", "NWDT", "MNWDT", "BT", "MBT", "PBT"]
-tmnames = ["DT", "MDT", "NWDT", "MNWDT", "BT", "MBT", "PBT", "IMBT"]
-tmnames = ["DT", "MDT","BT", "MBT"]
-tmnames = ["DT", "BT"]
+tmnames = ["DT", "MDT", "NWDT", "MNWDT", "CT", "MCT", "IMCT"]
+#tmnames = ["DT", "MDT","BT", "MBT"]
+#tmnames = ["DT", "NWDT"]
 
 for xs in xsnames:
     # Plot coll. density
-    for tm in tmnames:
-        plt.plot(x,XS[xs][tm][0], label=tm)
-        plt.plot(x,XS[xs][tm][3], label=tm+" all")
-        #plt.errorbar(x,XS[xs][tm][0], yerr=XS[xs][tm][1],label=tm)
-    plt.title(xs+" Collision Density")
-    plt.legend()
-    plt.show()
+    #for tm in tmnames:
+    #    plt.plot(x,XS[xs][tm][0], label=tm)
+    #    plt.plot(x,XS[xs][tm][3], label=tm+" all")
+    #    #plt.errorbar(x,XS[xs][tm][0], yerr=XS[xs][tm][1],label=tm)
+    #plt.title(xs+" Collision Density")
+    #plt.legend()
+    #plt.show()
 
     # Plot FOM
     for tm in tmnames:
         plt.plot(x,XS[xs][tm][2],label=tm)
+    plt.title(xs+" FOM")
+    plt.legend()
+    plt.show()
+
+    for tm in tmnames:
         plt.plot(x,XS[xs][tm][5],label=tm+" all")
     plt.title(xs+" FOM")
     plt.legend()

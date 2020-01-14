@@ -1709,7 +1709,7 @@ int main() {
     }
 
     File.open("Coll_Densities.txt");
-    for(int type = 1; type <= 2; type++) {
+    for(int type = 1; type <= 6; type++) {
       std::unique_ptr<XS> crs = make_cross_section(type);
 
       Zero_Values();
