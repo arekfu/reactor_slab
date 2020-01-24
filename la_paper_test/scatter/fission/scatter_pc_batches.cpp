@@ -20,23 +20,22 @@
 
 using namespace lmct; // namespace for my personal PCG RNG wrapper
 
-const double EPS = 1e-6;
-const int NPART = 1e6;
-const int NGENS = 110;
-const int NGENSIGNORED = 10;
+const int NPART = 10000; // Number of particles per batch
+const int NBATCHES = 1000;
 const int NBIN = 5;
 const int NFOMBINS = 100;
 const double Fdx = 2.0/(double)NFOMBINS;
 const double dx = 2.0/(double)NBIN;
+
 const double p = 0.75; // Esamp / Emaj for full system
 const double p_mshd = 0.75; // Esamp[i] / Emaj[i] for bin
 const double q = 0.3;
 const double q_mshd = 0.3;
 
-const double P_abs = 0.5; // Ea/Et
-const double P_fis = 0.47; // Ef/Et
-const double nu    = 3.2;
-const double P_sct = 0.5; // Es/Et
+const double P_abs = 0.3; // Ea/Et
+const double P_fis = 0.0; // Ef/Et
+const double nu    = 2.5;
+const double P_sct = 0.7; // Es/Et
 const double P_straight_ahead = 0.5;
 
 const double wgt_cutoff = 0.25;
@@ -48,28 +47,45 @@ const double alpha = 1.0;
 const double A = 2.0/std::sqrt(2.0*M_PI);
 const double a_s = (1.0/0.05)*(1.0/0.05);
 const double a_b = 1.0;
-const double z = 0.77;
+const double z = 1.23;
 
 // Seed variables for PCG RNG
-const int NTHREADS = 40;
 std::vector<uint64_t> pcg_seeds;
 
 // Outputfile
 std::ofstream File;
 
 // Tallies
-double collide; // Sum of weights that collide
-double collide_sqr; // Sum of weights squared that collide
-double all_collide; // Sum of all weights that collide at all collisions (virt. and real)
-double all_collide_sqr; // Summ of all weights squared that collide (virt. and real)
-double escape; // Sum of weights that leak
-double escape_sqr; // Sum of weights squared that lead
+int n_particles_transported;
+
+// Method of independent trials
+std::vector<double> avg_real;
+std::vector<double> avg_all;
+
+// Current tallies for batch which is running
+double current_real_coll_tally;
+double current_all_coll_tally;
+double current_escape_tally;
+std::vector<double> current_real_collision_density;
+std::vector<double> current_all_collision_density;
+
+// Tally for averaging over all batches
+double sum_avg_coll_per_particle;
+double sum_avg_coll_per_particle_sqr;
+double sum_avg_all_coll_per_particle;
+double sum_avg_all_coll_per_particle_sqr;
+double sum_avg_escape;
+double sum_avg_escape_sqr;
+std::vector<double> sum_real_collision_density;
+std::vector<double> sum_real_collision_density_sqr;
+std::vector<double> sum_all_collision_density;
+std::vector<double> sum_all_collision_density_sqr;
+
+// Other tallies
 double xs_evals; // # of xs look ups or xs integrations
 double wgt_chngs; // # of times particle wgt sign flipped
-std::vector<std::vector<double>> coll_density; //[0] #sum coll in box,[1] sum coll sqr, [2] coll STD, [3] Coll FOM in box
-std::vector<std::vector<double>> all_coll_density; // Same as above but scores at all collisions (virt. and real)
 
-double keff = 0.225647;
+double keff = 1.0;
 double k_sum = 0.0;
 double k_sqr_sum = 0.0;
 double total_weight = static_cast<double>(NPART);
@@ -125,7 +141,7 @@ class Constant : public XS {
 // Step XS (Et = 1.5 ∀ 0<x<0.278), Et=1.0 ∀ 0.278<x<2)
 class Step : public XS {
     public:
-        Step():XS(1.0) {
+        Step():XS(1.5) {
             for(int b = 0; b < NBIN; b++) {
                 double x = b*dx;
                 Em[b] = Et(x);
@@ -306,41 +322,80 @@ void roulette(double& wgt, bool& alive, const double& xi) {
     }
 }
 
-void score_real_collision(double& wgt, double& x) {
+void score_real_collision(double wgt, double x) {
     #pragma omp atomic
-    collide += wgt;
-    #pragma omp atomic
-    collide_sqr += wgt*wgt;
+    current_real_coll_tally += wgt;
 
     int coll_bin = std::floor(x/Fdx);
     #pragma omp atomic
-    coll_density[coll_bin][0] += wgt;
-    #pragma omp atomic
-    coll_density[coll_bin][1] += wgt*wgt;
+    current_real_collision_density[coll_bin] += wgt;
 }
 
-void score_all_collision(double& wgt, double& x) {
+void score_all_collision(double wgt, double x) {
     #pragma omp atomic
-    all_collide += wgt;
-    #pragma omp atomic
-    all_collide_sqr += wgt*wgt;
+    current_all_coll_tally += wgt;
 
     int coll_bin = std::floor(x/Fdx);
     #pragma omp atomic
-    all_coll_density[coll_bin][0] += wgt;
-    #pragma omp atomic
-    all_coll_density[coll_bin][1] += wgt*wgt;
+    current_all_collision_density[coll_bin] += wgt;
 }
 
-void score_escape(double& wgt) {
+void score_escape(double wgt) {
     #pragma omp atomic
-    escape += wgt;
-    #pragma omp atomic
-    escape_sqr += wgt*wgt;
+    current_escape_tally += wgt;
+}
+
+void zero_current_batch_scores() {
+    // Zero current batch score counters
+    current_real_coll_tally = 0.0;
+    current_all_coll_tally = 0.0;
+    current_escape_tally = 0.0;
+    
+    for(int i = 0; i < NFOMBINS; i++) {
+        current_real_collision_density[i] = 0.0;
+        current_all_collision_density[i] = 0.0;
+    }
+}
+
+void zero_all_scores() {
+    sum_avg_coll_per_particle = 0.0;
+    sum_avg_coll_per_particle_sqr = 0.0;
+    sum_avg_all_coll_per_particle = 0.0;
+    sum_avg_all_coll_per_particle_sqr = 0.0;
+    sum_avg_escape = 0.0;
+    sum_avg_escape_sqr = 0.0;
+
+    for(int i = 0; i < NFOMBINS; i++) {
+        sum_real_collision_density[i] = 0.0;
+        sum_real_collision_density_sqr[i] = 0.0;
+        sum_all_collision_density[i] = 0.0;
+        sum_all_collision_density_sqr[i] = 0.0;
+    }
+}
+
+void record_batch_scores() {
+    double npart = static_cast<double>(NPART);
+    // Recore global scores
+    sum_avg_coll_per_particle += (current_real_coll_tally / npart);
+    sum_avg_coll_per_particle_sqr += (current_real_coll_tally / npart)*(current_real_coll_tally / npart);
+
+    sum_avg_all_coll_per_particle += (current_all_coll_tally / npart);
+    sum_avg_all_coll_per_particle_sqr += (current_all_coll_tally / npart)*(current_all_coll_tally / npart);
+
+    sum_avg_escape += (current_escape_tally / npart);
+    sum_avg_escape_sqr += (current_escape_tally / npart)*(current_escape_tally / npart);
+
+    for(int i = 0; i < NFOMBINS; i++) {
+        sum_real_collision_density[i] += current_real_collision_density[i] / npart;
+        sum_real_collision_density_sqr[i] += (current_real_collision_density[i] / npart)*(current_real_collision_density[i] / npart);
+
+        sum_all_collision_density[i] += current_all_collision_density[i] / npart;
+        sum_all_collision_density_sqr[i] += (current_all_collision_density[i] / npart)*(current_all_collision_density[i] / npart);
+    }
 }
 
 std::vector<Particle> Delta_Tracking(std::unique_ptr<XS> const &xs,
-        std::vector<Particle> &bank) {
+       const std::vector<Particle> &bank) {
 
     int cnts_sum = 0;
     std::vector<Particle> fission_daughters;
@@ -361,8 +416,11 @@ std::vector<Particle> Delta_Tracking(std::unique_ptr<XS> const &xs,
 
         std::vector<Particle> this_thread_fission;
 
-        #pragma omp for
+        #pragma omp for schedule(dynamic)
         for(int n = 0; n < static_cast<int>(bank.size()); n++) {
+            #pragma omp atomic
+            n_particles_transported++;
+
             bool virtual_collision;
             Particle p = bank[n];
             while(p.alive) {
@@ -374,7 +432,7 @@ std::vector<Particle> Delta_Tracking(std::unique_ptr<XS> const &xs,
                         score_escape(p.wgt); 
                         virtual_collision = false;
                         p.kill();
-                        #pragma omp atomic
+                        #pragma omp atomic seq_cst
                         cnts_sum += p.xs_evals_cnt;
                     } else {
                         p.xs_eval();
@@ -396,12 +454,13 @@ std::vector<Particle> Delta_Tracking(std::unique_ptr<XS> const &xs,
                     new_neutron_tally += p.wgt*nu*P_fis;
 
                     // Fission
-                    int n_new = std::floor(p.wgt/keff*nu*P_fis + rng.rand());
+                    int n_new = std::floor(p.wgt*nu*P_fis/keff + rng.rand());
+                    this_thread_fission.reserve(this_thread_fission.size()+n_new);
                     for(int i = 0; i < n_new; i++) {
                         double u;
                         if(rng.rand() < 0.5) u = 1.0;
                         else u = -1.0;
-                        this_thread_fission.push_back(Particle(p.x,u,1.0));
+                        this_thread_fission.push_back(Particle(p.x,u,p.wgt));
                     }
                     
                     // Implicit capture
@@ -414,24 +473,22 @@ std::vector<Particle> Delta_Tracking(std::unique_ptr<XS> const &xs,
                     double xi = rng.rand();
                     roulette(p.wgt, p.alive, xi);
                     if(p.alive == false) {
-                        #pragma omp atomic
+                        #pragma omp atomic seq_cst
                         cnts_sum += p.xs_evals_cnt;
                     }
                 } // If alive for real collision
             } // While alive
         } // For all particles
-        #pragma omp critical
-        {
-            pcg_seeds[thread_id] = rng.get_seed();
-        }
-
-        #pragma omp barrier
-        #pragma omp critical
+        #pragma omp atomic write
+        pcg_seeds[thread_id] = rng.get_seed();
+        #pragma omp critical(threads)
         {
             fission_daughters.insert(std::end(fission_daughters),
                     std::begin(this_thread_fission),
                     std::end(this_thread_fission));
         }
+
+#pragma omp flush
     } // Parallel
     xs_evals += cnts_sum;
 
@@ -441,6 +498,7 @@ std::vector<Particle> Delta_Tracking(std::unique_ptr<XS> const &xs,
 
 std::vector<Particle> Meshed_Delta_Tracking(std::unique_ptr<XS> const &xs,
         std::vector<Particle> const &bank) {
+    std::cout << "\n Meshed Delta Tracking\n";
 
     int cnts_sum = 0;
     int virtual_cnt_sum = 0;
@@ -465,7 +523,10 @@ std::vector<Particle> Meshed_Delta_Tracking(std::unique_ptr<XS> const &xs,
         std::vector<Particle> this_thread_fission;
 
         #pragma omp for
-        for(int n = 0; n < static_cast<int>(bank.size()); n++) {
+        for(int n = 0; n < NPART; n++) {
+            #pragma omp atomic
+            n_particles_transported++;
+
             bool virtual_collision = true;
             Particle p = bank[n];
             double Emax = xs->Em[p.bin];
@@ -565,6 +626,7 @@ std::vector<Particle> Meshed_Delta_Tracking(std::unique_ptr<XS> const &xs,
 
 std::vector<Particle> Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs,
         std::vector<Particle> const &bank) {
+    std::cout << "\n Negative Weight Delta Tracking\n";
 
     int cnts_sum = 0;
     double sign_change = 0.0;
@@ -595,6 +657,9 @@ std::vector<Particle> Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &
 
             #pragma omp for
             for(int n = 0; n < n_particles; n++) {
+                #pragma omp atomic
+                n_particles_transported++;
+
                 double Esamp = p*(xs->Emax);
                 Particle p = Bank[n];
                 while(p.alive) {
@@ -698,6 +763,7 @@ std::vector<Particle> Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &
 
 std::vector<Particle> Meshed_Negative_Weight_Delta_Tracking(std::unique_ptr<XS> const &xs,
         std::vector<Particle> const &bank) {
+    std::cout << "\n Meshed Negative Weight Delta Tracking\n";
 
     int cnts_sum = 0;
     int bin_cnt_sum = 0;
@@ -729,6 +795,9 @@ std::vector<Particle> Meshed_Negative_Weight_Delta_Tracking(std::unique_ptr<XS> 
 
             #pragma omp for
             for(int n = 0; n < n_particles; n++) {
+                #pragma omp atomic
+                n_particles_transported++;
+
                 Particle p = Bank[n];
                 double Esamp = xs->Esmp[p.bin];
                 double d,d_bin;
@@ -849,8 +918,10 @@ std::vector<Particle> Meshed_Negative_Weight_Delta_Tracking(std::unique_ptr<XS> 
     return fission_daughters;
 }
 
-std::vector<Particle> Bomb_Transport(std::unique_ptr<XS> const &xs, double P,
+std::vector<Particle> Carter_Transport(std::unique_ptr<XS> const &xs, double P,
         std::vector<Particle> const &bank) {
+    std::cout << std::fixed << std::setprecision(2);
+    std::cout << "\n Carter Paper Transport, p = " << P << "\n";
     int cnts_sum = 0;
     double sign_change = 0.0;
     
@@ -880,6 +951,9 @@ std::vector<Particle> Bomb_Transport(std::unique_ptr<XS> const &xs, double P,
 
             #pragma omp for
             for(int n = 0; n < n_particles; n++) {
+                #pragma omp atomic
+                n_particles_transported++;
+
                 Particle p = Bank[n];
                 double Esmp = P*xs->Emax;
                 bool real_collision = false;
@@ -933,7 +1007,7 @@ std::vector<Particle> Bomb_Transport(std::unique_ptr<XS> const &xs, double P,
                             #pragma omp atomic
                             new_neutron_tally += p.wgt*nu*P_fis;
 
-                            int n_new = std::floor(p.wgt*nu*P_fis/keff + rng.rand());
+                            int n_new = std::floor(p.wgt*nu*P_fis/keff - rng.rand());
                             for(int i = 0; i < n_new; i++) {
                                 double u;
                                 if(rng.rand() < 0.5) u = 1.0;
@@ -1001,8 +1075,10 @@ std::vector<Particle> Bomb_Transport(std::unique_ptr<XS> const &xs, double P,
     return fission_daughters;
 }
 
-std::vector<Particle> Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P,
+std::vector<Particle> Meshed_Carter_Transport(std::unique_ptr<XS> const &xs, double P,
         std::vector<Particle> const &bank) {
+    std::cout << std::fixed << std::setprecision(2);
+    std::cout << "\n Meshed Carter Paper Transport, p = " << P << "\n";
     int cnts_sum = 0;
     double sign_change = 0.0;
 
@@ -1031,6 +1107,9 @@ std::vector<Particle> Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, doubl
 
             #pragma omp for
             for(int n = 0; n < n_particles; n++) {
+                #pragma omp atomic
+                n_particles_transported++;
+
                 Particle p = Bank[n];
                 double d_bin;
                 double Esmp = P*xs->Em[p.bin];
@@ -1158,8 +1237,10 @@ std::vector<Particle> Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, doubl
     return fission_daughters;
 }
 
-std::vector<Particle> Improving_Meshed_Bomb_Transport(std::unique_ptr<XS> const &xs, double P,
+std::vector<Particle> Improving_Meshed_Carter_Transport(std::unique_ptr<XS> const &xs, double P,
         std::vector<Particle> const &bank) {
+    std::cout << std::fixed << std::setprecision(2);
+    std::cout << "\n Improving Meshed Carter Paper Transport, p = " << P << "\n";
     int cnts_sum = 0;
     double sign_change = 0.0;
 
@@ -1188,6 +1269,9 @@ std::vector<Particle> Improving_Meshed_Bomb_Transport(std::unique_ptr<XS> const 
 
             #pragma omp for
             for(int n = 0; n < n_particles; n++) {
+                #pragma omp atomic
+                n_particles_transported++;
+
                 Particle p = Bank[n];
                 double d_bin;
                 double Esmp = xs->Em_imp[p.bin];
@@ -1326,10 +1410,10 @@ std::vector<Particle> Improving_Meshed_Bomb_Transport(std::unique_ptr<XS> const 
     return fission_daughters;
 }
 
-std::vector<Particle> Previous_XS_Bomb_Transport(std::unique_ptr<XS> const &xs,
+std::vector<Particle> Previous_XS_Carter_Transport(std::unique_ptr<XS> const &xs,
         std::vector<Particle> const &bank) {
     std::cout << std::fixed << std::setprecision(2);
-    std::cout << "\n Previous XS Bomb Paper Transport\n";
+    std::cout << "\n Previous XS Carter Paper Transport\n";
     int cnts_sum = 0;
     double sign_change = 0.0;
     
@@ -1362,6 +1446,9 @@ std::vector<Particle> Previous_XS_Bomb_Transport(std::unique_ptr<XS> const &xs,
 
             #pragma omp for
             for(int n = 0; n < n_particles; n++) {
+                #pragma omp atomic
+                n_particles_transported++;
+
                 Particle p = Bank[n];
                 double Esmp = p.Esmp;
                 if(Esmp < 1.0) Esmp = 1.0;
@@ -1475,79 +1562,67 @@ std::vector<Particle> Previous_XS_Bomb_Transport(std::unique_ptr<XS> const &xs,
 }
 
 void Output() {
-    double collide_avg = collide / (double)NPART;
-    double collide_sqr_avg = collide_sqr / (double)NPART;
-    double collide_std = std::sqrt(std::abs(collide_avg*collide_avg - 
-                          collide_sqr_avg)/((double)NPART - 1.0));
+    double collide_avg = sum_avg_coll_per_particle / (double)NBATCHES;
+    double collide_sqr_avg = sum_avg_coll_per_particle_sqr / (double)NBATCHES;
+    double collide_std = std::sqrt((collide_sqr_avg - collide_avg*collide_avg)/((double)NBATCHES - 1.0));
+    avg_real.push_back(collide_avg);
 
-    double all_collide_avg = all_collide / (double)NPART;
-    double all_collide_sqr_avg = all_collide_sqr / (double)NPART;
-    double all_collide_std = std::sqrt(std::abs(all_collide_avg*all_collide_avg - 
-                          all_collide_sqr_avg)/((double)NPART - 1.0));
+    double all_collide_avg = sum_avg_all_coll_per_particle / (double)NBATCHES;
+    double all_collide_sqr_avg = sum_avg_all_coll_per_particle_sqr / (double)NBATCHES;
+    double all_collide_std = std::sqrt((all_collide_sqr_avg - all_collide_avg*all_collide_avg)/((double)NBATCHES - 1.0));
+    avg_all.push_back(all_collide_avg);
 
-    double escape_avg = escape / (double)NPART;
-    double escape_sqr_avg = escape_sqr / (double)NPART;
-    double escape_std = std::sqrt(std::abs(escape_avg*escape_avg - 
-                           escape_sqr_avg)/((double)NPART - 1.0));
+    double escape_avg = sum_avg_escape / (double)NBATCHES;
+    double escape_sqr_avg = sum_avg_escape_sqr / (double)NBATCHES;
+    double escape_std = std::sqrt((escape_sqr_avg - escape_avg*escape_avg)/((double)NBATCHES - 1.0));
 
     //double avg_xs_evals = xs_evals / (double)NPART;
-    double avg_sgn_chngs = wgt_chngs / (double)NPART;
+    double avg_sgn_chngs = wgt_chngs / (double)(NPART*NBATCHES);
 
+    // Temp vectors to hold FOM
+    std::vector<double> collision_density_fom;
+    collision_density_fom.resize(NFOMBINS);
     // Calculations and output for real collision density profile
     for(int i = 0; i < NFOMBINS; i++) {
         // Get avg for bin
-        double coll_avg = coll_density[i][0] / static_cast<double>(NPART);
-        double coll_sqr_avg = coll_density[i][1] / static_cast<double>(NPART);
-        double coll_sig = std::sqrt(std::abs(coll_avg*coll_avg - coll_sqr_avg)
-                /(static_cast<double>(NPART) - 1.0));
-        coll_density[i][2] = coll_sig;
+        double coll_avg = sum_real_collision_density[i] / static_cast<double>(NBATCHES);
+        double coll_sqr_avg = sum_real_collision_density_sqr[i] / static_cast<double>(NBATCHES);
+        double coll_sig = std::sqrt((coll_sqr_avg - coll_avg*coll_avg)/(static_cast<double>(NBATCHES) - 1.0));
+        
         double rel_error = coll_sig / coll_avg;
-        coll_density[i][3] = 1.0 / (xs_evals * rel_error * rel_error); // FOM
+        collision_density_fom[i] = 1.0 / (xs_evals * rel_error * rel_error); // FOM
 
         // Output avg real coll desnity in bin
         if(i == 0) {File << coll_avg;}
         else {File << "," << coll_avg;}
     }
     File << "\n";
-    // Output std of real coll density
-    for(int i = 0; i < NFOMBINS; i++) {
-        if(i == 0) {File << coll_density[i][2];}
-        else {File << "," << coll_density[i][2];}
-    }
-    File << "\n";
     // Output FOM of real coll density
     for(int i = 0; i < NFOMBINS; i++) {
-        if(i == 0) {File << coll_density[i][3];}
-        else {File << "," << coll_density[i][3];}
+        if(i == 0) {File << collision_density_fom[i];}
+        else {File << "," << collision_density_fom[i];}
     }
     File << "\n";
 
     // Calculations and output for all collision density profile
     for(int i = 0; i < NFOMBINS; i++) {
         // Get avg for bin
-        double all_coll_avg = all_coll_density[i][0] / static_cast<double>(NPART);
-        double all_coll_sqr_avg = all_coll_density[i][1] / static_cast<double>(NPART);
-        double all_coll_sig = std::sqrt(std::abs(all_coll_avg*all_coll_avg - all_coll_sqr_avg)
-                /(static_cast<double>(NPART) - 1.0));
-        all_coll_density[i][2] = all_coll_sig;
+        double all_coll_avg = sum_all_collision_density[i] / static_cast<double>(NBATCHES);
+        double all_coll_sqr_avg = sum_all_collision_density_sqr[i] / static_cast<double>(NBATCHES);
+        double all_coll_sig = std::sqrt((all_coll_sqr_avg - all_coll_avg*all_coll_avg)/(static_cast<double>(NBATCHES) - 1.0));
+        
         double all_rel_error = all_coll_sig / all_coll_avg;
-        all_coll_density[i][3] = 1.0 / (xs_evals * all_rel_error * all_rel_error); // FOM
+        collision_density_fom[i] = 1.0 / (xs_evals * all_rel_error * all_rel_error); // FOM
 
         // Output avg all coll desnity in bin
         if(i == 0) {File << all_coll_avg;}
         else {File << "," << all_coll_avg;}
     }
     File << "\n";
-    // Output std of all coll density
-    for(int i = 0; i < NFOMBINS; i++) {
-        if(i == 0) {File << all_coll_density[i][2];}
-        else {File << "," << all_coll_density[i][2];}
-    }
-    File << "\n";
     // Output FOM of all coll density
     for(int i = 0; i < NFOMBINS; i++) {
-        if(i == 0) {File << all_coll_density[i][3];}
-        else {File << "," << all_coll_density[i][3];}
+        if(i == 0) {File << collision_density_fom[i];}
+        else {File << "," << collision_density_fom[i];}
     }
     File << "\n\n";
 
@@ -1566,223 +1641,188 @@ void Output() {
     std::cout << std::fixed << std::setprecision(6) << ", Avg Sign Changes: " << avg_sgn_chngs << "\n";
     std::cout << std::scientific;
     std::cout << " FOM_coll = " << FOM_col << ", FOM_all_coll = " << FOM_all_coll;
-    std::cout << ", FOM_escp = " << FOM_esc << "\n\n";
+    std::cout << ", FOM_escp = " << FOM_esc << "\n";
+    std::cout << " N Particles Transported = " << n_particles_transported << "\n\n";
 }
 
 std::unique_ptr<XS> make_cross_section(int type)
 {
   // Determine cross section type for run
   if(type == -1) {
-    std::cout << "\n Step\n";
+    std::cout << "\n------------------------------------------------------";
+    std::cout << "\n Step\n\n";
     File << "#XS,S\n";
     return std::make_unique<Step>();
   }
   else if(type == 0) {
-    std::cout << "\n Constant\n";
+    std::cout << "\n------------------------------------------------------";
+    std::cout << "\n Constant\n\n";
     File << "#XS,C\n";
     return std::make_unique<Constant>();
   }
   else if(type == 1) {
-    std::cout << "\n Linearly Increasing\n";
+    std::cout << "\n------------------------------------------------------";
+    std::cout << "\n Linearly Increasing\n\n";
     File << "#XS,LI\n";
     return std::make_unique<Lin_Increase>();
   }
   else if(type == 2) {
-    std::cout << "\n Linearly Decreasing\n";
+    std::cout << "\n------------------------------------------------------";
+    std::cout << "\n Linearly Decreasing\n\n";
     File << "#XS,LD\n"; 
     return std::make_unique<Lin_Decrease>();
   }
   else if(type == 4) {
-    std::cout << "\n Exponentially Decreasing\n";
+    std::cout << "\n------------------------------------------------------";
+    std::cout << "\n Exponentially Decreasing\n\n";
     File << "#XS,ED\n";
     return std::make_unique<Exp_Decrease>();
   }
   else if(type == 3) {
-    std::cout << "\n Exponentially Increasing\n";
+    std::cout << "\n------------------------------------------------------";
+    std::cout << "\n Exponentially Increasing\n\n";
     File << "#XS,EI\n";
     return std::make_unique<Exp_Increase>();
   }
   else if(type == 5) {
-    std::cout << "\n Sharp Gaussian\n";
+    std::cout << "\n------------------------------------------------------";
+    std::cout << "\n Sharp Gaussian\n\n";
     File << "#XS,SG\n";
     return std::make_unique<Gauss_Sharp>();
   }
   else if(type == 6) {
-    std::cout << "\n Broad Gaussian\n";
+    std::cout << "\n------------------------------------------------------";
+    std::cout << "\n Broad Gaussian\n\n";
     File << "#XS,BG\n";
     return std::make_unique<Gauss_Broad>();
   }
   else {
     exit(1);
   }
+
 }
 
 void Zero_Values() {
-    collide = 0.0;
-    collide_sqr = 0.0;
-    all_collide = 0.0;
-    all_collide_sqr = 0.0;
-    escape = 0.0;
-    escape_sqr = 0.0;
+    n_particles_transported = 0;
     xs_evals = 0.0;
     wgt_chngs = 0.0;
-    for(int i = 0; i < NFOMBINS; i++) {
-        coll_density[i][0] = 0.0;
-        coll_density[i][1] = 0.0;
-        coll_density[i][2] = 0.0;
-        coll_density[i][3] = 0.0;
-        all_coll_density[i][0] = 0.0;
-        all_coll_density[i][1] = 0.0;
-        all_coll_density[i][2] = 0.0;
-        all_coll_density[i][3] = 0.0;
-    }
 }
 
 void RNG_Seeds() {
-    pcg_seeds.resize(NTHREADS);
-    for(int i = 0; i < NTHREADS; i++) {
+    int nthreads;
+#ifdef _OPENMP
+    nthreads = omp_get_max_threads();
+#else
+    nthreads = 1;
+#endif
+    pcg_seeds.resize(nthreads);
+    for(int i = 0; i < nthreads; i++) {
         uint64_t seed = i+1;
         pcg_seeds[seed];
     }
 }
 
 int main() {
-    #ifdef _OPENMP
-    omp_set_num_threads(NTHREADS);
-    #endif
+    std::cout << "\n NParticles = " << NPART << ", NBins = " << NBIN << "\n\n";
 
 
     RNG_Seeds();
 
     // Create and zero coll_density array
     for(int i = 0; i < NFOMBINS; i++) {
-        std::vector<double> bin;
-        bin.push_back(0.0);
-        bin.push_back(0.0);
-        bin.push_back(0.0);
-        bin.push_back(0.0);
-        coll_density.push_back(bin);
-        all_coll_density.push_back(bin);
+        current_real_collision_density.push_back(0.0);
+        current_all_collision_density.push_back(0.0);
+        sum_real_collision_density.push_back(0.0);
+        sum_real_collision_density_sqr.push_back(0.0);
+        sum_all_collision_density.push_back(0.0);
+        sum_all_collision_density_sqr.push_back(0.0);
     }
 
-    File.open("Fission_Output.txt");
+    File.open("Coll_Densities.txt");
 
     // Make initial source distribution
     std::vector<Particle> particle_bank;
-    PCG rng;
     for(int i = 0; i < NPART; i++) {
-        double x = 2.0*rng.rand();
-        double u;
-        if(rng.rand() < 0.5) u = -1.0;
-        else u = 1.0;
-        particle_bank.push_back(Particle(x,u,1.0));
+        particle_bank.push_back(Particle(0.0,1.0,1.0));
+        // Initials source, particles start at x = 0.0 in bin 0,
+        // in forward direction, with wgt = 1.0
     }
 
-    // Determine ngens, xs type, tracking type
-    int xs_type;
-    std::cout << "\n 0) Constant 1) Linearly Increasing    2) Linearly Decreasing    3) Exponentially Increasing\n";
-    std::cout << " 4) Exponentially Decreasing    5) Sharp Gaussian    6) Broad Gaussian\n\n";
-    std::cout << " Select XS => ";
-    std::cin >> xs_type;
-    if(xs_type < 0 or xs_type > 6) exit(1);
+    // Ensure tallys start at zero
+    zero_current_batch_scores();
+    zero_all_scores();
 
-    std::unique_ptr<XS> crs = make_cross_section(xs_type);
+    // Iterate through all XSs
+    for(int type = 1; type <= 5; type ++) {
+        std::unique_ptr<XS> crs = make_cross_section(1);
 
-    // Determine tracking method
-    int track_method;
-    std::cout << " \n\n 1) Delta Tracking    2) Meshed Delta Tracking    3) Negative Weighted Delta Tracking\n";
-    std::cout << " 4) Meshed Negative Weighted Delta Tracking    5) Carter Transport    6) Mehsed Carter Transport\n";
-    std::cout << " 7) Improving Meshed Carter Transport\n\n";
-    std::cout << " Select Tracking Method => ";
-    std::cin >> track_method;
-    if(track_method < 1 or track_method > 7) exit(1);
-    if(track_method == 1) {
-        std::cout << "\n Delta Tracking\n\n";
+        Zero_Values();
         File << "#TM,DT\n";
-    }
-    else if(track_method == 2) {
-        std::cout << "\n Meshed Delta Tracking\n\n";
-        File << "#TM,MDT\n";
-    }
-    else if(track_method == 3) {
-        std::cout << "\n Negative Weighted Delta Tracking\n\n";
-        File << "#TM,NWDT\n";
-    }
-    else if(track_method == 4) {
-        std::cout << "\n Meshed Negative Weighted Delta Tracking\n\n";
-        File << "#TM,MNWDT\n";
-    }
-    else if(track_method == 5) {
-        std::cout << "\n Carter Transport\n\n";
-        File << "#TM,CT\n";
-    }
-    else if(track_method == 6) {
-        std::cout << "\n Meshed Carter Transport\n\n";
-        File << "#TM,MCT\n";
-    }
-    else if(track_method == 7) {
-        std::cout << "\n Impoving Meshed Carter Transport\n\n";
-        File << "#TM,IMCT\n";
-    }
-
-    std::cout << "\n NParticles = " << NPART << ", NBins = " << NBIN << "\n\n";
-
-    Zero_Values();
-
-    double keff_sum = 0.0;
-    double keff_sqr_sum = 0.0;
-
-    for(int g = 1; g <= NGENS; g++) {
-        // Ignored generations
-        if(g == NGENSIGNORED) {Zero_Values(); keff_sum = 0.0; keff_sqr_sum = 0.0;}
-
-        std::vector<Particle> next_gen_particles;
-        if(track_method == 1) next_gen_particles = Delta_Tracking(crs, particle_bank);
-        else if(track_method == 2) next_gen_particles = Meshed_Delta_Tracking(crs, particle_bank);
-        else if(track_method == 3) next_gen_particles = Negative_Weight_Delta_Tracking(crs, particle_bank);
-        else if(track_method == 4) next_gen_particles = Meshed_Negative_Weight_Delta_Tracking(crs, particle_bank);
-        else if(track_method == 5) next_gen_particles = Bomb_Transport(crs, 0.85, particle_bank);
-        else if(track_method == 6) next_gen_particles = Meshed_Bomb_Transport(crs, 0.85, particle_bank);
-        else if(track_method == 7) next_gen_particles = Improving_Meshed_Bomb_Transport(crs, 0.85, particle_bank);
-
-        // Calculate keff for generation
-        keff = (new_neutron_tally / total_weight);
-        keff_sum += keff;
-        keff_sqr_sum += keff*keff;
-        std::cout << " gen = " << g << ",    keff = " << keff << ",    Nparticles = " << next_gen_particles.size() << "\n";
-
-        // Fix weights for next gen
-        double n_particles_next_gen = static_cast<double>(next_gen_particles.size());
-        for(int i = 0; i < static_cast<int>(next_gen_particles.size()); i++) {
-            next_gen_particles[i].wgt = total_weight / n_particles_next_gen;
+        std::cout << "\n Delta Tracking\n";
+        for(int b = 1; b <= NBATCHES; b++) {
+            Delta_Tracking(crs, particle_bank);
+            record_batch_scores();
+            zero_current_batch_scores();
         }
+        Output();
+        zero_all_scores();
+        /*
+        Zero_Values();
+        File << "#TM,MDT\n";
+        Meshed_Delta_Tracking(crs, particle_bank);
+        Output();
 
-        // Zero neutron tall for next gen
-        new_neutron_tally = 0.0;
+        Zero_Values();
+        File << "#TM,NWDT\n";
+        Negative_Weight_Delta_Tracking(crs, particle_bank);
+        Output();
 
-        // Set particle bank for next gen
-        particle_bank.clear();
-        particle_bank = next_gen_particles;
-        
+        Zero_Values();
+        File << "#TM,MNWDT\n";
+        Meshed_Negative_Weight_Delta_Tracking(crs,particle_bank);
+        Output();
+
+        Zero_Values();
+        File << "#TM,CT\n";
+        Carter_Transport(crs,0.8,particle_bank);
+        Output();
+
+        Zero_Values();
+        File << "#TM,MCT\n";
+        Meshed_Carter_Transport(crs,0.8,particle_bank);
+        Output();
+
+        Zero_Values();
+        File << "#TM,IMCT\n";
+        Improving_Meshed_Carter_Transport(crs,0.8,particle_bank);
+        Output();*/
     }
 
-    double avg_keff = keff_sum / static_cast<double>(NGENS - NGENSIGNORED);
-    double avg_keff_sqr = keff_sqr_sum / static_cast<double>(NGENS - NGENSIGNORED);
-    double std_keff = std::sqrt(std::abs(avg_keff*avg_keff - avg_keff_sqr)/(static_cast<double>(NGENS - NGENSIGNORED)-1.0));
-    double rel_err_keff = std_keff / avg_keff;
-    double FOM_keff = 1.0/ (xs_evals*rel_err_keff*rel_err_keff);
-    std::cout << "\n Avg keff = " << std::fixed << std::setprecision(6) << avg_keff << " +/- " << std_keff;
-    std::cout << " ,    FOM = " << std::scientific << FOM_keff << "\n\n";
+    double Real = 0.0;
+    double All = 0.0;
+    int ntrials = static_cast<int>(avg_real.size());
+    for(int i = 0; i < ntrials; i++) {
+        Real += avg_real[i];
 
-    //File << "\n\n SOURCE\n";
-    //for(auto& p : particle_bank) {
-    //    File << p.x << "\n";
-    //}
+        All += avg_all[i];
+    }
+    Real /= (double)ntrials;
+    All /= (double)ntrials;
+
+    double std_real = 0.0;
+    double std_all = 0.0;
+    for(int i = 0; i < ntrials; i++) {
+        std_real += (Real - avg_real[i])*(Real - avg_real[i]);
+        std_all += (All - avg_all[i])*(Real - avg_all[i]);
+    }
+    std_real = std::sqrt(std_real / ((double)ntrials - 1.0));
+    std_all = std::sqrt(std_all / ((double)ntrials - 1.0));
+    std::cout << " " << std_real << "\n";
+    std::cout << " " << std_all << "\n";
     
-    std::cout << "\n";
-    Output();
-        
+
     File.close();
+
 
     return 0;
 }

@@ -22,7 +22,7 @@ using namespace lmct; // namespace for my personal PCG RNG wrapper
 
 const double EPS = 1e-6;
 const int NPART = 1e6;
-const int NGENS = 110;
+const int NGENS = 510;
 const int NGENSIGNORED = 10;
 const int NBIN = 5;
 const int NFOMBINS = 100;
@@ -34,8 +34,8 @@ const double q = 0.3;
 const double q_mshd = 0.3;
 
 const double P_abs = 0.5; // Ea/Et
-const double P_fis = 0.47; // Ef/Et
-const double nu    = 3.2;
+const double P_fis = 0.3; // Ef/Et
+const double nu    = 2.5;
 const double P_sct = 0.5; // Es/Et
 const double P_straight_ahead = 0.5;
 
@@ -48,7 +48,7 @@ const double alpha = 1.0;
 const double A = 2.0/std::sqrt(2.0*M_PI);
 const double a_s = (1.0/0.05)*(1.0/0.05);
 const double a_b = 1.0;
-const double z = 0.77;
+const double z = 1.23;
 
 // Seed variables for PCG RNG
 const int NTHREADS = 40;
@@ -69,7 +69,7 @@ double wgt_chngs; // # of times particle wgt sign flipped
 std::vector<std::vector<double>> coll_density; //[0] #sum coll in box,[1] sum coll sqr, [2] coll STD, [3] Coll FOM in box
 std::vector<std::vector<double>> all_coll_density; // Same as above but scores at all collisions (virt. and real)
 
-double keff = 0.225647;
+double keff = 1.0;
 double k_sum = 0.0;
 double k_sqr_sum = 0.0;
 double total_weight = static_cast<double>(NPART);
@@ -1639,18 +1639,15 @@ void Zero_Values() {
 }
 
 void RNG_Seeds() {
-    pcg_seeds.resize(NTHREADS);
-    for(int i = 0; i < NTHREADS; i++) {
+    int nthrds = omp_get_max_threads();
+    pcg_seeds.resize(nthrds);
+    for(int i = 0; i < nthrds; i++) {
         uint64_t seed = i+1;
         pcg_seeds[seed];
     }
 }
 
 int main() {
-    #ifdef _OPENMP
-    omp_set_num_threads(NTHREADS);
-    #endif
-
 
     RNG_Seeds();
 
@@ -1679,51 +1676,12 @@ int main() {
     }
 
     // Determine ngens, xs type, tracking type
-    int xs_type;
-    std::cout << "\n 0) Constant 1) Linearly Increasing    2) Linearly Decreasing    3) Exponentially Increasing\n";
-    std::cout << " 4) Exponentially Decreasing    5) Sharp Gaussian    6) Broad Gaussian\n\n";
-    std::cout << " Select XS => ";
-    std::cin >> xs_type;
-    if(xs_type < 0 or xs_type > 6) exit(1);
-
+    int xs_type = 0;
     std::unique_ptr<XS> crs = make_cross_section(xs_type);
 
     // Determine tracking method
-    int track_method;
-    std::cout << " \n\n 1) Delta Tracking    2) Meshed Delta Tracking    3) Negative Weighted Delta Tracking\n";
-    std::cout << " 4) Meshed Negative Weighted Delta Tracking    5) Carter Transport    6) Mehsed Carter Transport\n";
-    std::cout << " 7) Improving Meshed Carter Transport\n\n";
-    std::cout << " Select Tracking Method => ";
-    std::cin >> track_method;
-    if(track_method < 1 or track_method > 7) exit(1);
-    if(track_method == 1) {
-        std::cout << "\n Delta Tracking\n\n";
-        File << "#TM,DT\n";
-    }
-    else if(track_method == 2) {
-        std::cout << "\n Meshed Delta Tracking\n\n";
-        File << "#TM,MDT\n";
-    }
-    else if(track_method == 3) {
-        std::cout << "\n Negative Weighted Delta Tracking\n\n";
-        File << "#TM,NWDT\n";
-    }
-    else if(track_method == 4) {
-        std::cout << "\n Meshed Negative Weighted Delta Tracking\n\n";
-        File << "#TM,MNWDT\n";
-    }
-    else if(track_method == 5) {
-        std::cout << "\n Carter Transport\n\n";
-        File << "#TM,CT\n";
-    }
-    else if(track_method == 6) {
-        std::cout << "\n Meshed Carter Transport\n\n";
-        File << "#TM,MCT\n";
-    }
-    else if(track_method == 7) {
-        std::cout << "\n Impoving Meshed Carter Transport\n\n";
-        File << "#TM,IMCT\n";
-    }
+    std::cout << "\n Delta Tracking\n\n";
+    File << "#TM,DT\n";
 
     std::cout << "\n NParticles = " << NPART << ", NBins = " << NBIN << "\n\n";
 
@@ -1737,13 +1695,7 @@ int main() {
         if(g == NGENSIGNORED) {Zero_Values(); keff_sum = 0.0; keff_sqr_sum = 0.0;}
 
         std::vector<Particle> next_gen_particles;
-        if(track_method == 1) next_gen_particles = Delta_Tracking(crs, particle_bank);
-        else if(track_method == 2) next_gen_particles = Meshed_Delta_Tracking(crs, particle_bank);
-        else if(track_method == 3) next_gen_particles = Negative_Weight_Delta_Tracking(crs, particle_bank);
-        else if(track_method == 4) next_gen_particles = Meshed_Negative_Weight_Delta_Tracking(crs, particle_bank);
-        else if(track_method == 5) next_gen_particles = Bomb_Transport(crs, 0.85, particle_bank);
-        else if(track_method == 6) next_gen_particles = Meshed_Bomb_Transport(crs, 0.85, particle_bank);
-        else if(track_method == 7) next_gen_particles = Improving_Meshed_Bomb_Transport(crs, 0.85, particle_bank);
+        next_gen_particles = Delta_Tracking(crs, particle_bank);
 
         // Calculate keff for generation
         keff = (new_neutron_tally / total_weight);
@@ -1773,11 +1725,6 @@ int main() {
     double FOM_keff = 1.0/ (xs_evals*rel_err_keff*rel_err_keff);
     std::cout << "\n Avg keff = " << std::fixed << std::setprecision(6) << avg_keff << " +/- " << std_keff;
     std::cout << " ,    FOM = " << std::scientific << FOM_keff << "\n\n";
-
-    //File << "\n\n SOURCE\n";
-    //for(auto& p : particle_bank) {
-    //    File << p.x << "\n";
-    //}
     
     std::cout << "\n";
     Output();

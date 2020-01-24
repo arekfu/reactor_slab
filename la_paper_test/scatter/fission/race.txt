@@ -1,0 +1,2961 @@
+
+ NParticles = 10000, NBins = 5
+
+
+------------------------------------------------------
+ Linearly Increasing
+
+
+ Delta Tracking
+ In transport15
+ In transport2
+ In transport16
+ In transport24
+ In transport25
+ In transport3
+ In transport7
+ In transport1
+ In transport26
+ In transport13
+ In transport10
+ In transport21
+ In transport20
+ In transport In transport08
+
+ In transport In transport17
+ In transport11
+ In transport In transport28
+ In transport4
+ In transport14
+ In transport In transport In transport30
+3123
+
+ In transport In transport38
+ In transport35
+ In transport In transport34
+18
+29
+ In transport32
+ In transport27
+ In transport37
+ In transport6
+5
+ In transport19
+ In transport9
+ In transport36
+ In transport22
+39 In transport12
+ In transport33
+
+ Finished at main
+ In transport2
+ In transport In transport In transport3 In transport In transport In transport In transport26
+ In transport24
+ In transport In transport3528 In transport In transport17 In transport In transport In transport In transport In transport611 In transport In transport In transport In transport1
+ In transport In transport In transport In transport
+ In transport18
+391619
+
+ In transport1521
+ In transport In transport In transport127
+259
+
+ In transport
+
+
+20
+37
+ In transport
+8132314
+3610
+29
+
+
+ In transport
+3233 In transport
+
+
+ In transport
+ In transport54
+
+
+380
+
+
+22
+ In transport34
+30
+ In transport31
+ In transport27
+
+ Finished at main
+ In transport35
+ In transport31
+ In transport10
+ In transport15
+ In transport28
+ In transport36
+ In transport39
+ In transport17
+ In transport20
+ In transport23
+ In transport1
+ In transport32
+ In transport30
+ In transport9
+ In transport16
+ In transport12
+ In transport3
+ In transport29
+ In transport22
+ In transport37
+ In transport11
+ In transport24
+ In transport33
+ In transport26
+ In transport In transport27
+ In transport In transport0
+13 In transport
+ In transport6
+ In transport In transport19
+ In transport In transport1834 In transport2
+ In transport In transport In transport
+5
+738
+ In transport8
+25
+
+1421
+
+
+ In transport4
+ Finished at main
+ In transport31
+ In transport16
+ In transport10
+ In transport12
+ In transport24
+ In transport23
+ In transport22
+ In transport33
+ In transport9
+ In transport13
+ In transport37
+ In transport6
+ In transport11
+ In transport28
+ In transport30
+ In transport0
+ In transport36
+ In transport39
+ In transport19
+ In transport26
+ In transport5
+ In transport14
+ In transport17
+ In transport32
+ In transport27
+ In transport In transport35
+34
+ In transport2
+ In transport1
+ In transport15
+ In transport In transport8
+ In transport38
+ In transport7
+ In transport20
+ In transport25
+ In transport3
+ In transport29
+ In transport4
+ In transport18
+21
+ Finished at main
+ In transport2
+ In transport7
+ In transport3
+ In transport12
+ In transport5
+ In transport27
+ In transport In transport32
+34
+ In transport In transport23
+ In transport24
+ In transport35
+ In transport26
+ In transport4
+ In transport In transport37
+22
+ In transport In transport36
+ In transport9
+ In transport In transport In transport1
+31 In transport In transport In transport17
+ In transport In transport1425
+
+ In transport In transport In transport8
+ In transport In transport16
+ In transport In transport In transport15
+331319
+
+6
+
+2920 In transport
+ In transport183039
+10 In transport In transport
+38
+
+ In transport21
+
+
+11
+0
+
+28
+ Finished at main
+ In transport28
+ In transport In transport In transport In transport In transport33 In transport In transport In transport19
+ In transport In transport In transport In transport In transport1 In transport In transport In transport In transport2526 In transport6 In transport In transport17
+ In transport14
+39 In transport
+222 In transport0 In transport13 In transport11
+ In transport12 In transport31
+15
+ In transport In transport In transport In transport214 In transport29
+
+
+
+36 In transport32 In transport In transport
+27 In transport38
+ In transport
+
+
+
+
+
+10
+
+2453416
+79
+20830
+
+ In transport
+37
+
+
+
+
+
+23
+
+
+35
+
+18
+ In transport3
+ Finished at main
+ In transport35
+ In transport In transport20
+ In transport In transport In transport11 In transport In transport In transport17 In transport In transport16 In transport
+ In transport In transport In transport37 In transport In transport In transport In transport In transport24
+ In transport In transport9
+ In transport
+22
+ In transport1
+
+38 In transport In transport2726 In transport0292533
+ In transport23 In transport In transport In transport34
+13
+3221
+ In transport
+15
+
+74 In transport In transport19 In transport
+39
+
+ In transport14
+36
+
+10
+28
+
+
+
+ In transport
+ In transport
+18
+313
+2 In transport
+12
+8630
+
+
+
+ In transport5
+
+
+ Finished at main
+ In transport0
+ In transport In transport31
+ In transport In transport In transport In transport In transport In transport128 In transport In transport34
+ In transport In transport In transport24
+ In transport33
+38
+ In transport
+ In transport In transport In transport5
+ In transport9
+ In transport
+ In transport1613
+ In transport3730 In transport In transport In transport1
+2227 In transport In transport In transport In transport In transport3239
+7
+19
+15
+ In transport25 In transport231421
+
+ In transport
+
+
+
+
+26 In transport
+
+ In transport
+41029
+ In transport20 In transport6
+ In transport In transport2818
+
+3
+
+217
+
+35
+
+
+11
+36
+
+ Finished at main
+ In transport0
+ In transport In transport In transport In transport19
+344
+ In transport15
+ In transport In transport In transport27
+32 In transport In transport In transport
+ In transport29
+26
+ In transport In transport In transport In transport In transport In transport730
+ In transport In transport In transport In transport128
+39
+
+ In transport11 In transport In transport5 In transport
+835
+ In transport In transport1613
+ In transport In transport36 In transport
+ In transport3721 In transport
+22025
+9
+
+
+38 In transport10 In transport33
+
+
+ In transport
+31 In transport
+318
+23
+17
+14
+
+
+
+
+
+
+12
+24
+ In transport6
+ In transport22
+ Finished at main
+ In transport In transport1535
+ In transport In transport In transport In transport In transport In transport In transport In transport5 In transport In transport In transport In transport In transport In transport33 In transport2718 In transport In transport7 In transport
+0
+14 In transport1628
+30
+19
+
+ In transport34
+ In transport
+ In transport In transport In transport In transport In transport In transport In transport36
+32 In transport In transport In transport6204 In transport In transport2
+39
+17
+ In transport37
+
+
+ In transport
+11
+ In transport9 In transport10312425122923113
+8
+ In transport
+26
+
+
+
+
+22
+
+
+
+
+3821
+
+
+
+
+3
+
+
+
+ Finished at main
+ In transport12
+ In transport In transport In transport In transport13
+28
+ In transport In transport17
+ In transport In transport In transport32
+ In transport In transport37
+21
+ In transport In transport29 In transport27
+9 In transport
+ In transport In transport In transport31 In transport0
+20 In transport
+ In transport In transport In transport3439
+15
+1026 In transport
+8 In transport In transport
+ In transport23
+38
+3 In transport
+ In transport1 In transport
+
+
+1418
+ In transport In transport22
+3319
+11
+
+25
+
+30 In transport2435
+
+
+ In transport
+2
+ In transport16
+36
+
+ In transport6
+ In transport In transport In transport5
+4
+7
+ Finished at main
+ In transport3
+ In transport12
+ In transport28
+ In transport35
+ In transport17
+ In transport16
+ In transport33
+ In transport21
+ In transport22
+ In transport26
+ In transport1
+ In transport31
+ In transport14
+ In transport0
+ In transport23
+ In transport6
+ In transport29
+ In transport18
+ In transport32
+ In transport39
+ In transport38
+ In transport5
+ In transport24
+ In transport7
+ In transport4
+ In transport30
+ In transport15
+ In transport13
+ In transport37
+ In transport19
+ In transport36
+ In transport27
+ In transport10
+ In transport20
+ In transport25
+ In transport2
+ In transport11
+ In transport9
+ In transport8
+ In transport34
+ Finished at main
+ In transport11
+ In transport In transport323 In transport In transport In transport
+ In transport
+ In transport In transport In transport24
+ In transport In transport In transport In transport In transport In transport In transport1429 In transport15 In transport In transport62 In transport8
+
+33
+3922
+
+431
+
+26 In transport
+15
+ In transport100
+
+
+3823
+ In transport In transport
+ In transport20
+ In transport In transport In transport18
+35
+
+ In transport In transport30 In transport
+25 In transport In transport13
+1736
+ In transport12
+737 In transport27
+28
+
+ In transport In transport16
+9
+
+ In transport1921
+
+
+
+
+
+
+ In transport34
+ Finished at main
+ In transport35
+ In transport In transport In transport In transport In transport In transport In transport In transport12
+161731
+
+ In transport In transport34
+ In transport13
+ In transport33
+ In transport36 In transport In transport
+3 In transport In transport426
+37
+38 In transport In transport In transport
+2 In transport3928
+
+ In transport In transport5 In transport In transport119
+
+296
+1910 In transport In transport0
+
+ In transport In transport15
+ In transport24
+32 In transport In transport In transport In transport
+ In transport71
+
+8
+
+
+22 In transport In transport2521
+18
+ In transport
+
+14
+
+27
+ In transport
+20
+
+23
+
+30
+
+ Finished at main
+ In transport15
+ In transport In transport In transport In transport In transport In transport373 In transport In transport In transport In transport In transport In transport In transport In transport13 In transport38 In transport1
+ In transport In transport29
+ In transport In transport33
+
+ In transport23
+ In transport7
+
+36
+6
+ In transport2 In transport27 In transport12 In transport30
+20243425 In transport35
+ In transport175
+1822 In transport In transport
+
+
+
+
+214
+
+0 In transport In transport
+
+19 In transport
+1428
+16
+
+ In transport In transport
+ In transport
+
+399811 In transport26
+10
+
+
+
+
+
+
+ In transport32
+
+ In transport31
+ Finished at main
+ In transport10 In transport In transport In transport26 In transport In transport In transport5 In transport34 In transport In transport In transport13
+
+ In transport In transport24 In transport In transport In transport In transport In transport In transport36 In transport In transport In transport39
+ In transport In transport17
+ In transport
+ In transport In transport23 In transport In transport In transport In transport In transport3833 In transport911 In transport27
+
+31
+2835
+8137
+1216 In transport
+
+1532 In transport
+
+ In transport2218
+
+21 In transport
+ In transport2029
+
+
+
+
+14
+437
+
+
+
+25
+
+
+
+6
+
+19 In transport
+0
+
+
+2
+
+30
+ Finished at main
+ In transport35
+ In transport32
+ In transport31
+ In transport In transport1528
+
+ In transport In transport33
+14
+ In transport2
+ In transport In transport29
+ In transport39
+ In transport In transport11
+1
+ In transport In transport377
+
+ In transport In transport12
+ In transport26
+ In transport In transport34
+ In transport In transport In transport2220163
+ In transport5
+ In transport In transport8
+425
+ In transport In transport13
+ In transport0
+38
+ In transport In transport In transport2736
+18
+ In transport
+23
+ In transport In transport
+3017 In transport
+10
+ In transport
+
+ In transport21
+ In transport9
+24
+
+
+ In transport19
+6
+ Finished at main
+ In transport11
+ In transport2
+ In transport35
+ In transport4
+ In transport24
+ In transport19
+ In transport1
+ In transport37
+ In transport18
+ In transport20
+ In transport22
+ In transport15
+ In transport7
+ In transport14
+ In transport33
+ In transport8
+ In transport36
+ In transport17
+ In transport30
+ In transport31
+ In transport13
+ In transport6
+ In transport26
+ In transport38
+ In transport27
+ In transport39
+ In transport23
+ In transport32
+ In transport28
+ In transport0
+ In transport16
+ In transport21
+ In transport9
+ In transport34
+ In transport12
+ In transport10
+ In transport25
+ In transport29
+ In transport5
+ In transport3
+ Finished at main
+ In transport35
+ In transport In transport In transport In transport In transport In transport In transport In transport21
+ In transport In transport14
+ In transport2
+ In transport In transport In transport9
+ In transport In transport31 In transport5
+ In transport In transport In transport In transport27
+3911
+
+ In transport0
+ In transport In transport In transport In transport36 In transport317
+
+34
+ In transport416
+
+ In transport29
+1320
+ In transport
+ In transport In transport25
+ In transport In transport103818 In transport
+3022 In transport6
+
+26
+15
+2432
+
+7
+
+8 In transport28
+
+
+33
+19123
+
+
+
+ In transport
+
+12 In transport37
+
+ Finished at main
+ In transport35
+ In transport In transport In transport28
+ In transport33 In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport31 In transport16 In transport In transport In transport371
+10
+398 In transport26
+ In transport
+29 In transport115 In transport In transport In transport
+ In transport In transport In transport38 In transport In transport
+ In transport In transport In transport
+17 In transport30
+27
+ In transport18
+2
+24
+13
+212369 In transport In transport32232
+
+20
+
+
+
+ In transport
+360
+
+
+
+12
+
+4
+34
+
+
+715
+14
+
+
+25 In transport
+
+19
+
+ Finished at main
+ In transport32
+ In transport In transport In transport In transport In transport In transport In transport In transport In transport21
+ In transport In transport In transport2024
+0
+ In transport In transport In transport37
+139 In transport In transport In transport
+ In transport19 In transport In transport33
+5 In transport31 In transport In transport4 In transport In transport
+
+2
+27 In transport In transport36
+8 In transport In transport In transport
+92530 In transport In transport18
+36
+
+15 In transport
+
+1413
+10
+ In transport
+
+
+23
+
+12
+2611
+28 In transport In transport22
+
+
+ In transport3834
+35
+ In transport17
+
+
+167
+
+
+29
+
+
+ Finished at main
+ In transport34
+ In transport In transport In transport In transport In transport In transport In transport In transport In transport15 In transport In transport227
+ In transport In transport In transport30 In transport1
+ In transport In transport25
+ In transport28
+ In transport12
+ In transport In transport In transport In transport26114
+ In transport In transport In transport2
+ In transport
+ In transport
+5
+
+
+24
+ In transport In transport39 In transport In transport1035
+ In transport31149
+ In transport27
+
+16
+19 In transport3633
+32
+6
+
+2938
+21 In transport In transport8 In transport
+
+320
+23
+17
+
+0
+
+
+
+
+37
+
+
+13
+ In transport18
+ Finished at main
+ In transport35
+ In transport In transport34 In transport In transport In transport In transport In transport In transport In transport In transport In transport29
+12 In transport37
+28 In transport In transport67 In transport30
+ In transport1727 In transport In transport18
+20
+ In transport4
+ In transport329 In transport In transport
+ In transport In transport In transport
+10
+
+ In transport In transport In transport In transport In transport In transport239
+14
+13
+36 In transport In transport In transport3
+26 In transport33
+
+
+ In transport1 In transport In transport
+0 In transport38
+
+
+248
+
+25
+
+51116
+15312221
+
+
+
+23
+
+19
+
+
+
+
+
+
+ Finished at main
+ In transport35
+ In transport In transport In transport In transport In transport In transport12 In transport In transport In transport In transport10
+ In transport In transport In transport1610 In transport In transport In transport In transport In transport In transport In transport2
+ In transport
+ In transport In transport In transport34
+ In transport In transport5
+
+
+ In transport In transport21
+ In transport13 In transport In transport26 In transport8
+296
+31
+32 In transport2328 In transport2725
+
+15
+ In transport9
+
+2022
+74 In transport In transport
+
+
+
+38392411
+ In transport
+14 In transport
+
+
+373319
+30
+17
+
+
+183
+36
+
+
+
+
+
+
+ Finished at main
+ In transport35
+ In transport39
+ In transport32
+ In transport34
+ In transport2
+ In transport14
+ In transport37
+ In transport21
+ In transport15
+ In transport3
+ In transport1
+ In transport9
+ In transport27
+ In transport8
+ In transport5
+ In transport24
+ In transport26
+ In transport38
+ In transport28
+ In transport11
+ In transport7
+ In transport22
+ In transport23
+ In transport29
+ In transport17
+ In transport18
+ In transport20
+ In transport19
+ In transport4
+ In transport12
+ In transport16
+ In transport0
+ In transport13
+ In transport30
+ In transport25
+ In transport36
+ In transport31
+ In transport6
+ In transport33
+ In transport10
+ Finished at main
+ In transport15
+ In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport30
+118
+27
+2312
+
+ In transport3631
+
+13 In transport In transport In transport In transport34
+ In transport In transport In transport In transport In transport In transport33739
+ In transport5
+ In transport In transport28 In transport
+ In transport In transport In transport124
+29 In transport26
+ In transport In transport
+ In transport20
+
+
+76
+10
+1892
+38
+ In transport25
+16
+
+ In transport21
+22
+
+ In transport35
+
+ In transport32
+
+14
+
+0
+4
+19
+ In transport33
+
+17
+ Finished at main
+ In transport35
+ In transport In transport31 In transport In transport In transport In transport In transport In transport In transport33 In transport In transport In transport In transport In transport117 In transport5
+ In transport16
+ In transport24
+
+ In transport In transport9
+ In transport In transport28
+12 In transport In transport In transport In transport
+383213 In transport In transport
+ In transport
+ In transport In transport In transport In transport18
+ In transport6 In transport34
+22
+
+321910
+
+17
+ In transport26
+
+015
+
+
+2029
+ In transport21
+ In transport39
+37 In transport23
+2714
+304
+
+
+8
+
+
+
+
+
+
+36
+25
+ In transport1
+ Finished at main
+ In transport In transport In transport In transport In transport33 In transport1119
+ In transport In transport34 In transport In transport In transport15
+ In transport In transport4
+ In transport In transport353 In transport In transport
+13020
+6
+
+
+
+ In transport In transport In transport27
+ In transport In transport32 In transport In transport
+8
+ In transport10 In transport In transport In transport In transport
+ In transport In transport In transport In transport2
+24
+38
+9012
+ In transport28
+
+
+
+ In transport25
+ In transport171314
+3721
+3136 In transport29
+5 In transport
+
+ In transport2223
+
+
+
+
+3918
+7
+
+
+16
+
+
+ In transport26
+ Finished at main
+ In transport35 In transport In transport In transport28 In transport In transport In transport In transport9 In transport In transport In transport In transport In transport In transport In transport14 In transport In transport In transport7 In transport34 In transport In transport2 In transport
+ In transport In transport817 In transport
+ In transport20
+ In transport In transport In transport37
+38
+121
+2316 In transport In transport
+21
+
+
+6
+18
+36
+ In transport11
+39
+31
+5
+22
+26
+ In transport10
+4
+
+
+
+ In transport30
+ In transport29
+15
+32
+24
+
+13
+ In transport25
+
+
+ In transport3
+ In transport19
+ In transport0
+33
+
+ In transport27
+ Finished at main
+ In transport15
+ In transport In transport29
+ In transport In transport In transport In transport In transport In transport33
+ In transport In transport In transport In transport In transport34
+ In transport In transport27
+1 In transport In transport23 In transport19
+5
+2
+ In transport3117 In transport In transport In transport In transport In transport In transport8
+
+22
+1811 In transport
+ In transport2413
+28
+ In transport In transport In transport In transport In transport In transport
+9436
+
+1230
+7 In transport35
+
+20
+
+
+25 In transport37 In transport39
+ In transport
+
+
+32614
+
+2116
+
+
+ In transport10
+
+26
+
+
+ In transport380
+
+3
+ Finished at main
+ In transport39
+ In transport In transport3524 In transport In transport In transport In transport
+ In transport38
+ In transport1911
+
+15
+ In transport2
+14
+ In transport16
+
+ In transport5
+ In transport37
+ In transport34
+ In transport In transport12
+ In transport18
+31
+10
+ In transport In transport In transport In transport25
+ In transport20
+ In transport1
+4
+ In transport8
+ In transport7
+ In transport In transport13
+28
+ In transport6
+ In transport22
+ In transport In transport30
+9
+ In transport32
+ In transport23
+ In transport29
+27
+ In transport3
+ In transport26
+ In transport36
+ In transport21
+ In transport17
+ In transport33
+0
+ Finished at main
+ In transport15
+ In transport In transport In transport In transport In transport In transport23
+4721
+
+0 In transport
+12
+ In transport In transport18
+ In transport In transport626
+ In transport
+335
+
+ In transport28 In transport
+ In transport In transport31
+ In transport In transport In transport In transport25
+20 In transport In transport3038
+
+ In transport In transport1
+11
+ In transport In transport10
+ In transport39 In transport In transport
+ In transport In transport In transport3214
+
+
+
+ In transport In transport17 In transport24
+ In transport13
+ In transport3537
+34
+
+19
+299
+2
+8
+
+3
+
+16
+ In transport27
+22
+ In transport36
+ Finished at main
+ In transport35
+ In transport In transport In transport In transport In transport1 In transport In transport16 In transport In transport24 In transport In transport In transport In transport In transport19
+ In transport In transport In transport In transport2 In transport3623
+ In transport In transport
+153221
+20
+28 In transport34 In transport In transport In transport In transport In transport26
+17
+7 In transport
+14
+ In transport12 In transport
+27
+ In transport9
+ In transport37
+
+ In transport10
+39
+ In transport
+ In transport In transport
+5
+ In transport258
+
+1811
+31
+
+3022
+6
+338
+4 In transport33
+
+
+
+ In transport
+
+13
+29
+0
+
+
+
+ Finished at main
+ In transport35
+ In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport14 In transport In transport In transport In transport24
+ In transport4 In transport In transport In transport In transport In transport15
+33
+19
+16 In transport In transport In transport In transport In transport In transport In transport In transport26 In transport62023
+10
+ In transport29
+2532 In transport In transport
+28 In transport
+393
+17
+7 In transport21
+38
+8
+
+13 In transport
+
+2236
+512
+
+37
+
+ In transport
+
+27 In transport11
+18 In transport
+
+
+
+2
+19
+
+
+3031
+
+
+34
+
+ In transport0
+ Finished at main
+ In transport In transport In transport35
+ In transport In transport In transport In transport In transport In transport14 In transport In transport In transport In transport In transport525 In transport
+ In transport In transport In transport In transport23 In transport3413 In transport38 In transport24
+ In transport16
+ In transport In transport
+19 In transport In transport In transport In transport In transport39 In transport33
+12
+10320
+
+2011
+16
+36
+
+ In transport22 In transport84
+
+
+
+15
+
+
+ In transport In transport7 In transport
+921 In transport In transport In transport1718
+27
+282
+
+3729
+
+
+
+30
+
+
+31
+
+
+
+
+
+26
+ In transport3
+ Finished at main
+ In transport39
+ In transport In transport In transport In transport5 In transport In transport25
+ In transport In transport2 In transport
+6 In transport In transport In transport In transport13
+ In transport In transport10
+ In transport In transport In transport34 In transport In transport In transport In transport12
+ In transport In transport In transport21
+3
+19414
+ In transport18 In transport7 In transport0
+ In transport
+
+
+
+
+2032
+1711
+36 In transport26 In transport In transport In transport9
+
+35124
+1637
+
+
+
+8
+
+
+15
+ In transport38
+27
+
+33
+
+ In transport23
+
+22
+ In transport28
+ In transport31
+ In transport30
+ In transport29
+ Finished at main
+ In transport31
+ In transport In transport In transport In transport In transport25 In transport In transport In transport1429
+27 In transport2034 In transport2 In transport In transport30
+
+ In transport In transport In transport921
+ In transport In transport32
+ In transport In transport
+ In transport16
+ In transport In transport33 In transport23 In transport
+
+
+19
+26
+ In transport In transport113
+
+24
+
+ In transport
+11 In transport3
+ In transport
+ In transport2235
+0
+
+
+10 In transport18
+
+
+ In transport12 In transport In transport15
+4
+6
+ In transport5
+7
+8
+
+28
+17
+ In transport39
+ In transport In transport3637
+
+ In transport38
+ Finished at main
+ In transport39
+ In transport In transport15
+ In transport In transport7 In transport35
+ In transport In transport18
+ In transport In transport24
+9 In transport In transport In transport17
+ In transport In transport1219
+ In transport In transport4
+ In transport0
+ In transport In transport In transport37
+ In transport21
+ In transport In transport In transport34
+ In transport2
+29
+ In transport In transport In transport26
+ In transport33
+3227
+28
+ In transport5
+ In transport20
+ In transport In transport1
+ In transport In transport22
+10
+ In transport14813
+36
+3
+ In transport25
+23
+
+
+ In transport6
+
+
+31
+38
+
+
+16
+11
+ In transport30
+ Finished at main
+ In transport15
+ In transport14
+ In transport13
+ In transport12
+ In transport0
+ In transport In transport19
+ In transport4
+ In transport29
+ In transport16
+ In transport10
+ In transport5
+ In transport23
+ In transport27
+ In transport26
+ In transport6
+ In transport28
+ In transport In transport2
+ In transport25
+ In transport17
+ In transport In transport22
+ In transport In transport In transport2124
+ In transport32
+9 In transport
+35
+ In transport In transport In transport37
+ In transport In transport20
+ In transport34 In transport7
+ In transport In transport38
+ In transport8363
+
+183033
+
+
+
+31
+
+
+11
+ In transport1
+ In transport39
+ Finished at main
+ In transport In transport1214 In transport
+28
+
+ In transport In transport In transport In transport In transport1 In transport In transport In transport In transport In transport9 In transport17 In transport In transport In transport In transport In transport In transport In transport31
+6 In transport25
+
+
+ In transport13 In transport In transport In transport In transport In transport4 In transport In transport
+35
+323924
+
+34
+
+2292320111518
+ In transport In transport5
+
+ In transport
+
+21
+
+
+
+7
+
+26 In transport
+30 In transport
+373319
+36
+10
+22
+ In transport16
+
+ In transport8
+
+ In transport3
+
+ In transport In transport0
+
+27
+38
+ Finished at main
+ In transport32
+ In transport In transport In transport In transport8 In transport In transport28
+ In transport12 In transport In transport36
+ In transport30 In transport
+ In transport25
+22 In transport6
+ In transport29 In transport In transport In transport32
+ In transport In transport0
+
+4
+ In transport9
+
+
+
+ In transport34
+18 In transport21 In transport31 In transport In transport In transport
+
+ In transport27 In transport In transport
+ In transport3338
+24
+ In transport In transport15
+ In transport2011
+ In transport10
+ In transport37
+1
+
+19
+26
+ In transport17
+ In transport16
+ In transport5
+
+23
+14
+35
+39
+
+13
+
+ In transport7
+ Finished at main
+ In transport15
+ In transport In transport In transport In transport In transport In transport252918
+ In transport39
+ In transport In transport In transport In transport3412
+24
+ In transport In transport10
+37
+ In transport In transport26
+ In transport17
+ In transport In transport In transport In transport30
+ In transport5
+ In transport In transport8
+ In transport In transport27 In transport36
+2
+ In transport
+ In transport
+2833 In transport2007
+ In transport
+38 In transport
+6 In transport
+ In transport16
+35
+
+
+2231
+ In transport
+21
+
+
+32
+19
+14
+19
+
+ In transport11
+
+ In transport23
+ In transport4
+ In transport13
+ In transport3
+ Finished at main
+ In transport12
+ In transport In transport35 In transport In transport In transport In transport In transport
+ In transport3733
+ In transport
+ In transport In transport In transport21 In transport21
+ In transport In transport In transport19
+ In transport In transport27
+101124
+ In transport In transport
+ In transport1830 In transport
+ In transport
+ In transport02916 In transport In transport In transport34
+
+
+25
+39 In transport
+ In transport In transport
+7
+39
+20
+4838
+
+
+ In transport In transport
+281514 In transport
+32 In transport6 In transport In transport
+13
+ In transport
+26 In transport
+17
+
+
+
+
+31
+5
+22
+
+36
+ In transport23
+ Finished at main
+ In transport35
+ In transport15
+ In transport14
+ In transport33
+ In transport34
+ In transport4
+ In transport39
+ In transport28
+ In transport0
+ In transport23
+ In transport18
+ In transport38
+ In transport13
+ In transport20
+ In transport12
+ In transport5
+ In transport29
+ In transport21
+ In transport26
+ In transport8
+ In transport11
+ In transport36
+ In transport27
+ In transport19
+ In transport10
+ In transport16
+ In transport2
+ In transport31
+ In transport37
+ In transport17
+ In transport7
+ In transport30
+ In transport24
+ In transport6
+ In transport1
+ In transport9
+ In transport25
+ In transport22
+ In transport32
+ In transport3
+ Finished at main
+ In transport35
+ In transport In transport In transport In transport In transport In transport17
+ In transport In transport1
+32
+ In transport In transport13 In transport In transport30
+15
+ In transport11
+ In transport In transport36
+39 In transport
+ In transport14
+ In transport23 In transport In transport8
+33 In transport In transport
+ In transport In transport2134 In transport
+6 In transport In transport In transport
+7 In transport In transport10
+12274 In transport
+ In transport
+ In transport18031
+2
+
+38 In transport In transport
+52619 In transport
+28
+9
+
+
+3
+
+ In transport
+1625
+
+
+ In transport3722
+
+
+ In transport
+2024
+
+29
+
+ Finished at main
+ In transport32
+ In transport In transport26 In transport In transport2 In transport
+ In transport In transport In transport3719
+ In transport In transport In transport75 In transport In transport
+ In transport In transport34
+ In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport
+14 In transport In transport In transport In transport13 In transport38 In transport
+36
+3214
+9
+3310 In transport23
+20
+12
+3518
+ In transport39
+
+
+
+15
+24
+81116
+
+22
+17
+
+
+
+25
+
+27
+
+01
+
+ In transport
+
+6
+ In transport In transport28 In transport31
+ In transport30
+
+29
+ Finished at main
+ In transport35
+ In transport In transport In transport0 In transport In transport10 In transport In transport In transport208
+ In transport In transport In transport17
+14
+
+ In transport In transport
+5 In transport In transport2
+ In transport30
+ In transport In transport In transport In transport In transport In transport In transport27
+ In transport18
+ In transport1
+12 In transport29
+1116 In transport26
+ In transport9
+37 In transport In transport In transport31 In transport2321
+33 In transport3
+ In transport32
+344
+
+ In transport In transport
+
+61525
+ In transport
+
+13
+
+ In transport722
+ In transport2439
+
+36
+
+
+
+
+
+19
+28
+
+38
+
+ Finished at main
+ In transport35
+ In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport10
+231621524 In transport46
+
+
+
+ In transport In transport In transport In transport In transport In transport
+ In transport In transport732 In transport2038 In transport
+ In transport25 In transport In transport33
+ In transport17
+261922 In transport In transport
+30 In transport2811 In transport
+
+27
+ In transport336
+
+1 In transport
+37
+14 In transport In transport In transport
+0
+
+
+
+
+ In transport821
+13
+
+293912 In transport9
+ In transport
+531
+34
+
+
+
+
+18
+
+
+
+
+ Finished at main
+ In transport32
+ In transport In transport In transport In transport38
+ In transport23 In transport In transport In transport In transport366
+ In transport In transport In transport In transport7 In transport In transport272
+ In transport In transport In transport In transport In transport33 In transport12
+ In transport5
+
+ In transport
+1
+17
+35
+3
+16
+15
+ In transport4 In transport22 In transport
+
+ In transport19
+ In transport8
+ In transport In transport39 In transport11
+14
+0
+21
+24
+34 In transport
+ In transport
+ In transport In transport2837 In transport In transport9
+2018
+2526
+ In transport30 In transport
+
+
+2931
+10
+
+13
+
+
+
+
+
+ Finished at main
+ In transport32
+ In transport In transport In transport In transport In transport In transport In transport20 In transport In transport In transport18 In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport3416
+2
+ In transport24
+912
+ In transport In transport In transport In transport In transport27 In transport In transport In transport22
+1311
+21 In transport05
+39
+35
+7826
+41
+19
+
+
+ In transport33
+17 In transport
+
+
+36
+
+23
+
+
+371538 In transport31
+14
+
+
+
+ In transport
+ In transport In transport29 In transport
+3
+
+
+25
+2830
+
+
+6
+ In transport10
+ Finished at main
+ In transport32
+ In transport In transport In transport In transport In transport1811 In transport In transport In transport10 In transport In transport In transport In transport In transport In transport13
+ In transport In transport In transport In transport36619
+ In transport In transport21
+
+2734
+ In transport In transport39
+23520 In transport38 In transport In transport In transport In transport In transport17
+
+
+16 In transport
+31
+3
+
+23 In transport
+9529
+15
+
+ In transport In transport
+ In transport In transport In transport In transport In transport18
+3724 In transport
+4
+ In transport22
+
+
+
+
+033
+7302826
+
+14
+
+12
+
+25
+
+
+
+
+
+ Finished at main
+ In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport15
+24
+01734331
+
+26193518
+12036
+2
+
+5
+83216
+13114
+
+
+22276
+21
+
+25
+9
+392330
+ In transport3873312
+1428
+
+
+29
+37
+
+
+
+
+
+
+
+
+
+
+
+
+
+10
+
+ Finished at main
+ In transport In transport In transport10
+ In transport In transport In transport In transport In transport In transport In transport8 In transport In transport In transport In transport36
+ In transport27 In transport In transport In transport13 In transport In transport In transport24
+4 In transport142
+28211529 In transport In transport In transport In transport In transport In transport
+ In transport18
+ In transport
+
+1
+ In transport11
+
+38 In transport337 In transport017
+6
+ In transport2531
+ In transport
+ In transport22 In transport In transport
+32
+30
+35
+ In transport123416
+
+5
+
+
+19
+7
+23
+
+
+
+
+
+39
+20
+
+26
+
+
+ In transport33
+9
+ Finished at main
+ In transport35
+ In transport15
+ In transport3
+ In transport2
+ In transport14
+ In transport12
+ In transport26
+ In transport37
+ In transport8
+ In transport19
+ In transport9
+ In transport33
+ In transport39
+ In transport32
+ In transport4
+ In transport10
+ In transport25
+ In transport36
+ In transport38
+ In transport1
+ In transport5
+ In transport18
+ In transport16
+ In transport23
+ In transport0
+ In transport28
+ In transport21
+ In transport22
+ In transport7
+ In transport6
+ In transport29
+ In transport27
+ In transport24
+ In transport13
+ In transport20
+ In transport31
+ In transport34
+ In transport30
+ In transport11
+ In transport17
+ Finished at main
+ In transport32
+ In transport2
+ In transport In transport In transport9
+ In transport In transport In transport In transport In transport5 In transport In transport In transport In transport In transport In transport19 In transport
+0 In transport In transport In transport In transport In transport In transport12 In transport In transport In transport15 In transport13
+10 In transport In transport17
+3
+22
+8
+14
+23
+18
+
+39
+ In transport3367
+37
+29 In transport In transport162028
+
+
+ In transport
+1
+3638
+ In transport344
+
+
+
+35
+ In transport In transport
+
+
+303121
+
+
+
+11
+ In transport27
+ In transport25
+
+ In transport In transport2624
+
+ Finished at main
+ In transport12
+ In transport In transport In transport In transport In transport In transport In transport3 In transport39375 In transport36 In transport In transport In transport3338 In transport
+32 In transport
+ In transport976
+ In transport35
+
+
+011
+
+ In transport In transport
+ In transport In transport In transport In transport
+ In transport30 In transport1412
+15
+
+
+13
+
+
+4 In transport16
+
+ In transport In transport2524 In transport In transport10 In transport In transport In transport In transport In transport
+ In transport In transport
+31
+822
+23
+29 In transport26
+ In transport
+27
+
+
+3428
+
+17
+19
+18
+
+ In transport20
+
+21
+
+ Finished at main
+ In transport In transport152
+ In transport30 In transport In transport
+20
+ In transport In transport In transport In transport In transport In transport In transport In transport3534
+ In transport In transport In transport In transport
+ In transport3726
+ In transport In transport In transport In transport In transport16
+39
+7 In transport32
+38
+
+ In transport In transport2131
+ In transport18 In transport In transport In transport10
+28 In transport27
+ In transport In transport1122
+
+ In transport In transport
+33
+629
+ In transport19
+178
+ In transport
+09
+1
+ In transport
+4
+5 In transport
+
+ In transport1236
+
+
+13
+3
+231425
+
+24
+
+
+
+
+ Finished at main
+ In transport34
+ In transport In transport In transport276
+
+ In transport In transport In transport In transport In transport In transport5 In transport In transport In transport In transport In transport In transport In transport4 In transport
+ In transport1 In transport
+ In transport28 In transport In transport1814 In transport1713
+ In transport10
+22 In transport11 In transport In transport In transport In transport37
+ In transport30
+ In transport In transport In transport7
+1536
+248
+ In transport
+2112
+26
+35
+
+29
+
+ In transport020 In transport
+2
+19
+1638
+
+
+
+
+
+
+3
+ In transport31
+32
+
+39
+9
+
+23
+
+ In transport33
+ In transport25
+ Finished at main
+ In transport35
+ In transport In transport In transport In transport0183919
+ In transport12
+ In transport In transport In transport In transport In transport In transport In transport In transport14
+ In transport242138
+
+36 In transport32
+ In transport5
+
+ In transport In transport In transport In transport In transport621 In transport In transport In transport20 In transport
+ In transport In transport3
+16
+
+23 In transport37
+ In transport In transport11
+
+ In transport153331
+
+
+
+7 In transport In transport
+
+ In transport
+
+269 In transport
+344
+ In transport830 In transport
+
+ In transport2922
+
+25
+13
+
+
+ In transport281710
+
+
+
+27
+
+ Finished at main
+ In transport11
+ In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport28 In transport In transport In transport In transport In transport In transport In transport36
+37
+3417 In transport
+29
+ In transport In transport30
+ In transport0161331
+ In transport In transport In transport In transport In transport
+
+ In transport In transport5
+ In transport3810 In transport
+ In transport In transport1420
+3523 In transport25
+
+26 In transport
+
+2432492119
+139
+ In transport815
+
+
+ In transport1233
+
+
+
+
+2
+
+7
+
+
+6
+
+
+
+22
+
+ In transport3
+27
+ In transport18
+ Finished at main
+ In transport15
+ In transport In transport In transport In transport In transport3 In transport In transport In transport37 In transport
+ In transport11
+ In transport In transport19 In transport7 In transport In transport In transport In transport In transport2613 In transport In transport In transport25
+235
+31
+ In transport In transport16 In transport23
+98
+
+
+ In transport5 In transport In transport In transport18
+ In transport In transport
+30 In transport In transport
+0 In transport63814
+
+ In transport In transport39
+
+ In transport17
+
+2233
+4
+3624
+
+
+
+10 In transport1232
+
+2128
+
+34
+
+
+
+
+
+
+20
+29
+ In transport27
+ In transport1
+ Finished at main
+ In transport15
+ In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport1610
+35
+313
+ In transport
+335
+ In transport87 In transport
+ In transport1
+ In transport25 In transport17
+20
+
+ In transport In transport In transport In transport In transport In transport In transport13 In transport3028
+94
+ In transport In transport
+0
+23 In transport38 In transport19
+ In transport In transport In transport2 In transport In transport
+ In transport
+
+2629
+183412
+22
+ In transport
+
+37241121
+
+32
+
+
+39
+
+ In transport6
+ In transport36
+
+
+
+
+
+27
+ In transport14
+ Finished at main
+ In transport35
+ In transport In transport14
+ In transport7
+ In transport In transport11
+ In transport27
+ In transport In transport25
+ In transport13
+ In transport39
+ In transport In transport8
+ In transport33
+ In transport In transport In transport2615
+ In transport
+ In transport In transport In transport10
+4 In transport31
+ In transport In transport In transport6 In transport21
+
+ In transport36
+ In transport In transport3220
+ In transport In transport In transport37134160
+
+
+ In transport In transport23518
+
+ In transport
+ In transport2428 In transport In transport In transport
+
+30
+19
+
+3812
+
+
+
+9
+ In transport
+2317
+22
+29
+
+
+ Finished at main
+ In transport15
+ In transport In transport In transport In transport In transport In transport In transport In transport38 In transport8 In transport In transport182 In transport In transport In transport12 In transport36 In transport In transport17 In transport In transport In transport29 In transport In transport
+
+10
+ In transport
+ In transport In transport In transport370
+
+ In transport In transport
+26
+ In transport In transport In transport In transport In transport11 In transport In transport359
+
+4
+
+
+6243232753020
+2125
+1431
+19132
+22
+ In transport
+16
+
+
+
+
+
+
+
+28 In transport7
+
+
+33
+
+
+13
+ In transport
+39
+
+
+ In transport34
+ Finished at main
+ In transport34
+ In transport12
+ In transport35
+ In transport30
+ In transport In transport28
+ In transport7
+ In transport In transport37
+0
+ In transport In transport16
+ In transport17
+ In transport In transport In transport233315
+ In transport In transport In transport2229 In transport26 In transport
+39 In transport
+ In transport In transport In transport In transport In transport In transport42419
+38
+ In transport In transport125 In transport
+ In transport
+3
+ In transport In transport In transport32 In transport
+5
+18 In transport
+27
+
+21
+9
+11 In transport
+
+14
+36
+8 In transport
+ In transport In transport
+
+20
+10
+31
+
+6
+13
+
+2
+ Finished at main
+ In transport15
+ In transport In transport In transport In transport3213
+ In transport In transport In transport In transport19 In transport In transport In transport2 In transport In transport In transport
+ In transport In transport In transport In transport14 In transport18
+35
+241 In transport17726 In transport In transport In transport8 In transport In transport In transport In transport11
+ In transport23 In transport
+ In transport
+ In transport12
+22
+
+
+ In transport25
+28
+ In transport
+34
+
+ In transport In transport3103036
+
+4
+38
+9
+2037
+
+3539
+
+
+ In transport16
+6
+
+ In transport29
+1027
+
+
+
+
+
+
+ In transport33
+ In transport21
+ Finished at main
+ In transport35
+ In transport11
+ In transport14
+ In transport13
+ In transport32
+ In transport30
+ In transport3
+ In transport26
+ In transport34
+ In transport36
+ In transport15
+ In transport17
+ In transport23
+ In transport28
+ In transport21
+ In transport39
+ In transport24
+ In transport37
+ In transport38
+ In transport25
+ In transport20
+ In transport33
+ In transport31
+ In transport8
+ In transport In transport10
+ In transport7
+4
+ In transport16
+ In transport18
+ In transport2
+ In transport9
+ In transport5
+ In transport27
+ In transport In transport6
+29
+ In transport In transport0
+ In transport In transport1
+12
+ In transport19
+22
+ Finished at main
+ In transport32
+ In transport15
+ In transport34
+ In transport2
+ In transport7
+ In transport26
+ In transport In transport31
+ In transport28
+ In transport In transport16
+ In transport In transport29
+24
+ In transport In transport In transport23
+ In transport In transport30
+3
+ In transport11
+ In transport In transport6
+ In transport In transport In transport In transport121433
+
+ In transport13
+ In transport In transport9
+ In transport1
+20
+39 In transport In transport
+21
+2235 In transport385
+25
+
+ In transport37
+ In transport In transport1017188
+
+ In transport
+ In transport0
+ In transport27
+
+ In transport36
+4
+ In transport19
+
+
+
+ Finished at main
+ In transport15
+ In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport1116 In transport In transport In transport2 In transport18
+22
+28 In transport In transport In transport25
+24 In transport
+2010 In transport
+
+ In transport In transport1726 In transport27
+ In transport0 In transport In transport In transport194
+
+ In transport
+ In transport In transport37
+
+
+39
+ In transport34
+ In transport36 In transport In transport333
+31 In transport12235
+30
+1
+
+ In transport
+
+
+9
+
+21
+
+
+78
+3229 In transport
+
+38
+6
+
+
+
+ In transport14
+ In transport35
+ In transport13
+ Finished at main
+ In transport15
+ In transport In transport In transport27 In transport In transport In transport29
+ In transport4 In transport18
+ In transport In transport In transport In transport In transport In transport In transport In transport
+
+ In transport In transport In transport In transport In transport In transport In transport10
+ In transport34 In transport7
+1725
+89 In transport36
+ In transport322230
+31 In transport In transport In transport1128
+ In transport38
+
+33
+ In transport
+ In transport19 In transport In transport3
+14
+23
+16
+
+37
+ In transport200
+39
+2412
+ In transport In transport21
+2
+
+
+
+
+
+26
+351
+
+13
+6
+
+
+
+ In transport5
+ Finished at main
+ In transport15 In transport In transport In transport In transport39
+ In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport In transport27
+7
+6341942
+8032 In transport
+
+22
+ In transport In transport In transport In transport In transport In transport In transport In transport In transport
+ In transport2133
+
+10 In transport13
+
+38
+2435 In transport In transport In transport In transport In transport36 In transport1126
+
+323
+
+ In transport
+143720
+
+25
+5
+ In transport
+12 In transport16
+
+131
+
+289
+18
+
+
+
+ In transport
+17
+2930
+
+
+
+
+
+ Finished at main
+ In transport35
+ In transport In transport In transport In transport In transport5
+ In transport In transport3722
+
+12 In transport33
+ In transport In transport In transport In transport029
+ In transport34 In transport In transport In transport In transport In transport In transport
+ In transport In transport In transport In transport10
+30
+ In transport In transport6
+
+48 In transport3
+18
+ In transport In transport17
+38
+ In transport
+ In transport21 In transport3126 In transport24 In transport25
+7 In transport
+
+3236
+
+27139
+ In transport23
+20 In transport
+
+1314
+1692
+
+ In transport
+
+1128
+ In transport
+
+
+
+19
+
+
+
+ In transport15
+ Finished at main
